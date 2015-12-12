@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGeneration.Roslyn", "CodeGeneration.Roslyn\CodeGeneration.Roslyn.csproj", "{80CEA17A-2175-4CD5-BED8-4B6CFB98CF3B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0BA25C7A-1A7A-43DA-BF47-202B54C75C9B}"
+	ProjectSection(SolutionItems) = preProject
+		..\LICENSE.txt = ..\LICENSE.txt
+		..\nuget.config = ..\nuget.config
+		stylecop.json = stylecop.json
+		version.json = version.json
+	EndProjectSection
+EndProject
+Project("{FF286327-C783-4F7A-AB73-9BCBAD0D4460}") = "CodeGeneration.Roslyn.NuGet", "CodeGeneration.Roslyn.NuGet\CodeGeneration.Roslyn.NuGet.nuproj", "{9BBF02A9-E3B9-4360-89B5-DDE053BD8135}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{7A398ABE-B79F-4BE2-8759-58693BF65D62}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{80CEA17A-2175-4CD5-BED8-4B6CFB98CF3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80CEA17A-2175-4CD5-BED8-4B6CFB98CF3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80CEA17A-2175-4CD5-BED8-4B6CFB98CF3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80CEA17A-2175-4CD5-BED8-4B6CFB98CF3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BBF02A9-E3B9-4360-89B5-DDE053BD8135}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BBF02A9-E3B9-4360-89B5-DDE053BD8135}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BBF02A9-E3B9-4360-89B5-DDE053BD8135}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BBF02A9-E3B9-4360-89B5-DDE053BD8135}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
