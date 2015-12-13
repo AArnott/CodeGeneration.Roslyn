@@ -1,6 +1,16 @@
 ﻿{
   "dependencies": {
-    "StyleCop.Analyzers": "1.0.0-rc2"
+    "Microsoft.CodeAnalysis.CSharp.Workspaces": "1.0.0",
+    "Nerdbank.GitVersioning": {
+      "version": "1.1.61-rc",
+      "suppressParent": "none"
+    },
+    "ReadOnlySourceTree": {
+      "version": "0.1.17-beta-gf0bddac335",
+      "suppressParent": "none"
+    },
+    "StyleCop.Analyzers": "1.0.0-rc2",
+    "Validation": "2.2.8"
   },
   "frameworks": {
     ".NETPortable,Version=v4.5,Profile=Profile7": { }
