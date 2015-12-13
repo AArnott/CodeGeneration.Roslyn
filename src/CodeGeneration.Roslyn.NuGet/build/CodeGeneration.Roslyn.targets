@@ -14,7 +14,7 @@
     </CoreCompileDependsOn>
   </PropertyGroup>
 
-  <UsingTask TaskName="GenerateCodeFromAttributes" AssemblyFile="$(CodeGenerationRoslynToolsPath)ImmutableObjectGraph.CodeGeneration.Tasks.dll" />
+  <UsingTask TaskName="GenerateCodeFromAttributes" AssemblyFile="$(CodeGenerationRoslynToolsPath)CodeGeneration.Roslyn.Tasks.dll" />
 
   <Target Name="GenerateCodeFromAttributes" DependsOnTargets="ResolveReferences" BeforeTargets="CoreCompile">
     <ItemGroup>

@@ -119,6 +119,7 @@ namespace CodeGeneration.Roslyn
                     if (generatorTypeName != null)
                     {
                         Type generatorType = Type.GetType(generatorTypeName);
+                        Verify.Operation(generatorType != null, "Unable to find code generator: {0}", generatorTypeName);
                         ICodeGenerator generator = (ICodeGenerator)Activator.CreateInstance(generatorType, attributeData);
                         yield return generator;
                     }

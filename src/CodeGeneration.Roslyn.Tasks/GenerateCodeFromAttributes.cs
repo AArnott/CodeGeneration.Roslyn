@@ -167,7 +167,7 @@ namespace CodeGeneration.Roslyn.Tasks
             {
                 // Ensure that certain assemblies are loaded.
                 Type t1 = typeof(DocumentTransform);
-                ////Type t2 = typeof(GenerateImmutableAttribute);
+                Assembly.LoadWithPartialName("CodeGeneration.Roslyn.Tests.Generators");
 
                 return AppDomain.CurrentDomain.GetAssemblies()
                     .Where(a => !a.IsDynamic)
