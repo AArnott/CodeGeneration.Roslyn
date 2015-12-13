@@ -1,6 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\packages\ReadOnlySourceTree.0.1.17-beta\build\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.props" Condition="Exists('..\..\packages\ReadOnlySourceTree.0.1.17-beta\build\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.props')" />
+  <PropertyGroup>
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == ''">$(UserProfile)\.nuget\packages\</NuGetPackageRoot>
+    <ReadOnlySourceTreePackage>$(NuGetPackageRoot)ReadOnlySourceTree\0.1.17-beta\</ReadOnlySourceTreePackage>
+    <NerdbankGitVersioningPackage>$(NuGetPackageRoot)Nerdbank.GitVersioning\1.1.61-rc\</NerdbankGitVersioningPackage>
+    <NuProjPackage>$(NuGetPackageRoot)Nuproj\0.10.27-beta-g2363d7cd98\</NuProjPackage>
+  </PropertyGroup>
+  <Import Project="ReadOnlySourceTreePackagebuild\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.props" Condition="Exists('ReadOnlySourceTreePackagebuild\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|AnyCPU">
       <Configuration>Debug</Configuration>
@@ -14,11 +20,14 @@
   <ItemGroup>
     <ProjectReference Include="..\CodeGeneration.Roslyn\CodeGeneration.Roslyn.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="build\CodeGeneration.Roslyn.targets" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>9bbf02a9-e3b9-4360-89b5-dde053bd8135</ProjectGuid>
   </PropertyGroup>
   <PropertyGroup>
-    <NuProjPath Condition=" '$(NuProjPath)' == '' ">..\..\packages\Nuproj.0.10.27-beta-g2363d7cd98\tools</NuProjPath>
+    <NuProjPath Condition=" '$(NuProjPath)' == '' ">$(NuProjPackage)tools</NuProjPath>
     <VersionDependsOn>$(VersionDependsOn);GetNuPkgVersion</VersionDependsOn>
   </PropertyGroup>
   <Import Project="$(NuProjPath)\NuProj.props" Condition="Exists('$(NuProjPath)\NuProj.props')" />
@@ -36,23 +45,13 @@
     <Copyright>Copyright © Andrew arnott</Copyright>
     <Tags>CodeGeneration Roslyn</Tags>
   </PropertyGroup>
-
   <Target Name="GetNuPkgVersion" DependsOnTargets="GetBuildVersion">
     <PropertyGroup>
       <Version>$(NuGetPackageVersion)</Version>
       <NuSpecProperties>$(NuGetProperties);CommitId=$(GitCommitIdShort)</NuSpecProperties>
     </PropertyGroup>
   </Target>
-
   <Import Project="$(NuProjPath)\NuProj.targets" />
-  <Import Project="..\..\packages\Nerdbank.GitVersioning.1.1.61-rc\build\NerdBank.GitVersioning.targets"/>
-  <Import Project="..\..\packages\ReadOnlySourceTree.0.1.17-beta\build\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.targets" Condition="Exists('..\..\packages\ReadOnlySourceTree.0.1.17-beta\build\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\Nerdbank.GitVersioning.1.1.61-rc\build\NerdBank.GitVersioning.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Nerdbank.GitVersioning.1.1.61-rc\build\NerdBank.GitVersioning.targets'))" />
-    <Error Condition="!Exists('..\..\packages\ReadOnlySourceTree.0.1.17-beta\build\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\ReadOnlySourceTree.0.1.17-beta\build\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.props'))" />
-    <Error Condition="!Exists('..\..\packages\ReadOnlySourceTree.0.1.17-beta\build\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\ReadOnlySourceTree.0.1.17-beta\build\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.targets'))" />
-  </Target>
+  <Import Project="$(NerdbankGitVersioningPackage)build\NerdBank.GitVersioning.targets" />
+  <Import Project="ReadOnlySourceTreePackagebuild\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.targets" Condition="Exists('ReadOnlySourceTreePackagebuild\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.targets')" />
 </Project>

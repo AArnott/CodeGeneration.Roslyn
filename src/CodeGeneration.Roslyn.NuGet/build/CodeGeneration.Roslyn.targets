@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <CodeGenerationRoslynToolsPath Condition=" '$(CodeGenerationRoslynToolsPath)' == '' ">$(MSBuildThisFileDirectory)..\tools\</CodeGenerationRoslynToolsPath>
+
+    <PrepareResourcesDependsOn>
+      GenerateCodeFromAttributes;
+      $(PrepareResourcesDependsOn)
+    </PrepareResourcesDependsOn>
+
+    <CoreCompileDependsOn>
+      GenerateCodeFromAttributes;
+      $(CoreCompileDependsOn)
+    </CoreCompileDependsOn>
+  </PropertyGroup>
+
+  <UsingTask TaskName="GenerateCodeFromAttributes" AssemblyFile="$(CodeGenerationRoslynToolsPath)ImmutableObjectGraph.CodeGeneration.Tasks.dll" />
+
+  <Target Name="GenerateCodeFromAttributes" DependsOnTargets="ResolveReferences" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <CompileToGenerateFromAttributes Include="@(Compile)"
+                                           Condition=" '%(Compile.Generator)' == 'MSBuild:GenerateCodeFromAttributes' " />
+    </ItemGroup>
+    <GenerateCodeFromAttributes
+      Compile="@(Compile)"
+      CompileToGenerateFromAttributes="@(CompileToGenerateFromAttributes)"
+      ReferencePath="@(ReferencePath)"
+      IntermediateOutputDirectory="$(IntermediateOutputPath)">
+      <Output TaskParameter="GeneratedCompile" ItemName="GeneratedCodeFromAttribute_Compile" />
+    </GenerateCodeFromAttributes>
+    <ItemGroup>
+      <Compile Include="@(GeneratedCodeFromAttribute_Compile)" />
+    </ItemGroup>
+  </Target>
+</Project>

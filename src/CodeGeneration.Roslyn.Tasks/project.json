@@ -1,0 +1,15 @@
+﻿{
+  "dependencies": {
+    "Microsoft.CodeAnalysis.CSharp.Workspaces": "1.0.0",
+    "Nerdbank.GitVersioning": "1.1.61-rc",
+    "NuProj.Common": "0.10.27-beta-g2363d7cd98",
+    "ReadOnlySourceTree": "0.1.17-beta-gf0bddac335",
+    "StyleCop.Analyzers": "1.0.0-rc2"
+  },
+  "frameworks": {
+    "net46": { }
+  },
+  "runtimes": {
+    "win": { }
+  }
+}
