@@ -18,6 +18,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CodeGeneration.Roslyn.Tasks\CodeGeneration.Roslyn.Tasks.csproj">
+      <PackageDirectory>Tools</PackageDirectory>
+    </ProjectReference>
     <ProjectReference Include="..\CodeGeneration.Roslyn\CodeGeneration.Roslyn.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -32,8 +35,8 @@
   </PropertyGroup>
   <Import Project="$(NuProjPath)\NuProj.props" Condition="Exists('$(NuProjPath)\NuProj.props')" />
   <PropertyGroup Label="Configuration">
-    <Id>CodeGeneration.Roslyn.NuGet</Id>
-    <Title>CodeGeneration.Roslyn.NuGet</Title>
+    <Id>CodeGeneration.Roslyn</Id>
+    <Title>CodeGeneration.Roslyn</Title>
     <Authors>andarno</Authors>
     <Owners>andarno</Owners>
     <Summary>CodeGeneration.Roslyn.NuGet</Summary>
@@ -44,6 +47,7 @@
     <LicenseUrl>https://raw.githubusercontent.com/AArnott/CodeGeneration.Roslyn/$CommitId$/LICENSE.txt</LicenseUrl>
     <Copyright>Copyright © Andrew arnott</Copyright>
     <Tags>CodeGeneration Roslyn</Tags>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
   <Target Name="GetNuPkgVersion" DependsOnTargets="GetBuildVersion">
     <PropertyGroup>
