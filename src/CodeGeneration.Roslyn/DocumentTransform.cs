@@ -135,7 +135,7 @@ namespace CodeGeneration.Roslyn
             {
                 foreach (var generatorCandidateAttribute in attributeType.GetAttributes())
                 {
-                    if (generatorCandidateAttribute.AttributeClass.Name == typeof(CodeGenerationAttribute).Name)
+                    if (generatorCandidateAttribute.AttributeClass.Name == typeof(CodeGenerationAttributeAttribute).Name)
                     {
                         return (string)generatorCandidateAttribute.ConstructorArguments.Single().Value;
                     }

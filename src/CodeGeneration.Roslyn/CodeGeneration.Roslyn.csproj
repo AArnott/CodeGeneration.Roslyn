@@ -47,7 +47,7 @@
     </AdditionalFiles>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CodeGenerationAttribute.cs" />
+    <Compile Include="CodeGenerationAttributeAttribute.cs" />
     <Compile Include="DocumentTransform.cs" />
     <Compile Include="ICodeGenerator.cs" />
     <Compile Include="IProgressAndErrors.cs" />
