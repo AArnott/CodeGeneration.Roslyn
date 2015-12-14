@@ -17,16 +17,14 @@
   <UsingTask TaskName="GenerateCodeFromAttributes" AssemblyFile="$(CodeGenerationRoslynToolsPath)CodeGeneration.Roslyn.Tasks.dll" />
 
   <Target Name="GenerateCodeFromAttributes" DependsOnTargets="ResolveReferences" BeforeTargets="CoreCompile">
-    <ItemGroup>
-      <CompileToGenerateFromAttributes Include="@(Compile)"
-                                           Condition=" '%(Compile.Generator)' == 'MSBuild:GenerateCodeFromAttributes' " />
-    </ItemGroup>
     <GenerateCodeFromAttributes
       Compile="@(Compile)"
-      CompileToGenerateFromAttributes="@(CompileToGenerateFromAttributes)"
       ReferencePath="@(ReferencePath)"
+      TargetName="GenerateCodeFromAttributes"
       IntermediateOutputDirectory="$(IntermediateOutputPath)">
       <Output TaskParameter="GeneratedCompile" ItemName="GeneratedCodeFromAttribute_Compile" />
+      <Output TaskParameter="GeneratedCompile" ItemName="FileWrites" />
+      <Output TaskParameter="AdditionalWrittenFiles" ItemName="FileWrites" />
     </GenerateCodeFromAttributes>
     <ItemGroup>
       <Compile Include="@(GeneratedCodeFromAttribute_Compile)" />

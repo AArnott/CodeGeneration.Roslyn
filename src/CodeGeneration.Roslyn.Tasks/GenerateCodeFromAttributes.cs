@@ -25,8 +25,10 @@ namespace CodeGeneration.Roslyn.Tasks
         [Required]
         public ITaskItem[] Compile { get; set; }
 
-        [Required]
-        public ITaskItem[] CompileToGenerateFromAttributes { get; set; }
+        /// <summary>
+        /// Gets or sets the name of the target running code generation.
+        /// </summary>
+        public string TargetName { get; set; }
 
         [Required]
         public ITaskItem[] ReferencePath { get; set; }
@@ -36,6 +38,9 @@ namespace CodeGeneration.Roslyn.Tasks
 
         [Output]
         public ITaskItem[] GeneratedCompile { get; set; }
+
+        [Output]
+        public ITaskItem[] AdditionalWrittenFiles { get; set; }
 
         public override bool Execute()
         {
@@ -48,7 +53,7 @@ namespace CodeGeneration.Roslyn.Tasks
             {
                 var helper = (Helper)appDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, typeof(Helper).FullName);
                 helper.Compile = this.Compile;
-                helper.CompileToGenerateFromAttributes = this.CompileToGenerateFromAttributes;
+                helper.TargetName = this.TargetName;
                 helper.ReferencePath = this.ReferencePath;
                 helper.IntermediateOutputDirectory = this.IntermediateOutputDirectory;
                 helper.Log = this.Log;
@@ -60,6 +65,7 @@ namespace CodeGeneration.Roslyn.Tasks
                     // Copy the contents of the output parameters into our own. Don't just copy the reference
                     // because we're going to unload the AppDomain.
                     this.GeneratedCompile = helper.GeneratedCompile.Select(i => new TaskItem(i)).ToArray();
+                    this.AdditionalWrittenFiles = helper.AdditionalWrittenFiles.Select(i => new TaskItem(i)).ToArray();
 
                     return !this.Log.HasLoggedErrors;
                 }
@@ -86,13 +92,15 @@ namespace CodeGeneration.Roslyn.Tasks
 
             public ITaskItem[] Compile { get; set; }
 
-            public ITaskItem[] CompileToGenerateFromAttributes { get; set; }
+            public string TargetName { get; set; }
 
             public ITaskItem[] ReferencePath { get; set; }
 
             public string IntermediateOutputDirectory { get; set; }
 
             public ITaskItem[] GeneratedCompile { get; set; }
+
+            public ITaskItem[] AdditionalWrittenFiles { get; set; }
 
             public TaskLoggingHelper Log { get; set; }
 
@@ -102,16 +110,25 @@ namespace CodeGeneration.Roslyn.Tasks
                 {
                     var project = this.CreateProject();
                     var outputFiles = new List<ITaskItem>();
+                    var writtenFiles = new List<ITaskItem>();
+
+                    string generatorAssemblyInputsFile = Path.Combine(this.IntermediateOutputDirectory, "CodeGeneration.Roslyn.InputAssemblies.txt");
 
                     // For incremental build, we want to consider the input->output files as well as the assemblies involved in code generation.
-                    DateTime assembliesLastModified = GetLastModifiedAssemblyTime();
+                    DateTime assembliesLastModified = GetLastModifiedAssemblyTime(generatorAssemblyInputsFile);
+
+                    var explicitIncludeList = new HashSet<string>(
+                        from item in this.Compile
+                        where string.Equals(item.GetMetadata("Generator"), $"MSBuild:{this.TargetName}", StringComparison.OrdinalIgnoreCase)
+                        select item.ItemSpec,
+                        StringComparer.OrdinalIgnoreCase);
 
                     foreach (var inputDocument in project.Documents)
                     {
                         this.CancellationToken.ThrowIfCancellationRequested();
 
                         // Skip over documents that aren't on the prescribed list of files to scan.
-                        if (!this.CompileToGenerateFromAttributes.Any(i => i.ItemSpec == inputDocument.Name))
+                        if (!explicitIncludeList.Contains(inputDocument.Name))
                         {
                             continue;
                         }
@@ -179,18 +196,46 @@ namespace CodeGeneration.Roslyn.Tasks
                         }
                     }
 
+                    SaveGeneratorAssemblyList(generatorAssemblyInputsFile);
+                    writtenFiles.Add(new TaskItem(generatorAssemblyInputsFile));
+
                     this.GeneratedCompile = outputFiles.ToArray();
+                    this.AdditionalWrittenFiles = writtenFiles.ToArray();
                 }).GetAwaiter().GetResult();
             }
 
-            private static DateTime GetLastModifiedAssemblyTime()
+            private static DateTime GetLastModifiedAssemblyTime(string assemblyListPath)
             {
-                // Ensure that certain assemblies are loaded.
-                Type t1 = typeof(DocumentTransform);
+                if (!File.Exists(assemblyListPath))
+                {
+                    return DateTime.MinValue;
+                }
 
-                return AppDomain.CurrentDomain.GetAssemblies()
-                    .Where(a => !a.IsDynamic)
-                    .Max(a => File.GetLastWriteTime(a.Location));
+                return (from path in File.ReadAllLines(assemblyListPath)
+                        where File.Exists(path)
+                        select File.GetLastWriteTime(path)).Max();
+            }
+
+            private static void SaveGeneratorAssemblyList(string assemblyListPath)
+            {
+                // Union our current list with the one on disk, since our incremental code generation
+                // may have skipped some up-to-date files, resulting in fewer assemblies being loaded
+                // this time.
+                var assemblyPaths = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                if (File.Exists(assemblyListPath))
+                {
+                    assemblyPaths.UnionWith(File.ReadAllLines(assemblyListPath));
+                }
+
+                assemblyPaths.UnionWith(
+                    from a in AppDomain.CurrentDomain.GetAssemblies()
+                    where !a.IsDynamic
+                    select a.Location);
+
+                File.WriteAllLines(
+                    assemblyListPath,
+                    assemblyPaths);
             }
 
             private Project CreateProject()
