@@ -9,7 +9,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
     using System.Text;
     using Validation;
 
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
     [CodeGeneration("CodeGeneration.Roslyn.Tests.Generators.DuplicateWithSuffixGenerator, CodeGeneration.Roslyn.Tests.Generators, Version=" + ThisAssembly.AssemblyVersion + ", Culture=neutral, PublicKeyToken=null")]
     public class DuplicateWithSuffixAttribute : Attribute
     {

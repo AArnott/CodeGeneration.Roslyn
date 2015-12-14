@@ -10,13 +10,20 @@ using Xunit;
 
 public class CodeGenerationTests
 {
+    /// <summary>
+    /// Verifies that code generation works because if it didn't, the test wouldn't compile.
+    /// </summary>
     [Fact]
-    public void EmptyTest()
+    public void SimpleGenerationWorks()
     {
         var foo = new Foo();
         var fooA = new FooA();
+        var fooB = new FooB();
     }
 
     [DuplicateWithSuffix("A")]
-    public class Foo { }
+    [DuplicateWithSuffix("B")]
+    public class Foo
+    {
+    }
 }
