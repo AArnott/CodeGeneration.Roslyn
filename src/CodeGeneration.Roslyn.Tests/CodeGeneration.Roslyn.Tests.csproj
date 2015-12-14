@@ -74,9 +74,8 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-
   <PropertyGroup>
-    <CodeGenerationRoslynToolsPath>$(RepoBinRoot)$(Configuration)\CodeGeneration.Roslyn.Tasks\</CodeGenerationRoslynToolsPath>
+    <CodeGenerationRoslynToolsPath>$(MSBuildProjectDirectory)\$(RepoBinRoot)$(Configuration)\CodeGeneration.Roslyn.Tasks\</CodeGenerationRoslynToolsPath>
   </PropertyGroup>
   <Import Project="..\CodeGeneration.Roslyn.NuGet\build\CodeGeneration.Roslyn.targets" />
 </Project>
