@@ -6,7 +6,7 @@
     <NerdbankGitVersioningPackage>$(NuGetPackageRoot)Nerdbank.GitVersioning\1.1.61-rc\</NerdbankGitVersioningPackage>
     <NuProjPackage>$(NuGetPackageRoot)Nuproj\0.10.27-beta-g2363d7cd98\</NuProjPackage>
   </PropertyGroup>
-  <Import Project="ReadOnlySourceTreePackagebuild\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.props" Condition="Exists('ReadOnlySourceTreePackagebuild\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.props')" />
+  <Import Project="$(ReadOnlySourceTreePackage)build\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.props" Condition="Exists('$(ReadOnlySourceTreePackage)build\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|AnyCPU">
       <Configuration>Debug</Configuration>
@@ -53,5 +53,5 @@
   </Target>
   <Import Project="$(NuProjPath)\NuProj.targets" />
   <Import Project="$(NerdbankGitVersioningPackage)build\NerdBank.GitVersioning.targets" />
-  <Import Project="ReadOnlySourceTreePackagebuild\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.targets" Condition="Exists('ReadOnlySourceTreePackagebuild\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.targets')" />
+  <Import Project="$(ReadOnlySourceTreePackage)build\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.targets" Condition="Exists('$(ReadOnlySourceTreePackage)build\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.targets')" />
 </Project>
