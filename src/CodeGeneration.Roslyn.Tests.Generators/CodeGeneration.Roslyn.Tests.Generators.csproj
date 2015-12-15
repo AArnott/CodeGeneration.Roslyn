@@ -43,7 +43,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DuplicateWithSuffixAttribute.cs" />
+    <Compile Include="DuplicateWithSuffixByTypeAttribute.cs" />
+    <Compile Include="DuplicateWithSuffixByNameAttribute.cs" />
     <Compile Include="DuplicateWithSuffixGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

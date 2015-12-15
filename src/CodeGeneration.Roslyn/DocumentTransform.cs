@@ -137,7 +137,15 @@ namespace CodeGeneration.Roslyn
                 {
                     if (generatorCandidateAttribute.AttributeClass.Name == typeof(CodeGenerationAttributeAttribute).Name)
                     {
-                        return (string)generatorCandidateAttribute.ConstructorArguments.Single().Value;
+                        TypedConstant firstArg = generatorCandidateAttribute.ConstructorArguments.Single();
+                        string typeName = firstArg.Value as string;
+                        if (typeName == null)
+                        {
+                            var type = (INamedTypeSymbol)firstArg.Value;
+                            typeName = $"{type.ConstructedFrom}, {type.ContainingAssembly}";
+                        }
+
+                        return typeName;
                     }
                 }
             }

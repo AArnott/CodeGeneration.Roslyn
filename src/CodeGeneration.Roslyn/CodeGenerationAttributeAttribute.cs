@@ -4,6 +4,7 @@
 namespace CodeGeneration.Roslyn
 {
     using System;
+    using Validation;
 
     /// <summary>
     /// A base attribute type for code generation attributes.
@@ -17,10 +18,21 @@ namespace CodeGeneration.Roslyn
         /// <param name="generatorFullTypeName">
         /// The fully-qualified type name (including assembly information)
         /// of the code generator to activate.
+        /// This type must implement <see cref="ICodeGenerator"/>.
         /// </param>
         public CodeGenerationAttributeAttribute(string generatorFullTypeName)
         {
             this.GeneratorFullTypeName = generatorFullTypeName;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CodeGenerationAttributeAttribute"/> class.
+        /// </summary>
+        /// <param name="generatorType">The code generator that implements <see cref="ICodeGenerator"/>.</param>
+        public CodeGenerationAttributeAttribute(Type generatorType)
+        {
+            Requires.NotNull(generatorType, nameof(generatorType));
+            this.GeneratorFullTypeName = generatorType.AssemblyQualifiedName;
         }
 
         /// <summary>

@@ -21,8 +21,8 @@ public class CodeGenerationTests
         var fooB = new FooB();
     }
 
-    [DuplicateWithSuffix("A")]
-    [DuplicateWithSuffix("B")]
+    [DuplicateWithSuffixByName("A")]
+    [DuplicateWithSuffixByType("B")]
     public class Foo
     {
     }
