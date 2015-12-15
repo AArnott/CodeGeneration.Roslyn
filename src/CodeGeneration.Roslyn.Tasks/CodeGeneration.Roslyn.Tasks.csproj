@@ -72,4 +72,8 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="GetReferenceCopyLocalPaths"
+          DependsOnTargets="ResolveReferences"
+          Returns="@(ReferenceCopyLocalPaths)">
+  </Target>
 </Project>

@@ -4,7 +4,7 @@
     <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == ''">$(UserProfile)\.nuget\packages\</NuGetPackageRoot>
     <ReadOnlySourceTreePackage>$(NuGetPackageRoot)ReadOnlySourceTree\0.1.17-beta\</ReadOnlySourceTreePackage>
     <NerdbankGitVersioningPackage>$(NuGetPackageRoot)Nerdbank.GitVersioning\1.1.61-rc\</NerdbankGitVersioningPackage>
-    <NuProjPackage>$(NuGetPackageRoot)Nuproj\0.10.27-beta-g2363d7cd98\</NuProjPackage>
+    <NuProjPackage>$(NuGetPackageRoot)Nuproj\0.10.30-beta-gcbd7693f91\</NuProjPackage>
   </PropertyGroup>
   <Import Project="$(ReadOnlySourceTreePackage)build\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.props" Condition="Exists('$(ReadOnlySourceTreePackage)build\portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS\ReadOnlySourceTree.props')" />
   <ItemGroup Label="ProjectConfigurations">
@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CodeGeneration.Roslyn.Tasks\CodeGeneration.Roslyn.Tasks.csproj">
       <PackageDirectory>Tools</PackageDirectory>
+      <Targets>$(ProjectOutputGroups);GetReferenceCopyLocalPaths</Targets>
     </ProjectReference>
     <ProjectReference Include="..\CodeGeneration.Roslyn\CodeGeneration.Roslyn.csproj" />
   </ItemGroup>
@@ -48,6 +49,7 @@
     <Copyright>Copyright © Andrew arnott</Copyright>
     <Tags>CodeGeneration Roslyn</Tags>
     <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
   </PropertyGroup>
   <Target Name="GetNuPkgVersion" DependsOnTargets="GetBuildVersion">
     <PropertyGroup>

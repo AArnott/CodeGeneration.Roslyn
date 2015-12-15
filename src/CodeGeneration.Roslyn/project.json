@@ -5,9 +5,9 @@
       "version": "1.1.61-rc",
       "suppressParent": "none"
     },
-    "NuProj": "0.10.27-beta-g2363d7cd98",
+    "NuProj": "0.10.30-beta-gcbd7693f91",
     "NuProj.Common": {
-      "version": "0.10.27-beta-g2363d7cd98",
+      "version": "0.10.30-beta-gcbd7693f91",
       "suppressParent": "none"
     },
     "ReadOnlySourceTree": {
