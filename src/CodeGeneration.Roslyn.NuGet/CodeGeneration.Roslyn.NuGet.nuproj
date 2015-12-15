@@ -51,6 +51,14 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <NoDefaultExcludes>true</NoDefaultExcludes>
   </PropertyGroup>
+  <ItemGroup>
+    <Dependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces">
+      <Version>1.1.1</Version>
+    </Dependency>
+    <Dependency Include="Validation">
+      <Version>2.2.8</Version>
+    </Dependency>
+  </ItemGroup>
   <Target Name="GetNuPkgVersion" DependsOnTargets="GetBuildVersion">
     <PropertyGroup>
       <Version>$(NuGetPackageVersion)</Version>
