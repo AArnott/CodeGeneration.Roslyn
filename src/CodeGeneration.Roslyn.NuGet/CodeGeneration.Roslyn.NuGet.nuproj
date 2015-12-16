@@ -18,6 +18,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CodeGeneration.Roslyn.Net40\CodeGeneration.Roslyn.Net40.csproj" />
     <ProjectReference Include="..\CodeGeneration.Roslyn.Tasks\CodeGeneration.Roslyn.Tasks.csproj">
       <PackageDirectory>Tools</PackageDirectory>
       <Targets>$(ProjectOutputGroups);GetReferenceCopyLocalPaths</Targets>
