@@ -5,18 +5,16 @@
     <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{80CEA17A-2175-4CD5-BED8-4B6CFB98CF3B}</ProjectGuid>
+    <ProjectGuid>{A68DF260-4305-4D1D-8FF0-1E6C128286AE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CodeGeneration.Roslyn</RootNamespace>
-    <AssemblyName>CodeGeneration.Roslyn</AssemblyName>
+    <AssemblyName>CodeGeneration.Roslyn.Attributes</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
     <AssemblyOriginatorKeyFile>..\opensource.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
@@ -28,7 +26,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\CodeGeneration.Roslyn.XML</DocumentationFile>
+    <DocumentationFile>..\..\bin\Debug\CodeGeneration.Roslyn.Attributes\CodeGeneration.Roslyn.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -37,30 +35,20 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\CodeGeneration.Roslyn.XML</DocumentationFile>
+    <DocumentationFile>..\..\bin\Release\CodeGeneration.Roslyn.Attributes\CodeGeneration.Roslyn.XML</DocumentationFile>
   </PropertyGroup>
-  <ItemGroup>
-    <None Include="project.json" />
-  </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\stylecop.json">
       <Visible>false</Visible>
     </AdditionalFiles>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DocumentTransform.cs" />
-    <Compile Include="ICodeGenerator.cs" />
-    <Compile Include="IProgressAndErrors.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Roslyn\CSharpDeclarationComputer.cs" />
-    <Compile Include="Roslyn\DeclarationComputer.cs" />
-    <Compile Include="Roslyn\DeclarationInfo.cs" />
+    <!-- A reference to the entire .NET Framework is automatically included -->
+    <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CodeGeneration.Roslyn.Attributes\CodeGeneration.Roslyn.Attributes.csproj">
-      <Project>{a68df260-4305-4d1d-8ff0-1e6c128286ae}</Project>
-      <Name>CodeGeneration.Roslyn.Attributes</Name>
-    </ProjectReference>
+    <Compile Include="CodeGenerationAttributeAttribute.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
 </Project>

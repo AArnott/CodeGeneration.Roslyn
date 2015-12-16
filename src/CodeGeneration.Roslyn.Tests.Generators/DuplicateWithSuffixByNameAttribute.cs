@@ -4,10 +4,12 @@
 namespace CodeGeneration.Roslyn.Tests.Generators
 {
     using System;
+    using System.Diagnostics;
     using Validation;
 
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
     [CodeGenerationAttribute("CodeGeneration.Roslyn.Tests.Generators.DuplicateWithSuffixGenerator, CodeGeneration.Roslyn.Tests.Generators, Version=" + ThisAssembly.AssemblyVersion + ", Culture=neutral, PublicKeyToken=null")]
+    [Conditional("CodeGeneration")]
     public class DuplicateWithSuffixByNameAttribute : Attribute
     {
         public DuplicateWithSuffixByNameAttribute(string suffix)

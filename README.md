@@ -26,6 +26,7 @@ any class the attribute is applied to, but adds some suffix to the name on the c
 ```csharp
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
 [CodeGenerationAttribute(typeof(DuplicateWithSuffixGenerator))]
+[Conditional("CodeGeneration")]
 public class DuplicateWithSuffixAttribute : Attribute
 {
     public DuplicateWithSuffixAttribute(string suffix)
@@ -62,6 +63,11 @@ public class DuplicateWithSuffixGenerator : ICodeGenerator
     }
 }
 ```
+
+The `[Conditional("CodeGeneration")]` attribute is not necessary, but it will prevent
+the attribute from persisting in the compiled assembly that consumes it, leaving it
+instead as just a compile-time hint to code generation, and allowing you to not ship
+with a dependency on your code generation assembly.
 
 ## Apply code generation
 

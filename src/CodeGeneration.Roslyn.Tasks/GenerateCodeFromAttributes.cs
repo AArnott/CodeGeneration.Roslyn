@@ -34,6 +34,9 @@ namespace CodeGeneration.Roslyn.Tasks
         public ITaskItem[] ReferencePath { get; set; }
 
         [Required]
+        public ITaskItem[] GeneratorAssemblySearchPaths { get; set; }
+
+        [Required]
         public string IntermediateOutputDirectory { get; set; }
 
         [Output]
@@ -55,6 +58,7 @@ namespace CodeGeneration.Roslyn.Tasks
                 helper.Compile = this.Compile;
                 helper.TargetName = this.TargetName;
                 helper.ReferencePath = this.ReferencePath;
+                helper.GeneratorAssemblySearchPaths = this.GeneratorAssemblySearchPaths;
                 helper.IntermediateOutputDirectory = this.IntermediateOutputDirectory;
                 helper.Log = this.Log;
 
@@ -95,6 +99,8 @@ namespace CodeGeneration.Roslyn.Tasks
             public string TargetName { get; set; }
 
             public ITaskItem[] ReferencePath { get; set; }
+
+            public ITaskItem[] GeneratorAssemblySearchPaths { get; set; }
 
             public string IntermediateOutputDirectory { get; set; }
 
@@ -159,6 +165,20 @@ namespace CodeGeneration.Roslyn.Tasks
                                         if (referencePath != null)
                                         {
                                             assembly = Assembly.LoadFile(referencePath.GetMetadata("FullPath"));
+                                        }
+                                    }
+
+                                    if (assembly == null)
+                                    {
+                                        foreach (var searchPath in this.GeneratorAssemblySearchPaths)
+                                        {
+                                            string searchDir = searchPath.GetMetadata("FullPath");
+                                            const string extension = ".dll";
+                                            string fileName = Path.Combine(searchDir, assemblyName.Name + extension);
+                                            if (File.Exists(fileName))
+                                            {
+                                                assembly = Assembly.LoadFile(fileName);
+                                            }
                                         }
                                     }
 

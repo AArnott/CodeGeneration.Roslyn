@@ -37,6 +37,10 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
+    <ProjectReference Include="..\CodeGeneration.Roslyn.Attributes\CodeGeneration.Roslyn.Attributes.csproj">
+      <Project>{a68df260-4305-4d1d-8ff0-1e6c128286ae}</Project>
+      <Name>CodeGeneration.Roslyn.Attributes</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CodeGeneration.Roslyn\CodeGeneration.Roslyn.csproj">
       <Project>{80cea17a-2175-4cd5-bed8-4b6cfb98cf3b}</Project>
       <Name>CodeGeneration.Roslyn</Name>
