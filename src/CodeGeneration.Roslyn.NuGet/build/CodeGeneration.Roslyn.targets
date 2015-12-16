@@ -21,6 +21,7 @@
       Compile="@(Compile)"
       ReferencePath="@(ReferencePath)"
       TargetName="GenerateCodeFromAttributes"
+      GeneratorAssemblySearchPaths="@(GeneratorAssemblySearchPaths)"
       IntermediateOutputDirectory="$(IntermediateOutputPath)">
       <Output TaskParameter="GeneratedCompile" ItemName="GeneratedCodeFromAttribute_Compile" />
       <Output TaskParameter="GeneratedCompile" ItemName="FileWrites" />
