@@ -55,9 +55,15 @@
   <ItemGroup>
     <Dependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces">
       <Version>1.1.1</Version>
+      <TargetFramework>portable-net45+win+MonoAndroid10+xamarinios10+MonoTouch10</TargetFramework>
     </Dependency>
     <Dependency Include="Validation">
       <Version>2.2.8</Version>
+      <TargetFramework>portable-net45+win+MonoAndroid10+xamarinios10+MonoTouch10</TargetFramework>
+    </Dependency>
+    <Dependency Include="Validation">
+      <Version>2.2.8</Version>
+      <TargetFramework>portable-net40+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10</TargetFramework>
     </Dependency>
   </ItemGroup>
   <Target Name="GetNuPkgVersion" DependsOnTargets="GetBuildVersion">
