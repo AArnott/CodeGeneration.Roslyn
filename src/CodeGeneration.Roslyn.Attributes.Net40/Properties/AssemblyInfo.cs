@@ -4,7 +4,7 @@
 using System.Reflection;
 using System.Resources;
 
-[assembly: AssemblyTitle("CodeGeneration.Roslyn")]
-[assembly: AssemblyProduct("CodeGeneration.Roslyn")]
-[assembly: AssemblyCopyright("Copyright © Andrew Arnott 2015")]
+[assembly: AssemblyTitle("CodeGeneration.Roslyn.Attributes (.NET 4.0 version)")]
+[assembly: AssemblyProduct("CodeGeneration.Roslyn.Attributes")]
+[assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: NeutralResourcesLanguage("en")]

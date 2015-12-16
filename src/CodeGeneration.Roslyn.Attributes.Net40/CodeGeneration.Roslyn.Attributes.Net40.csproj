@@ -5,11 +5,11 @@
     <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A68DF260-4305-4D1D-8FF0-1E6C128286AE}</ProjectGuid>
+    <ProjectGuid>{D5FF965A-6AC9-42EC-AB18-00B857E7A613}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CodeGeneration.Roslyn</RootNamespace>
-    <AssemblyName>CodeGeneration.Roslyn</AssemblyName>
+    <AssemblyName>CodeGeneration.Roslyn.Attributes</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -24,7 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\..\bin\Debug\CodeGeneration.Roslyn.Net40\CodeGeneration.Roslyn.XML</DocumentationFile>
+    <DocumentationFile>..\..\bin\Debug\CodeGeneration.Roslyn.Attributes.Net40\CodeGeneration.Roslyn.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,14 +33,19 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\..\bin\Release\CodeGeneration.Roslyn.Net40\CodeGeneration.Roslyn.XML</DocumentationFile>
+    <DocumentationFile>..\..\bin\Release\CodeGeneration.Roslyn.Attributes.Net40\CodeGeneration.Roslyn.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\CodeGeneration.Roslyn\CodeGenerationAttributeAttribute.cs">
+    <AdditionalFiles Include="..\stylecop.json">
+      <Visible>false</Visible>
+    </AdditionalFiles>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\CodeGeneration.Roslyn.Attributes\CodeGenerationAttributeAttribute.cs">
       <Link>CodeGenerationAttributeAttribute.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
