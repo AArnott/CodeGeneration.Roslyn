@@ -7,7 +7,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
     using System.Diagnostics;
     using Validation;
 
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
     [CodeGenerationAttribute(typeof(DuplicateWithSuffixGenerator))]
     [Conditional("CodeGeneration")]
     public class DuplicateWithSuffixByTypeAttribute : Attribute
