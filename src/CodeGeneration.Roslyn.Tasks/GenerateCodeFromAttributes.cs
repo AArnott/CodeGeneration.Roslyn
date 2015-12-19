@@ -114,6 +114,11 @@ namespace CodeGeneration.Roslyn.Tasks
             {
                 Task.Run(async delegate
                 {
+                    AppDomain.CurrentDomain.AssemblyResolve += (s, e) =>
+                    {
+                        return this.TryLoadAssembly(new AssemblyName(e.Name));
+                    };
+
                     var project = this.CreateProject();
                     var outputFiles = new List<ITaskItem>();
                     var writtenFiles = new List<ITaskItem>();
@@ -152,39 +157,7 @@ namespace CodeGeneration.Roslyn.Tasks
 
                             var outputDocument = await DocumentTransform.TransformAsync(
                                 inputDocument,
-                                new ProgressLogger(this.Log, inputDocument.Name),
-                                assemblyQualifiedTypeName =>
-                                {
-                                    string typeName = assemblyQualifiedTypeName.Substring(0, assemblyQualifiedTypeName.IndexOf(','));
-                                    var assemblyName = new AssemblyName(assemblyQualifiedTypeName.Substring(assemblyQualifiedTypeName.IndexOf(',') + 2));
-                                    Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(
-                                        a => a.FullName == assemblyName.FullName);
-                                    if (assembly == null)
-                                    {
-                                        var referencePath = this.ReferencePath.FirstOrDefault(rp => string.Equals(rp.GetMetadata("FileName"), assemblyName.Name, StringComparison.OrdinalIgnoreCase));
-                                        if (referencePath != null)
-                                        {
-                                            assembly = Assembly.LoadFile(referencePath.GetMetadata("FullPath"));
-                                        }
-                                    }
-
-                                    if (assembly == null)
-                                    {
-                                        foreach (var searchPath in this.GeneratorAssemblySearchPaths)
-                                        {
-                                            string searchDir = searchPath.GetMetadata("FullPath");
-                                            const string extension = ".dll";
-                                            string fileName = Path.Combine(searchDir, assemblyName.Name + extension);
-                                            if (File.Exists(fileName))
-                                            {
-                                                assembly = Assembly.LoadFile(fileName);
-                                            }
-                                        }
-                                    }
-
-                                    Type type = assembly?.GetType(typeName);
-                                    return type;
-                                });
+                                new ProgressLogger(this.Log, inputDocument.Name));
 
                             // Only produce a new file if the generated document is not empty.
                             var semanticModel = await outputDocument.GetSemanticModelAsync(this.CancellationToken);
@@ -256,6 +229,28 @@ namespace CodeGeneration.Roslyn.Tasks
                 File.WriteAllLines(
                     assemblyListPath,
                     assemblyPaths);
+            }
+
+            private Assembly TryLoadAssembly(AssemblyName assemblyName)
+            {
+                var referencePath = this.ReferencePath.FirstOrDefault(rp => string.Equals(rp.GetMetadata("FileName"), assemblyName.Name, StringComparison.OrdinalIgnoreCase));
+                if (referencePath != null)
+                {
+                    return Assembly.LoadFile(referencePath.GetMetadata("FullPath"));
+                }
+
+                foreach (var searchPath in this.GeneratorAssemblySearchPaths)
+                {
+                    string searchDir = searchPath.GetMetadata("FullPath");
+                    const string extension = ".dll";
+                    string fileName = Path.Combine(searchDir, assemblyName.Name + extension);
+                    if (File.Exists(fileName))
+                    {
+                        return Assembly.LoadFile(fileName);
+                    }
+                }
+
+                return null;
             }
 
             private Project CreateProject()

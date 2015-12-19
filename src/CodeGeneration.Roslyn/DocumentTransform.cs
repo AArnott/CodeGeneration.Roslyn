@@ -35,10 +35,9 @@ namespace CodeGeneration.Roslyn
         {
         }
 
-        public static async Task<Document> TransformAsync(Document inputDocument, IProgressAndErrors progress, Func<string, Type> transformTypeResolver, bool simplify = false)
+        public static async Task<Document> TransformAsync(Document inputDocument, IProgressAndErrors progress, bool simplify = false)
         {
             Requires.NotNull(inputDocument, "inputDocument");
-            Requires.NotNull(transformTypeResolver, nameof(transformTypeResolver));
 
             var workspace = inputDocument.Project.Solution.Workspace;
             var inputSemanticModel = await inputDocument.GetSemanticModelAsync();
@@ -54,7 +53,7 @@ namespace CodeGeneration.Roslyn
             {
                 var namespaceNode = memberNode.Ancestors().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
 
-                var generators = FindCodeGenerators(inputSemanticModel, memberNode, transformTypeResolver);
+                var generators = FindCodeGenerators(inputSemanticModel, memberNode);
                 foreach (var generator in generators)
                 {
                     var generatedTypes = await generator.GenerateAsync(memberNode, inputDocument, progress, CancellationToken.None);
@@ -106,11 +105,10 @@ namespace CodeGeneration.Roslyn
             return document;
         }
 
-        private static IEnumerable<ICodeGenerator> FindCodeGenerators(SemanticModel document, SyntaxNode nodeWithAttributesApplied, Func<string, Type> transformTypeResolver)
+        private static IEnumerable<ICodeGenerator> FindCodeGenerators(SemanticModel document, SyntaxNode nodeWithAttributesApplied)
         {
             Requires.NotNull(document, "document");
             Requires.NotNull(nodeWithAttributesApplied, "nodeWithAttributesApplied");
-            Requires.NotNull(transformTypeResolver, nameof(transformTypeResolver));
 
             var symbol = document.GetDeclaredSymbol(nodeWithAttributesApplied);
             if (symbol != null)
@@ -120,7 +118,7 @@ namespace CodeGeneration.Roslyn
                     string generatorTypeName = GetCodeGeneratorTypeNameForAttribute(attributeData.AttributeClass);
                     if (generatorTypeName != null)
                     {
-                        Type generatorType = transformTypeResolver(generatorTypeName);
+                        Type generatorType = Type.GetType(generatorTypeName);
                         Verify.Operation(generatorType != null, "Unable to find code generator: {0}", generatorTypeName);
                         ICodeGenerator generator = (ICodeGenerator)Activator.CreateInstance(generatorType, attributeData);
                         yield return generator;
