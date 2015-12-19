@@ -157,21 +157,7 @@ namespace CodeGeneration.Roslyn.Tasks
 
                             var outputDocument = await DocumentTransform.TransformAsync(
                                 inputDocument,
-                                new ProgressLogger(this.Log, inputDocument.Name),
-                                assemblyQualifiedTypeName =>
-                                {
-                                    string typeName = assemblyQualifiedTypeName.Substring(0, assemblyQualifiedTypeName.IndexOf(','));
-                                    var assemblyName = new AssemblyName(assemblyQualifiedTypeName.Substring(assemblyQualifiedTypeName.IndexOf(',') + 2));
-                                    Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(
-                                        a => a.FullName == assemblyName.FullName);
-                                    if (assembly == null)
-                                    {
-                                        assembly = this.TryLoadAssembly(assemblyName);
-                                    }
-
-                                    Type type = assembly?.GetType(typeName);
-                                    return type;
-                                });
+                                new ProgressLogger(this.Log, inputDocument.Name));
 
                             // Only produce a new file if the generated document is not empty.
                             var semanticModel = await outputDocument.GetSemanticModelAsync(this.CancellationToken);
