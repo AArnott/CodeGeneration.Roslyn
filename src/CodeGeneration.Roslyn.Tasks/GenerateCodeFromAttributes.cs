@@ -5,6 +5,7 @@ namespace CodeGeneration.Roslyn.Tasks
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -274,7 +275,7 @@ namespace CodeGeneration.Roslyn.Tasks
             }
         }
 
-        private class ProgressLogger : IProgressAndErrors
+        private class ProgressLogger : IProgress<Diagnostic>
         {
             private readonly TaskLoggingHelper logger;
             private readonly string inputFilename;
@@ -285,32 +286,51 @@ namespace CodeGeneration.Roslyn.Tasks
                 this.inputFilename = inputFilename;
             }
 
-            public void Error(string message, int startLine, int startColumn, int endLine, int endColumn, string subcategory = null, string errorCode = null, string helpKeyword = "")
+            public void Report(Diagnostic value)
             {
-                this.logger.LogError(
-                    subcategory: subcategory,
-                    errorCode: errorCode,
-                    helpKeyword: helpKeyword,
-                    file: this.inputFilename,
-                    lineNumber: startLine,
-                    columnNumber: startColumn,
-                    endLineNumber: endLine,
-                    endColumnNumber: endColumn,
-                    message: message);
-            }
-
-            public void Warning(string message, int startLine, int startColumn, int endLine, int endColumn, string subcategory = null, string warningCode = null, string helpKeyword = "")
-            {
-                this.logger.LogWarning(
-                    subcategory: subcategory,
-                    warningCode: warningCode,
-                    helpKeyword: helpKeyword,
-                    file: this.inputFilename,
-                    lineNumber: startLine,
-                    columnNumber: startColumn,
-                    endLineNumber: endLine,
-                    endColumnNumber: endColumn,
-                    message: message);
+                var lineSpan = value.Location.GetLineSpan();
+                switch (value.Severity)
+                {
+                    case DiagnosticSeverity.Info:
+                        this.logger.LogMessage(
+                            value.Descriptor.Category,
+                            value.Descriptor.Id,
+                            value.Descriptor.HelpLinkUri,
+                            value.Location.SourceTree.FilePath,
+                            lineSpan.StartLinePosition.Line,
+                            lineSpan.StartLinePosition.Character,
+                            lineSpan.EndLinePosition.Line,
+                            lineSpan.EndLinePosition.Character,
+                            MessageImportance.Normal,
+                            value.GetMessage(CultureInfo.CurrentCulture));
+                        break;
+                    case DiagnosticSeverity.Warning:
+                        this.logger.LogWarning(
+                            value.Descriptor.Category,
+                            value.Descriptor.Id,
+                            value.Descriptor.HelpLinkUri,
+                            value.Location.SourceTree.FilePath,
+                            lineSpan.StartLinePosition.Line,
+                            lineSpan.StartLinePosition.Character,
+                            lineSpan.EndLinePosition.Line,
+                            lineSpan.EndLinePosition.Character,
+                            value.GetMessage(CultureInfo.CurrentCulture));
+                        break;
+                    case DiagnosticSeverity.Error:
+                        this.logger.LogError(
+                            value.Descriptor.Category,
+                            value.Descriptor.Id,
+                            value.Descriptor.HelpLinkUri,
+                            value.Location.SourceTree.FilePath,
+                            lineSpan.StartLinePosition.Line,
+                            lineSpan.StartLinePosition.Character,
+                            lineSpan.EndLinePosition.Line,
+                            lineSpan.EndLinePosition.Character,
+                            value.GetMessage(CultureInfo.CurrentCulture));
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     }

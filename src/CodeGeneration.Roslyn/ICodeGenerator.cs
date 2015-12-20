@@ -17,9 +17,9 @@ namespace CodeGeneration.Roslyn
         /// </summary>
         /// <param name="applyTo">The syntax node this attribute is found on.</param>
         /// <param name="document">The document with the semantic model in which this attribute was found.</param>
-        /// <param name="progress">A way to report progress, errors and warnings.</param>
+        /// <param name="progress">A way to report diagnostic messages.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>The generated member syntax to be added to the project.</returns>
-        Task<IReadOnlyList<MemberDeclarationSyntax>> GenerateAsync(MemberDeclarationSyntax applyTo, Document document, IProgressAndErrors progress, CancellationToken cancellationToken);
+        Task<IReadOnlyList<MemberDeclarationSyntax>> GenerateAsync(MemberDeclarationSyntax applyTo, Document document, IProgress<Diagnostic> progress, CancellationToken cancellationToken);
     }
 }
