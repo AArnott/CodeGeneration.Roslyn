@@ -297,10 +297,10 @@ namespace CodeGeneration.Roslyn.Tasks
                             value.Descriptor.Id,
                             value.Descriptor.HelpLinkUri,
                             value.Location.SourceTree.FilePath,
-                            lineSpan.StartLinePosition.Line,
-                            lineSpan.StartLinePosition.Character,
-                            lineSpan.EndLinePosition.Line,
-                            lineSpan.EndLinePosition.Character,
+                            lineSpan.StartLinePosition.Line + 1,
+                            lineSpan.StartLinePosition.Character + 1,
+                            lineSpan.EndLinePosition.Line + 1,
+                            lineSpan.EndLinePosition.Character + 1,
                             MessageImportance.Normal,
                             value.GetMessage(CultureInfo.CurrentCulture));
                         break;
