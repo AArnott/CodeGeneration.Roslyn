@@ -285,35 +285,31 @@ namespace CodeGeneration.Roslyn.Tasks
                 this.inputFilename = inputFilename;
             }
 
-            public void Error(string message, uint line, uint column)
+            public void Error(string message, int startLine, int startColumn, int endLine, int endColumn, string subcategory = null, string errorCode = null, string helpKeyword = "")
             {
                 this.logger.LogError(
-                    subcategory: string.Empty,
-                    errorCode: string.Empty,
-                    helpKeyword: string.Empty,
+                    subcategory: subcategory,
+                    errorCode: errorCode,
+                    helpKeyword: helpKeyword,
                     file: this.inputFilename,
-                    lineNumber: (int)line,
-                    columnNumber: (int)column,
-                    endLineNumber: -1,
-                    endColumnNumber: -1,
+                    lineNumber: startLine,
+                    columnNumber: startColumn,
+                    endLineNumber: endLine,
+                    endColumnNumber: endColumn,
                     message: message);
             }
 
-            public void Report(uint progress, uint total)
-            {
-            }
-
-            public void Warning(string message, uint line, uint column)
+            public void Warning(string message, int startLine, int startColumn, int endLine, int endColumn, string subcategory = null, string warningCode = null, string helpKeyword = "")
             {
                 this.logger.LogWarning(
-                    subcategory: string.Empty,
-                    warningCode: string.Empty,
-                    helpKeyword: string.Empty,
+                    subcategory: subcategory,
+                    warningCode: warningCode,
+                    helpKeyword: helpKeyword,
                     file: this.inputFilename,
-                    lineNumber: (int)line,
-                    columnNumber: (int)column,
-                    endLineNumber: -1,
-                    endColumnNumber: -1,
+                    lineNumber: startLine,
+                    columnNumber: startColumn,
+                    endLineNumber: endLine,
+                    endColumnNumber: endColumn,
                     message: message);
             }
         }

@@ -12,23 +12,26 @@ namespace CodeGeneration.Roslyn
         /// Report an error during the code generation process.
         /// </summary>
         /// <param name="message">The error message.</param>
-        /// <param name="line">The line number to associate with the error.</param>
-        /// <param name="column">The column number to associate with the error.</param>
-        void Error(string message, uint line, uint column);
+        /// <param name="startLine">The starting line number to associate with the error.</param>
+        /// <param name="startColumn">The starting column number to associate with the error.</param>
+        /// <param name="endLine">The ending line number to associate with the error.</param>
+        /// <param name="endColumn">The ending column number to associate with the error.</param>
+        /// <param name="subcategory">The subcategory.</param>
+        /// <param name="errorCode">The code associated with this message.</param>
+        /// <param name="helpKeyword">The help keyword.</param>
+        void Error(string message, int startLine, int startColumn, int endLine, int endColumn, string subcategory = null, string errorCode = null, string helpKeyword = "");
 
         /// <summary>
         /// Report a warning during the code generation process.
         /// </summary>
         /// <param name="message">The warning message.</param>
-        /// <param name="line">The line number to associate with the warning.</param>
-        /// <param name="column">The column number to associate with the warning.</param>
-        void Warning(string message, uint line, uint column);
-
-        /// <summary>
-        /// Reports incremental progress in the code generation process.
-        /// </summary>
-        /// <param name="progress">How many steps have been completed out of <paramref name="total"/>.</param>
-        /// <param name="total">The total number of steps expected during the generation process.</param>
-        void Report(uint progress, uint total);
+        /// <param name="startLine">The starting line number to associate with the warning.</param>
+        /// <param name="startColumn">The starting column number to associate with the warning.</param>
+        /// <param name="endLine">The ending line number to associate with the warning.</param>
+        /// <param name="endColumn">The ending column number to associate with the warning.</param>
+        /// <param name="subcategory">The subcategory.</param>
+        /// <param name="warningCode">The code associated with this message.</param>
+        /// <param name="helpKeyword">The help keyword.</param>
+        void Warning(string message, int startLine, int startColumn, int endLine, int endColumn, string subcategory = null, string warningCode = null, string helpKeyword = "");
     }
 }
