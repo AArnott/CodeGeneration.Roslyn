@@ -5,6 +5,7 @@ namespace CodeGeneration.Roslyn.Tasks
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -274,7 +275,7 @@ namespace CodeGeneration.Roslyn.Tasks
             }
         }
 
-        private class ProgressLogger : IProgressAndErrors
+        private class ProgressLogger : IProgress<Diagnostic>
         {
             private readonly TaskLoggingHelper logger;
             private readonly string inputFilename;
@@ -285,36 +286,51 @@ namespace CodeGeneration.Roslyn.Tasks
                 this.inputFilename = inputFilename;
             }
 
-            public void Error(string message, uint line, uint column)
+            public void Report(Diagnostic value)
             {
-                this.logger.LogError(
-                    subcategory: string.Empty,
-                    errorCode: string.Empty,
-                    helpKeyword: string.Empty,
-                    file: this.inputFilename,
-                    lineNumber: (int)line,
-                    columnNumber: (int)column,
-                    endLineNumber: -1,
-                    endColumnNumber: -1,
-                    message: message);
-            }
-
-            public void Report(uint progress, uint total)
-            {
-            }
-
-            public void Warning(string message, uint line, uint column)
-            {
-                this.logger.LogWarning(
-                    subcategory: string.Empty,
-                    warningCode: string.Empty,
-                    helpKeyword: string.Empty,
-                    file: this.inputFilename,
-                    lineNumber: (int)line,
-                    columnNumber: (int)column,
-                    endLineNumber: -1,
-                    endColumnNumber: -1,
-                    message: message);
+                var lineSpan = value.Location.GetLineSpan();
+                switch (value.Severity)
+                {
+                    case DiagnosticSeverity.Info:
+                        this.logger.LogMessage(
+                            value.Descriptor.Category,
+                            value.Descriptor.Id,
+                            value.Descriptor.HelpLinkUri,
+                            value.Location.SourceTree.FilePath,
+                            lineSpan.StartLinePosition.Line + 1,
+                            lineSpan.StartLinePosition.Character + 1,
+                            lineSpan.EndLinePosition.Line + 1,
+                            lineSpan.EndLinePosition.Character + 1,
+                            MessageImportance.Normal,
+                            value.GetMessage(CultureInfo.CurrentCulture));
+                        break;
+                    case DiagnosticSeverity.Warning:
+                        this.logger.LogWarning(
+                            value.Descriptor.Category,
+                            value.Descriptor.Id,
+                            value.Descriptor.HelpLinkUri,
+                            value.Location.SourceTree.FilePath,
+                            lineSpan.StartLinePosition.Line + 1,
+                            lineSpan.StartLinePosition.Character + 1,
+                            lineSpan.EndLinePosition.Line + 1,
+                            lineSpan.EndLinePosition.Character + 1,
+                            value.GetMessage(CultureInfo.CurrentCulture));
+                        break;
+                    case DiagnosticSeverity.Error:
+                        this.logger.LogError(
+                            value.Descriptor.Category,
+                            value.Descriptor.Id,
+                            value.Descriptor.HelpLinkUri,
+                            value.Location.SourceTree.FilePath,
+                            lineSpan.StartLinePosition.Line + 1,
+                            lineSpan.StartLinePosition.Character + 1,
+                            lineSpan.EndLinePosition.Line + 1,
+                            lineSpan.EndLinePosition.Character + 1,
+                            value.GetMessage(CultureInfo.CurrentCulture));
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     }

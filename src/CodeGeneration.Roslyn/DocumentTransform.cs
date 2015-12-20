@@ -35,9 +35,9 @@ namespace CodeGeneration.Roslyn
         {
         }
 
-        public static async Task<Document> TransformAsync(Document inputDocument, IProgressAndErrors progress, bool simplify = false)
+        public static async Task<Document> TransformAsync(Document inputDocument, IProgress<Diagnostic> progress, bool simplify = false)
         {
-            Requires.NotNull(inputDocument, "inputDocument");
+            Requires.NotNull(inputDocument, nameof(inputDocument));
 
             var workspace = inputDocument.Project.Solution.Workspace;
             var inputSemanticModel = await inputDocument.GetSemanticModelAsync();
