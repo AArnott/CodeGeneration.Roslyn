@@ -5,25 +5,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using CodeGeneration.Roslyn.Tests.Generators;
 using Xunit;
 
+// NOTE THIS FILE INTENTIONALLY SHARES A FILENAME WITH ANOTHER FILE IN THIS PROJECT.
+// That's part of the test: can we generate code for two files with the same name?
 public partial class CodeGenerationTests
 {
-    /// <summary>
-    /// Verifies that code generation works because if it didn't, the test wouldn't compile.
-    /// </summary>
     [Fact]
-    public void SimpleGenerationWorks()
+    public void GenerationFromSecondFile()
     {
-        var foo = new Foo();
-        var fooA = new FooA();
-        var fooB = new FooB();
+        var bar = new BarC();
     }
 
-    [DuplicateWithSuffixByName("A")]
-    [DuplicateWithSuffixByType("B")]
-    public class Foo
+    [DuplicateWithSuffixByType("C")]
+    public class Bar
     {
     }
 }
