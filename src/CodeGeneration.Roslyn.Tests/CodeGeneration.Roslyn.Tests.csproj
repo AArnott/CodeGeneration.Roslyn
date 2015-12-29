@@ -57,6 +57,9 @@
     <Compile Include="CodeGenerationTests.cs">
       <Generator>MSBuild:GenerateCodeFromAttributes</Generator>
     </Compile>
+    <Compile Include="OtherFolder\CodeGenerationTests.cs">
+      <Generator>MSBuild:GenerateCodeFromAttributes</Generator>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="CodeGeneration.Roslyn.Tests.ruleset" />

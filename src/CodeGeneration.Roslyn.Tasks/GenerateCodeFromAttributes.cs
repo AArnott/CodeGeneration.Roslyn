@@ -145,7 +145,8 @@ namespace CodeGeneration.Roslyn.Tasks
                             continue;
                         }
 
-                        string outputFilePath = Path.Combine(this.IntermediateOutputDirectory, Path.GetFileNameWithoutExtension(inputDocument.Name) + ".generated.cs");
+                        string sourceHash = inputDocument.Name.GetHashCode().ToString("x", CultureInfo.InvariantCulture);
+                        string outputFilePath = Path.Combine(this.IntermediateOutputDirectory, Path.GetFileNameWithoutExtension(inputDocument.Name) + $".{sourceHash}.generated.cs");
 
                         // Code generation is relatively fast, but it's not free.
                         // And when we run the Simplifier.ReduceAsync it's dog slow.
