@@ -4,6 +4,10 @@
 using CodeGeneration.Roslyn.Tests.Generators;
 using Xunit;
 
+#pragma warning disable SA1402 // File may only contain a single class
+#pragma warning disable SA1403 // File may only contain a single namespace
+#pragma warning disable SA1201 // Namespace should not follow a class
+
 public class NestedNamespacesAndTypesTests
 {
     [Fact]
@@ -22,7 +26,9 @@ namespace A
             public partial class MiddleType
             {
                 [DuplicateWithSuffixByType("A")]
-                public class NestedNSType { }
+                public class NestedNSType
+                {
+                }
             }
         }
     }

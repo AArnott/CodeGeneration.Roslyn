@@ -48,25 +48,47 @@ namespace CodeGeneration.Roslyn
             var memberNodes = from syntax in inputSyntaxTree.GetRoot().DescendantNodes(n => n is CompilationUnitSyntax || n is NamespaceDeclarationSyntax || n is TypeDeclarationSyntax).OfType<MemberDeclarationSyntax>()
                               select syntax;
 
-            var emittedMembers = new List<MemberDeclarationSyntax>();
+            var emittedMembers = SyntaxFactory.List<MemberDeclarationSyntax>();
             foreach (var memberNode in memberNodes)
             {
-                var namespaceNode = memberNode.Ancestors().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
-
                 var generators = FindCodeGenerators(inputSemanticModel, memberNode);
                 foreach (var generator in generators)
                 {
                     var generatedTypes = await generator.GenerateAsync(memberNode, inputDocument, progress, CancellationToken.None);
-                    if (namespaceNode != null)
+
+                    // Figure out ancestry for the generated type, including nesting types and namespaces.
+                    foreach (var ancestor in memberNode.Ancestors())
                     {
-                        emittedMembers.Add(SyntaxFactory.NamespaceDeclaration(namespaceNode.Name)
-                            .WithUsings(SyntaxFactory.List(namespaceNode.ChildNodes().OfType<UsingDirectiveSyntax>()))
-                            .WithMembers(SyntaxFactory.List(generatedTypes)));
+                        var ancestorNamespace = ancestor as NamespaceDeclarationSyntax;
+                        var nestingClass = ancestor as ClassDeclarationSyntax;
+                        var nestingStruct = ancestor as StructDeclarationSyntax;
+                        if (ancestorNamespace != null)
+                        {
+                            generatedTypes = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
+                                ancestorNamespace
+                                    .WithMembers(generatedTypes)
+                                    .WithLeadingTrivia(SyntaxFactory.TriviaList())
+                                    .WithTrailingTrivia(SyntaxFactory.TriviaList()));
+                        }
+                        else if (nestingClass != null)
+                        {
+                            generatedTypes = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
+                                nestingClass
+                                    .WithMembers(generatedTypes)
+                                    .WithLeadingTrivia(SyntaxFactory.TriviaList())
+                                    .WithTrailingTrivia(SyntaxFactory.TriviaList()));
+                        }
+                        else if (nestingStruct != null)
+                        {
+                            generatedTypes = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
+                                nestingStruct
+                                    .WithMembers(generatedTypes)
+                                    .WithLeadingTrivia(SyntaxFactory.TriviaList())
+                                    .WithTrailingTrivia(SyntaxFactory.TriviaList()));
+                        }
                     }
-                    else
-                    {
-                        emittedMembers.AddRange(generatedTypes);
-                    }
+
+                    emittedMembers = emittedMembers.AddRange(generatedTypes);
                 }
             }
 
@@ -83,7 +105,7 @@ namespace CodeGeneration.Roslyn
 
             var emittedTree = SyntaxFactory.CompilationUnit()
                 .WithUsings(resultFileLevelUsingDirectives)
-                .WithMembers(SyntaxFactory.List(emittedMembers))
+                .WithMembers(emittedMembers)
                 .WithLeadingTrivia(SyntaxFactory.Comment(GeneratedByAToolPreamble))
                 .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed)
                 .NormalizeWhitespace();
