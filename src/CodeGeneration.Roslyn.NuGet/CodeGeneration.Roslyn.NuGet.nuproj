@@ -2,7 +2,7 @@
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == ''">$(UserProfile)\.nuget\packages\</NuGetPackageRoot>
-    <ReadOnlySourceTreePackage>$(NuGetPackageRoot)ReadOnlySourceTree\0.1.17-beta\</ReadOnlySourceTreePackage>
+    <ReadOnlySourceTreePackage>$(NuGetPackageRoot)ReadOnlySourceTree\0.1.21-beta\</ReadOnlySourceTreePackage>
     <NerdbankGitVersioningPackage>$(NuGetPackageRoot)Nerdbank.GitVersioning\1.1.61-rc\</NerdbankGitVersioningPackage>
     <NuProjPackage>$(NuGetPackageRoot)Nuproj\0.10.30-beta-gcbd7693f91\</NuProjPackage>
   </PropertyGroup>
