@@ -30,9 +30,9 @@ namespace CodeGeneration.Roslyn.Tests.Generators
             this.data = this.attributeData.NamedArguments.ToImmutableDictionary(kv => kv.Key, kv => kv.Value);
         }
 
-        public Task<IReadOnlyList<MemberDeclarationSyntax>> GenerateAsync(MemberDeclarationSyntax applyTo, Document document, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
+        public Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(MemberDeclarationSyntax applyTo, Document document, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
         {
-            var results = new List<MemberDeclarationSyntax>();
+            var results = SyntaxFactory.List<MemberDeclarationSyntax>();
 
             MemberDeclarationSyntax copy = null;
             var applyToClass = applyTo as ClassDeclarationSyntax;
@@ -44,10 +44,10 @@ namespace CodeGeneration.Roslyn.Tests.Generators
 
             if (copy != null)
             {
-                results.Add(copy);
+                results = results.Add(copy);
             }
 
-            return Task.FromResult<IReadOnlyList<MemberDeclarationSyntax>>(results);
+            return Task.FromResult(results);
         }
     }
 }

@@ -16,9 +16,9 @@ public partial class CodeGenerationTests
     [Fact]
     public void SimpleGenerationWorks()
     {
-        var foo = new Foo();
-        var fooA = new FooA();
-        var fooB = new FooB();
+        var foo = new CodeGenerationTests.Foo();
+        var fooA = new CodeGenerationTests.FooA();
+        var fooB = new CodeGenerationTests.FooB();
     }
 
     [DuplicateWithSuffixByName("A")]
