@@ -105,6 +105,14 @@ If you execute Go To Definition on it, Visual Studio will open the generated cod
 that actually defines `FooA`, and you'll notice it's exactly like `Foo`, just renamed
 as our code generator defined it to be.
 
+### Shared Projects
+
+When using shared projects and partial classes across the definitions of your class in shared and platform projects:
+
+* The code generation attributes should be applied only to the files in the shared project
+  (or in other words, the attribute should only be applied once per type to avoid multiple generator invocations).
+* The MSBuild:GenerateCodeFromAttributes custom tool must be applied to every file we want to auto generate code from.
+
 ## Developing your code generator
 
 Your code generator can be defined in a project in the same solution as the solution with
