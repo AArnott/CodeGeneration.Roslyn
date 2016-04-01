@@ -235,21 +235,27 @@ namespace CodeGeneration.Roslyn.Tasks
 
             private Assembly TryLoadAssembly(AssemblyName assemblyName)
             {
-                var referencePath = this.ReferencePath.FirstOrDefault(rp => string.Equals(rp.GetMetadata("FileName"), assemblyName.Name, StringComparison.OrdinalIgnoreCase));
-                if (referencePath != null)
+                try
                 {
-                    return Assembly.LoadFile(referencePath.GetMetadata("FullPath"));
-                }
-
-                foreach (var searchPath in this.GeneratorAssemblySearchPaths)
-                {
-                    string searchDir = searchPath.GetMetadata("FullPath");
-                    const string extension = ".dll";
-                    string fileName = Path.Combine(searchDir, assemblyName.Name + extension);
-                    if (File.Exists(fileName))
+                    var referencePath = this.ReferencePath.FirstOrDefault(rp => string.Equals(rp.GetMetadata("FileName"), assemblyName.Name, StringComparison.OrdinalIgnoreCase));
+                    if (referencePath != null)
                     {
-                        return Assembly.LoadFile(fileName);
+                        return Assembly.LoadFile(referencePath.GetMetadata("FullPath"));
                     }
+
+                    foreach (var searchPath in this.GeneratorAssemblySearchPaths)
+                    {
+                        string searchDir = searchPath.GetMetadata("FullPath");
+                        const string extension = ".dll";
+                        string fileName = Path.Combine(searchDir, assemblyName.Name + extension);
+                        if (File.Exists(fileName))
+                        {
+                            return Assembly.LoadFile(fileName);
+                        }
+                    }
+                }
+                catch (BadImageFormatException)
+                {
                 }
 
                 return null;
