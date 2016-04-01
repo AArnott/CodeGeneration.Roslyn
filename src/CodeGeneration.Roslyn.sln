@@ -1,13 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25114.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGeneration.Roslyn", "CodeGeneration.Roslyn\CodeGeneration.Roslyn.csproj", "{80CEA17A-2175-4CD5-BED8-4B6CFB98CF3B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0BA25C7A-1A7A-43DA-BF47-202B54C75C9B}"
 	ProjectSection(SolutionItems) = preProject
 		..\.gitignore = ..\.gitignore
+		..\appveyor.yml = ..\appveyor.yml
 		..\LICENSE.txt = ..\LICENSE.txt
 		..\nuget.config = ..\nuget.config
 		..\README.md = ..\README.md

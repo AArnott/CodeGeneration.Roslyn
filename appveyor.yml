@@ -1,0 +1,24 @@
+version: 1.0.{build}
+os: Visual Studio 2015
+configuration: Release
+environment:
+  VisualStudioVersion: 14.0
+  NuGetApiKey:
+    secure: Ql19CstT9GvFNeSIAjXvgHXZg+/pNaYJ2jVkzde4LT2vwSyjiQgQ+M332wVYtu+r
+cache:
+- '%USERPROFILE%\.nuget\packages'
+before_build:
+- ps: nuget restore src -Verbosity quiet
+build:
+  verbosity: minimal
+artifacts:
+- path: bin\**\*.nupkg
+  name: NuGet Package
+on_success:
+- ps: >-
+    if ($env:NuGetApiKey -and $env:APPVEYOR_REPO_TAG_NAME -match "^v\d\.\d") {
+        Write-Output "Publishing release packages to nuget.org due to pushed tag $env:APPVEYOR_REPO_TAG_NAME"
+        Get-ChildItem bin\Release\CodeGeneration.Roslyn.NuGet\*.nupkg -exclude *.symbols.nupkg |% {
+            nuget push $_ -ApiKey $env:NuGetApiKey
+        }
+    }
