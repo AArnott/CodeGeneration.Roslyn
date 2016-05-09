@@ -122,8 +122,30 @@ to immediately see the effects of your changes on the generated code.
 ## Packaging up your code generator for others' use
 
 You can also package up your code generator as a NuGet package for others to install
-and use. But the mechanism for this is currently rather tedious as you have to pack
-many files into your NuGet package's `tools` folder. This experience is expected to
-improve in the future, if there is demand for it.
+and use. Your NuGet package should include a dependency on the `CodeGeneration.Roslyn.BuildTime`
+that matches the version of `CodeGeneration.Roslyn` that you used to produce your generator.
+For example, if you used version 0.1.57 of this project, your .nuspec file would include this tag:
+
+```xml
+<dependency id="CodeGeneration.Roslyn.BuildTime" version="0.1.57" />
+```
+
+In addition to this dependency, your NuGet package should include a `build` folder with an
+MSBuild file (either a .props or a .targets file) that defines an `GeneratorAssemblySearchPaths`
+MSBuild item pointing to the folder containing your code generator assembly and its dependencies.
+For example your package should have a `build\MyPackage.targets` file with this content:
+
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <GeneratorAssemblySearchPaths Include="$(MSBuildThisFileDirectory)..\tools" />
+  </ItemGroup>
+</Project>
+```
+
+Then your package should also have a `tools` folder that contains your code generator and any of the runtime
+dependencies it needs *besides those delivered by the `CodeGeneration.Roslyn.BuildTime` package*.
+This will typically mean it has your attributes assembly and your generator assembly.
 
 [NuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn
