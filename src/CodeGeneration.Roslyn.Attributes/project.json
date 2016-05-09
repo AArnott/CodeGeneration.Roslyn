@@ -1,19 +1,19 @@
 ﻿{
   "dependencies": {
     "Nerdbank.GitVersioning": {
-      "version": "1.3.16",
+      "version": "1.4.19",
       "suppressParent": "none"
     },
     "NuProj.Common": {
-      "version": "0.10.30-beta-gcbd7693f91",
+      "version": "0.10.48-beta-gea4a31bbc5",
       "suppressParent": "none"
     },
     "ReadOnlySourceTree": {
-      "version": "0.1.21-beta",
+      "version": "0.1.37-beta",
       "suppressParent": "none"
     },
     "StyleCop.Analyzers": {
-      "version": "1.0.0-rc2",
+      "version": "1.0.0",
       "suppressParent": "none"
     },
     "Validation": "2.2.8"

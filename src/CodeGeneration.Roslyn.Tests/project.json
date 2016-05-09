@@ -1,14 +1,5 @@
 ﻿{
   "dependencies": {
-    "Nerdbank.GitVersioning": {
-      "version": "1.3.16",
-      "suppressParent": "none"
-    },
-    "ReadOnlySourceTree": {
-      "version": "0.1.21-beta",
-      "suppressParent": "none"
-    },
-    "StyleCop.Analyzers": "1.0.0-rc2",
     "xunit": "2.1.0",
     "xunit.runner.visualstudio": "2.1.0"
   },

@@ -83,5 +83,5 @@
   <PropertyGroup>
     <CodeGenerationRoslynToolsPath>$(MSBuildProjectDirectory)\$(RepoBinRoot)$(Configuration)\CodeGeneration.Roslyn.Tasks\</CodeGenerationRoslynToolsPath>
   </PropertyGroup>
-  <Import Project="..\CodeGeneration.Roslyn.NuGet\build\CodeGeneration.Roslyn.targets" />
+  <Import Project="..\CodeGeneration.Roslyn.BuildTime.NuGet\build\CodeGeneration.Roslyn.BuildTime.targets" />
 </Project>

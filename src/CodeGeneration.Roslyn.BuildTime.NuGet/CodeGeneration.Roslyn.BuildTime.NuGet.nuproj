@@ -11,37 +11,43 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>9bbf02a9-e3b9-4360-89b5-dde053bd8135</ProjectGuid>
+    <ProjectGuid>90dd59a2-3dd6-4008-8f88-5a8910cb592c</ProjectGuid>
   </PropertyGroup>
   <PropertyGroup>
+    <NuSpecTemplate>CodeGeneration.Roslyn.BuildTime.nuspec</NuSpecTemplate>
     <NuProjPath>$(UserProfile)\.nuget\packages\NuProj\0.10.48-beta-gea4a31bbc5\tools</NuProjPath>
-    <NuSpecTemplate>CodeGeneration.Roslyn.nuspec</NuSpecTemplate>
     <ProjectBuildOutputGroup>Packages\</ProjectBuildOutputGroup>
   </PropertyGroup>
   <Import Project="$(NuProjPath)\NuProj.props" Condition="Exists('$(NuProjPath)\NuProj.props')" />
   <PropertyGroup Label="Configuration">
-    <Id>CodeGeneration.Roslyn</Id>
-    <Title>CodeGeneration.Roslyn</Title>
+    <Id>CodeGeneration.Roslyn.BuildTime</Id>
+    <Title>CodeGeneration.Roslyn.BuildTime</Title>
     <Authors>aarnott</Authors>
     <Owners>aarnott</Owners>
-    <Description>A package that offers libraries for creating a code generation attribute and the associated generator.</Description>
+    <Description>The build-time development dependency that generates code for a project that consumes code generation attributes.</Description>
     <ReleaseNotes>
     </ReleaseNotes>
     <ProjectUrl>https://github.com/aarnott/CodeGeneration.Roslyn</ProjectUrl>
     <LicenseUrl>https://raw.githubusercontent.com/AArnott/CodeGeneration.Roslyn/$GitCommitIdShort$/LICENSE.txt</LicenseUrl>
-    <Copyright>Copyright © Andrew arnott</Copyright>
-    <Tags>CodeGeneration Roslyn</Tags>
+    <Copyright>Copyright © Andrew Arnott</Copyright>
+    <Tags>
+    </Tags>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <NoDefaultExcludes>true</NoDefaultExcludes>
+    <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CodeGeneration.Roslyn.Attributes.Net40\CodeGeneration.Roslyn.Attributes.Net40.csproj" />
-    <ProjectReference Include="..\CodeGeneration.Roslyn.Attributes\CodeGeneration.Roslyn.Attributes.csproj" />
-    <ProjectReference Include="..\CodeGeneration.Roslyn\CodeGeneration.Roslyn.csproj" />
+    <Content Include="build\CodeGeneration.Roslyn.BuildTime.targets" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="CodeGeneration.Roslyn.nuspec" />
+    <None Include="CodeGeneration.Roslyn.BuildTime.nuspec" />
     <None Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CodeGeneration.Roslyn.Tasks\CodeGeneration.Roslyn.Tasks.csproj">
+      <PackageDirectory>Tools</PackageDirectory>
+      <PackageOutputGroups>$(PackageOutputGroups);GetReferenceCopyLocalPaths</PackageOutputGroups>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(NuProjPath)\NuProj.targets" />
 </Project>

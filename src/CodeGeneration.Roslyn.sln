@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25114.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGeneration.Roslyn", "CodeGeneration.Roslyn\CodeGeneration.Roslyn.csproj", "{80CEA17A-2175-4CD5-BED8-4B6CFB98CF3B}"
 EndProject
@@ -10,7 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\.gitignore = ..\.gitignore
 		..\appveyor.yml = ..\appveyor.yml
 		..\LICENSE.txt = ..\LICENSE.txt
-		..\nuget.config = ..\nuget.config
+		nuget.config = nuget.config
 		..\README.md = ..\README.md
 		stylecop.json = stylecop.json
 		version.json = version.json
@@ -29,6 +29,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGeneration.Roslyn.Attributes", "CodeGeneration.Roslyn.Attributes\CodeGeneration.Roslyn.Attributes.csproj", "{A68DF260-4305-4D1D-8FF0-1E6C128286AE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGeneration.Roslyn.Attributes.Net40", "CodeGeneration.Roslyn.Attributes.Net40\CodeGeneration.Roslyn.Attributes.Net40.csproj", "{D5FF965A-6AC9-42EC-AB18-00B857E7A613}"
+EndProject
+Project("{FF286327-C783-4F7A-AB73-9BCBAD0D4460}") = "CodeGeneration.Roslyn.BuildTime.NuGet", "CodeGeneration.Roslyn.BuildTime.NuGet\CodeGeneration.Roslyn.BuildTime.NuGet.nuproj", "{90DD59A2-3DD6-4008-8F88-5A8910CB592C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,6 +70,10 @@ Global
 		{D5FF965A-6AC9-42EC-AB18-00B857E7A613}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5FF965A-6AC9-42EC-AB18-00B857E7A613}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5FF965A-6AC9-42EC-AB18-00B857E7A613}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90DD59A2-3DD6-4008-8F88-5A8910CB592C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90DD59A2-3DD6-4008-8F88-5A8910CB592C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90DD59A2-3DD6-4008-8F88-5A8910CB592C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90DD59A2-3DD6-4008-8F88-5A8910CB592C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
