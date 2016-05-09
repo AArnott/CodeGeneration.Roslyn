@@ -10,6 +10,9 @@ namespace CodeGeneration.Roslyn
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
 
+    /// <summary>
+    /// Describes a code generator that responds to attributes on members to generate code.
+    /// </summary>
     public interface ICodeGenerator
     {
         /// <summary>

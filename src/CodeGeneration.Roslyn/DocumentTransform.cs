@@ -19,6 +19,9 @@ namespace CodeGeneration.Roslyn
     using Microsoft.CodeAnalysis.Simplification;
     using Validation;
 
+    /// <summary>
+    /// The class responsible for generating compilation units to add to the project being built.
+    /// </summary>
     public class DocumentTransform
     {
         private static readonly string GeneratedByAToolPreamble = @"// ------------------------------------------------------------------------------
@@ -35,6 +38,16 @@ namespace CodeGeneration.Roslyn
         {
         }
 
+        /// <summary>
+        /// Produces a new document in response to any code generation attributes found in the specified document.
+        /// </summary>
+        /// <param name="inputDocument">The document to scan for generator attributes.</param>
+        /// <param name="progress">Reports warnings and errors in code generation.</param>
+        /// <param name="simplify">
+        /// A value indicating whether to simplify the generated document.
+        /// This produces a more visually appealing code file, but costs significant time during code generation.
+        /// </param>
+        /// <returns>A task whose result is the generated document.</returns>
         public static async Task<Document> TransformAsync(Document inputDocument, IProgress<Diagnostic> progress, bool simplify = false)
         {
             Requires.NotNull(inputDocument, nameof(inputDocument));
