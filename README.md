@@ -24,6 +24,16 @@ In the following example, we define a pair of classes which exactly duplicates
 any class the attribute is applied to, but adds some suffix to the name on the copy.
 
 ```csharp
+using System;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using CodeGeneration.Roslyn;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Validation;
+
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
 [CodeGenerationAttribute(typeof(DuplicateWithSuffixGenerator))]
 [Conditional("CodeGeneration")]
