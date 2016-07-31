@@ -24,6 +24,16 @@ In the following example, we define a pair of classes which exactly duplicates
 any class the attribute is applied to, but adds some suffix to the name on the copy.
 
 ```csharp
+using System;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using CodeGeneration.Roslyn;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Validation;
+
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
 [CodeGenerationAttribute(typeof(DuplicateWithSuffixGenerator))]
 [Conditional("CodeGeneration")]
@@ -50,16 +60,16 @@ public class DuplicateWithSuffixGenerator : ICodeGenerator
         this.suffix = (string)attributeData.ConstructorArguments[0].Value;
     }
 
-    public Task<IReadOnlyList<MemberDeclarationSyntax>> GenerateAsync(MemberDeclarationSyntax applyTo, Document document, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
+    public Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(MemberDeclarationSyntax applyTo, Document document, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
     {
-        var results = new List<MemberDeclarationSyntax>();
+        var results = SyntaxFactory.List<MemberDeclarationSyntax>();
 
         var applyToClass = (ClassDeclarationSyntax)applyTo;
         var copy = applyToClass
             .WithIdentifier(SyntaxFactory.Identifier(applyToClass.Identifier.ValueText + this.suffix));
-        results.Add(copy);
+        results = results.Add(copy);
 
-        return Task.FromResult<IReadOnlyList<MemberDeclarationSyntax>>(results);
+        return Task.FromResult<SyntaxList<MemberDeclarationSyntax>>(results);
     }
 }
 ```
@@ -88,6 +98,11 @@ public class Foo
 Any file that uses this attribute should have its Custom Tool property set to
 `MSBuild:GenerateCodeFromAttributes` so that when you save the file or compile
 the project, the code generator runs and acts on your attribute.
+
+Install the [CodeGeneration.Roslyn.BuildTime][BuildTimeNuPkg] package into the
+project using your attribute:
+
+    Install-Package CodeGeneration.Roslyn.BuildTime -Pre
 
 You can then consume the generated code at design-time:
 
@@ -149,3 +164,4 @@ dependencies it needs *besides those delivered by the `CodeGeneration.Roslyn.Bui
 This will typically mean it has your attributes assembly and your generator assembly.
 
 [NuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn
+[BuildTimeNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.BuildTime
