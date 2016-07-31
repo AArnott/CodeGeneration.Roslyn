@@ -50,16 +50,16 @@ public class DuplicateWithSuffixGenerator : ICodeGenerator
         this.suffix = (string)attributeData.ConstructorArguments[0].Value;
     }
 
-    public Task<IReadOnlyList<MemberDeclarationSyntax>> GenerateAsync(MemberDeclarationSyntax applyTo, Document document, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
+    public Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(MemberDeclarationSyntax applyTo, Document document, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
     {
-        var results = new List<MemberDeclarationSyntax>();
+        var results = SyntaxFactory.List<MemberDeclarationSyntax>();
 
         var applyToClass = (ClassDeclarationSyntax)applyTo;
         var copy = applyToClass
             .WithIdentifier(SyntaxFactory.Identifier(applyToClass.Identifier.ValueText + this.suffix));
-        results.Add(copy);
+        results = results.Add(copy);
 
-        return Task.FromResult<IReadOnlyList<MemberDeclarationSyntax>>(results);
+        return Task.FromResult<SyntaxList<MemberDeclarationSyntax>>(results);
     }
 }
 ```
