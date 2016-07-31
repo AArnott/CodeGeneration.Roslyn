@@ -99,6 +99,11 @@ Any file that uses this attribute should have its Custom Tool property set to
 `MSBuild:GenerateCodeFromAttributes` so that when you save the file or compile
 the project, the code generator runs and acts on your attribute.
 
+Install the [CodeGeneration.Roslyn.BuildTime][BuildTimeNuPkg] package into the
+project using your attribute:
+
+    Install-Package CodeGeneration.Roslyn.BuildTime -Pre
+
 You can then consume the generated code at design-time:
 
 ```csharp
@@ -159,3 +164,4 @@ dependencies it needs *besides those delivered by the `CodeGeneration.Roslyn.Bui
 This will typically mean it has your attributes assembly and your generator assembly.
 
 [NuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn
+[BuildTimeNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.BuildTime
