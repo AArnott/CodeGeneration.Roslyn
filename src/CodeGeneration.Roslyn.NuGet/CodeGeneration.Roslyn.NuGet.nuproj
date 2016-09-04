@@ -14,7 +14,7 @@
     <ProjectGuid>9bbf02a9-e3b9-4360-89b5-dde053bd8135</ProjectGuid>
   </PropertyGroup>
   <PropertyGroup>
-    <NuProjPath>$(UserProfile)\.nuget\packages\NuProj\0.10.48-beta-gea4a31bbc5\tools</NuProjPath>
+    <NuProjPath>$(UserProfile)\.nuget\packages\NuProj\0.11.14-beta\tools</NuProjPath>
     <NuSpecTemplate>CodeGeneration.Roslyn.nuspec</NuSpecTemplate>
     <ProjectBuildOutputGroup>Packages\</ProjectBuildOutputGroup>
   </PropertyGroup>

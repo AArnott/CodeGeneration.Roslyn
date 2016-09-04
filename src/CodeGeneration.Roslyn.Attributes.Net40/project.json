@@ -1,11 +1,11 @@
 ﻿{
   "dependencies": {
     "Nerdbank.GitVersioning": {
-      "version": "1.4.19",
+      "version": "1.5.46",
       "suppressParent": "none"
     },
     "NuProj.Common": {
-      "version": "0.10.48-beta-gea4a31bbc5",
+      "version": "0.11.14-beta",
       "suppressParent": "none"
     },
     "ReadOnlySourceTree": {
@@ -16,7 +16,7 @@
       "version": "1.0.0",
       "suppressParent": "none"
     },
-    "Validation": "2.2.8"
+    "Validation": "2.3.7"
   },
   "frameworks": {
     ".NETPortable,Version=v4.0,Profile=Profile92": { }
