@@ -5,12 +5,33 @@
     <AssemblyOriginatorKeyFile>..\opensource.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
+    <PackageId>CodeGeneration.Roslyn.BuildTime</PackageId>
+    <Description>The build-time development dependency that generates code for a project that consumes code generation attributes.</Description>
+
+    <!-- We're going to include it by virtue of sending the whole bin dir to the build folder. -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
     <AdditionalFiles Include="..\stylecop.json">
       <Visible>false</Visible>
     </AdditionalFiles>
+  </ItemGroup>
+
+  <Target Name="CollectRuntimeOutputs" BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <Content Include="$(OutputPath)**\*.dll;$(OutputPath)**\*.json">
+        <Pack>true</Pack>
+        <PackagePath>build\</PackagePath>
+      </Content>
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <Content Include="build\*.props;build\*.targets">
+      <Pack>true</Pack>
+      <PackagePath>build\</PackagePath>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
