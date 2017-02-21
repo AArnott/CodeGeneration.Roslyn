@@ -6,6 +6,7 @@
     <RootNamespace>CodeGeneration.Roslyn</RootNamespace>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\opensource.snk</AssemblyOriginatorKeyFile>
+    <Description>A package that offers attributes to drive code generation.</Description>
   </PropertyGroup>
 
   <ItemGroup>
