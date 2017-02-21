@@ -34,6 +34,15 @@
     </Content>
   </ItemGroup>
 
+  <ItemDefinitionGroup>
+    <PackageReference>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <ProjectReference>
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.1.0-preview-000458-02" Condition=" '$(TargetFramework)' == 'netstandard1.3' " />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="14.3" Condition=" '$(TargetFramework)' == 'net452' " />
