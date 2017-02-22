@@ -9,13 +9,15 @@ namespace CodeGeneration.Roslyn.Tasks
     using System.IO;
     using System.Linq;
     using System.Reflection;
+#if NETCOREAPP1_0
+    using System.Runtime.Loader;
+#endif
     using System.Text;
     using System.Threading;
     using Microsoft.Build.Framework;
     using Microsoft.Build.Utilities;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
-    using Microsoft.CodeAnalysis.MSBuild;
     using Microsoft.CodeAnalysis.Text;
     using Task = System.Threading.Tasks.Task;
 
@@ -48,14 +50,20 @@ namespace CodeGeneration.Roslyn.Tasks
 
         public override bool Execute()
         {
+#if NET452
             // Run under our own AppDomain so we can control the version of Roslyn we load.
             var appDomainSetup = new AppDomainSetup();
             appDomainSetup.ApplicationBase = Path.GetDirectoryName(this.GetType().Assembly.Location);
             appDomainSetup.DisallowBindingRedirects = true; // We want the version of Roslyn we compiled against.
             var appDomain = AppDomain.CreateDomain("codegen", AppDomain.CurrentDomain.Evidence, appDomainSetup);
+#endif
             try
             {
+#if NET452
                 var helper = (Helper)appDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, typeof(Helper).FullName);
+#else
+                var helper = new Helper();
+#endif
                 helper.Compile = this.Compile;
                 helper.TargetName = this.TargetName;
                 helper.ReferencePath = this.ReferencePath;
@@ -82,7 +90,9 @@ namespace CodeGeneration.Roslyn.Tasks
             }
             finally
             {
+#if NET452
                 AppDomain.Unload(appDomain);
+#endif
             }
         }
 
@@ -91,7 +101,10 @@ namespace CodeGeneration.Roslyn.Tasks
             this.cts.Cancel();
         }
 
-        private class Helper : MarshalByRefObject
+        private class Helper
+#if NET452
+            : MarshalByRefObject
+#endif
         {
             public CancellationToken CancellationToken { get; set; }
 
@@ -115,10 +128,12 @@ namespace CodeGeneration.Roslyn.Tasks
             {
                 Task.Run(async delegate
                 {
+#if NET452
                     AppDomain.CurrentDomain.AssemblyResolve += (s, e) =>
                     {
                         return this.TryLoadAssembly(new AssemblyName(e.Name));
                     };
+#endif
 
                     var project = this.CreateProject();
                     var outputFiles = new List<ITaskItem>();
@@ -223,14 +238,25 @@ namespace CodeGeneration.Roslyn.Tasks
                     assemblyPaths.UnionWith(File.ReadAllLines(assemblyListPath));
                 }
 
+#if NET452
                 assemblyPaths.UnionWith(
                     from a in AppDomain.CurrentDomain.GetAssemblies()
                     where !a.IsDynamic
                     select a.Location);
+#endif
 
                 File.WriteAllLines(
                     assemblyListPath,
                     assemblyPaths);
+            }
+
+            private static Assembly LoadAssemblyByFile(string path)
+            {
+#if NET452
+                return Assembly.LoadFile(path);
+#else
+                return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+#endif
             }
 
             private Assembly TryLoadAssembly(AssemblyName assemblyName)
@@ -240,7 +266,7 @@ namespace CodeGeneration.Roslyn.Tasks
                     var referencePath = this.ReferencePath.FirstOrDefault(rp => string.Equals(rp.GetMetadata("FileName"), assemblyName.Name, StringComparison.OrdinalIgnoreCase));
                     if (referencePath != null)
                     {
-                        return Assembly.LoadFile(referencePath.GetMetadata("FullPath"));
+                        return LoadAssemblyByFile(referencePath.GetMetadata("FullPath"));
                     }
 
                     foreach (var searchPath in this.GeneratorAssemblySearchPaths)
@@ -250,7 +276,7 @@ namespace CodeGeneration.Roslyn.Tasks
                         string fileName = Path.Combine(searchDir, assemblyName.Name + extension);
                         if (File.Exists(fileName))
                         {
-                            return Assembly.LoadFile(fileName);
+                            return LoadAssemblyByFile(fileName);
                         }
                     }
                 }
