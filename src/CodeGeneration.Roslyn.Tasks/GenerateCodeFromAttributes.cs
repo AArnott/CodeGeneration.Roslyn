@@ -106,6 +106,8 @@ namespace CodeGeneration.Roslyn.Tasks
             : MarshalByRefObject
 #endif
         {
+            private readonly List<string> loadedAssemblies = new List<string>();
+
             public CancellationToken CancellationToken { get; set; }
 
             public ITaskItem[] Compile { get; set; }
@@ -132,6 +134,11 @@ namespace CodeGeneration.Roslyn.Tasks
                     AppDomain.CurrentDomain.AssemblyResolve += (s, e) =>
                     {
                         return this.TryLoadAssembly(new AssemblyName(e.Name));
+                    };
+#else
+                    AssemblyLoadContext.Default.Resolving += (lc, an) =>
+                    {
+                        return this.TryLoadAssembly(an);
                     };
 #endif
 
@@ -206,7 +213,7 @@ namespace CodeGeneration.Roslyn.Tasks
                         }
                     }
 
-                    SaveGeneratorAssemblyList(generatorAssemblyInputsFile);
+                    this.SaveGeneratorAssemblyList(generatorAssemblyInputsFile);
                     writtenFiles.Add(new TaskItem(generatorAssemblyInputsFile));
 
                     this.GeneratedCompile = outputFiles.ToArray();
@@ -221,12 +228,13 @@ namespace CodeGeneration.Roslyn.Tasks
                     return DateTime.MinValue;
                 }
 
-                return (from path in File.ReadAllLines(assemblyListPath)
-                        where File.Exists(path)
-                        select File.GetLastWriteTime(path)).Max();
+                var timestamps = (from path in File.ReadAllLines(assemblyListPath)
+                                  where File.Exists(path)
+                                  select File.GetLastWriteTime(path)).ToList();
+                return timestamps.Any() ? timestamps.Max() : DateTime.MinValue;
             }
 
-            private static void SaveGeneratorAssemblyList(string assemblyListPath)
+            private void SaveGeneratorAssemblyList(string assemblyListPath)
             {
                 // Union our current list with the one on disk, since our incremental code generation
                 // may have skipped some up-to-date files, resulting in fewer assemblies being loaded
@@ -237,6 +245,8 @@ namespace CodeGeneration.Roslyn.Tasks
                 {
                     assemblyPaths.UnionWith(File.ReadAllLines(assemblyListPath));
                 }
+
+                assemblyPaths.UnionWith(this.loadedAssemblies);
 
 #if NET452
                 assemblyPaths.UnionWith(
@@ -266,7 +276,9 @@ namespace CodeGeneration.Roslyn.Tasks
                     var referencePath = this.ReferencePath.FirstOrDefault(rp => string.Equals(rp.GetMetadata("FileName"), assemblyName.Name, StringComparison.OrdinalIgnoreCase));
                     if (referencePath != null)
                     {
-                        return LoadAssemblyByFile(referencePath.GetMetadata("FullPath"));
+                        string fullPath = referencePath.GetMetadata("FullPath");
+                        this.loadedAssemblies.Add(fullPath);
+                        return LoadAssemblyByFile(fullPath);
                     }
 
                     foreach (var searchPath in this.GeneratorAssemblySearchPaths)
