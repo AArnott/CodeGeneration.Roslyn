@@ -27,6 +27,32 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="CopyLocalPackageReferences"
+          AfterTargets="ResolveLockFileReferences"
+          Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">
+    <ItemGroup>
+      <None Include="@(FileDependencies->'$(NuGetPackageRoot)%(Identity)')"
+            Condition=" '%(FileDependencies.FileGroup)' == 'RuntimeAssembly' and
+              '%(FileDependencies.ParentTarget)' == '.NETCoreApp,Version=v1.0' and (
+              '%(FileName)' == 'Microsoft.CodeAnalysis' or
+              '%(FileName)' == 'Microsoft.CodeAnalysis.CSharp' or
+              '%(FileName)' == 'Microsoft.CodeAnalysis.CSharp.Workspaces' or
+              '%(FileName)' == 'Microsoft.CodeAnalysis.Workspaces' or
+              '%(FileName)' == 'System.Composition.AttributedModel' or
+              '%(FileName)' == 'System.Composition.Convention' or
+              '%(FileName)' == 'System.Composition.Hosting' or
+              '%(FileName)' == 'System.Composition.Runtime' or
+              '%(FileName)' == 'System.Composition.TypedParts' or
+              '%(FileName)' == 'System.Collections.Immutable' or
+              '%(FileName)' == 'System.Reflection.Metadata' or
+              '%(FileName)' == 'Validation' or
+              false
+              )">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <Content Include="build\*.props;build\*.targets">
       <Pack>true</Pack>
