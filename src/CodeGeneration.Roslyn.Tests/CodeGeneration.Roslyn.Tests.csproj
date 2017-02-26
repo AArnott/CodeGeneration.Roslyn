@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\CodeGeneration.Roslyn.Tasks\build\CodeGeneration.Roslyn.BuildTime.props" />
 
   <PropertyGroup>
-    <TargetFramework>net452</TargetFramework>
-    <CodeGenerationRoslynToolsPath>$(OutputPath)..\..\CodeGeneration.Roslyn.Tasks\$(Configuration)\net452\</CodeGenerationRoslynToolsPath>
+    <TargetFrameworks>net452</TargetFrameworks>
+    <CodeGenerationRoslynToolsRootPath>$(OutputPath)..\..\CodeGeneration.Roslyn.Tasks\$(Configuration)\</CodeGenerationRoslynToolsRootPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,5 +23,5 @@
     <ProjectReference Include="..\CodeGeneration.Roslyn\CodeGeneration.Roslyn.csproj" />
   </ItemGroup>
 
-  <Import Project="..\CodeGeneration.Roslyn.BuildTime.NuGet\build\CodeGeneration.Roslyn.BuildTime.targets" />
+  <Import Project="..\CodeGeneration.Roslyn.Tasks\build\CodeGeneration.Roslyn.BuildTime.targets" />
 </Project>
