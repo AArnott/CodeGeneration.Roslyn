@@ -155,8 +155,6 @@ namespace CodeGeneration.Roslyn.Tasks
                         DateTime outputLastModified = File.GetLastWriteTime(outputFilePath);
                         if (File.GetLastWriteTime(inputDocument.Name) > outputLastModified || assembliesLastModified > outputLastModified)
                         {
-                            this.Log.LogMessage(MessageImportance.Normal, "{0} -> {1}", inputDocument.Name, outputFilePath);
-
                             var outputDocument = await DocumentTransform.TransformAsync(
                                 inputDocument,
                                 new ProgressLogger(this.Log, inputDocument.Name));
@@ -176,7 +174,12 @@ namespace CodeGeneration.Roslyn.Tasks
                                     outputFileStream.SetLength(outputFileStream.Position);
                                 }
 
+                                this.Log.LogMessage(MessageImportance.Normal, "{0} -> {1}", inputDocument.Name, outputFilePath);
                                 generated = true;
+                            }
+                            else
+                            {
+                                this.Log.LogMessage(MessageImportance.Low, "{0} used no code generation attributes.", inputDocument.Name);
                             }
                         }
                         else
