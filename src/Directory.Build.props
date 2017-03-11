@@ -8,6 +8,7 @@
     <Authors>Andrew Arnott</Authors>
     <RepositoryUrl>https://github.com/aarnott/CodeGeneration.Roslyn</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <IsPackable Condition=" $(MSBuildProjectName.Contains('Test')) ">false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
