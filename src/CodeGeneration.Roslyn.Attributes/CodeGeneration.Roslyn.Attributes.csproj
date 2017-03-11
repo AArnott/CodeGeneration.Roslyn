@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.0;net40</TargetFrameworks>
+    <TargetFrameworks>netstandard1.0;net40;net20</TargetFrameworks>
     <AssemblyName>CodeGeneration.Roslyn.Attributes</AssemblyName>
     <RootNamespace>CodeGeneration.Roslyn</RootNamespace>
     <SignAssembly>True</SignAssembly>
@@ -13,10 +13,6 @@
     <AdditionalFiles Include="..\stylecop.json">
       <Visible>false</Visible>
     </AdditionalFiles>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Validation" Version="2.4.9" />
   </ItemGroup>
 
 </Project>

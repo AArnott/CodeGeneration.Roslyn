@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net452;netcoreapp1.0</TargetFrameworks>
+    <TargetFrameworks>net46;netcoreapp1.0</TargetFrameworks>
     <AssemblyOriginatorKeyFile>..\opensource.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
@@ -45,8 +45,8 @@
     </ProjectReference>
   </ItemDefinitionGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net452'">
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="14.3" Condition=" '$(TargetFramework)' == 'net452' " />
+  <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="14.3" Condition=" '$(TargetFramework)' == 'net46' " />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
@@ -56,8 +56,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    
+
     <ProjectReference Include="..\CodeGeneration.Roslyn.Tasks.Helper\CodeGeneration.Roslyn.Tasks.Helper.csproj" />
   </ItemGroup>
-  
+
 </Project>
