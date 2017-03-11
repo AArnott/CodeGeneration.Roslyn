@@ -6,6 +6,8 @@ build_script:
 - ps: >-
     msbuild src\CodeGeneration.Roslyn.sln /nologo /m /t:restore
 
+    msbuild src\CodeGeneration.Roslyn.sln /nologo /m /t:restore
+
     msbuild src\CodeGeneration.Roslyn.sln /nologo /m /t:build,pack
 artifacts:
 - path: bin\**\*.nupkg
