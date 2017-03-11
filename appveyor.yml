@@ -1,6 +1,6 @@
 version: 99.0.{build}
 skip_tags: true
-image: Visual Studio 2017 RC
+image: Visual Studio 2017
 configuration: Release
 build_script:
 - ps: msbuild src\CodeGeneration.Roslyn.sln /t:restore,build,pack /nologo /m
