@@ -3,6 +3,6 @@
   <PropertyGroup>
     <CodeGenerationRoslynToolsRootPath Condition=" '$(CodeGenerationRoslynToolsRootPath)' == '' ">$(MSBuildThisFileDirectory)</CodeGenerationRoslynToolsRootPath>
     <CodeGenerationRoslynToolsSubPath Condition=" '$(MSBuildRuntimeType)' == 'Core' ">netcoreapp1.0\</CodeGenerationRoslynToolsSubPath>
-    <CodeGenerationRoslynToolsSubPath Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net452\</CodeGenerationRoslynToolsSubPath>
+    <CodeGenerationRoslynToolsSubPath Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net46\</CodeGenerationRoslynToolsSubPath>
   </PropertyGroup>
 </Project>
