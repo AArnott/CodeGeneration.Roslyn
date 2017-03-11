@@ -8,46 +8,36 @@ This includes design-time support, such that code generation can respond to
 changes made in hand-authored code files by generating new code that shows
 up to Intellisense as soon as the file is saved to disk.
 
-## Installation
+## How to write your own code generator
 
-Install the [CodeGeneration.Roslyn NuGet package][NuPkg].
+In this walkthrough, we will define a code generator that replicates any class
+your code generation attribute is applied to, but with a suffix appended to its name.
 
-## Define code generation
+### Define code generator
 
-To write your code that generates more code, after installing the package,
-define two classes. First, an attribute class. This is the attribute your
-users will affix to a type or member to produce more code based on it.
-That attribute will refer to another class which actually performs the
-code generation.
+This must be done in a library that targets netstandard1.3 or net46 (or later).
+Your generator cannot be defined in the same project that will have code generated
+for it because code generation runs *before* the receiving project is itself compiled.
 
-In the following example, we define a pair of classes which exactly duplicates
-any class the attribute is applied to, but adds some suffix to the name on the copy.
+Install the [CodeGeneration.Roslyn][NuPkg] NuGet Package.
+You may need to define this property in your .NET SDK netstandard project to
+workaround the problem with the `Microsoft.Composition` NuGet package:
+
+```xml
+<PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
+```
+
+Define the generator class:
 
 ```csharp
-using System;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using CodeGeneration.Roslyn;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Validation;
-
-[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-[CodeGenerationAttribute(typeof(DuplicateWithSuffixGenerator))]
-[Conditional("CodeGeneration")]
-public class DuplicateWithSuffixAttribute : Attribute
-{
-    public DuplicateWithSuffixAttribute(string suffix)
-    {
-        Requires.NotNullOrEmpty(suffix, nameof(suffix));
-
-        this.Suffix = suffix;
-    }
-
-    public string Suffix { get; }
-}
 
 public class DuplicateWithSuffixGenerator : ICodeGenerator
 {
@@ -64,13 +54,59 @@ public class DuplicateWithSuffixGenerator : ICodeGenerator
     {
         var results = SyntaxFactory.List<MemberDeclarationSyntax>();
 
+        // Our generator is applied to any class that our attribute is applied to.
         var applyToClass = (ClassDeclarationSyntax)applyTo;
+
+        // Apply a suffix to the name of a copy of the class.
         var copy = applyToClass
             .WithIdentifier(SyntaxFactory.Identifier(applyToClass.Identifier.ValueText + this.suffix));
-        results = results.Add(copy);
 
+        // Return our modified copy. It will be added to the user's project for compilation.
+        results = results.Add(copy);
         return Task.FromResult<SyntaxList<MemberDeclarationSyntax>>(results);
     }
+}
+```
+
+### Define attribute
+
+To activate your code generator, you need to define an attribute that can be
+applied to the class to be copied. This attribute may be defined in the same
+assembly as defines your code generator, but since your code generator must
+be defined in a netstandard1.3 or net46 library, this may limit which projects
+can apply your attribute. So define your attribute in another assembly if
+it must be applied to projects that target older platforms.
+
+If your attributes are in their own project, you must install the
+[CodeGeneration.Roslyn.Attributes][AttrNuPkg] package to your attributes project.
+
+Define your attribute class.
+For this walkthrough, we will assume that the attributes are defined in the same
+netstandard1.3 project that defines the generator which allows us to use the more
+convenient `typeof` syntax when declaring the code generator type.
+If the attributes and code generator classes were in separate assemblies, you must
+specify the assembly-qualified name of the generator type as a string instead.
+
+
+```csharp
+using CodeGeneration.Roslyn;
+using System;
+using System.Diagnostics;
+using Validation;
+
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+[CodeGenerationAttribute(typeof(DuplicateWithSuffixGenerator))]
+[Conditional("CodeGeneration")]
+public class DuplicateWithSuffixAttribute : Attribute
+{
+    public DuplicateWithSuffixAttribute(string suffix)
+    {
+        Requires.NotNullOrEmpty(suffix, nameof(suffix));
+
+        this.Suffix = suffix;
+    }
+
+    public string Suffix { get; }
 }
 ```
 
@@ -95,14 +131,9 @@ public class Foo
 }
 ```
 
-Any file that uses this attribute should have its Custom Tool property set to
-`MSBuild:GenerateCodeFromAttributes` so that when you save the file or compile
-the project, the code generator runs and acts on your attribute.
-
 Install the [CodeGeneration.Roslyn.BuildTime][BuildTimeNuPkg] package into the
-project using your attribute:
-
-    Install-Package CodeGeneration.Roslyn.BuildTime -Pre
+project that uses your attribute. You may set `PrivateAssets="all"` on this reference
+because this is a build-time only package.
 
 You can then consume the generated code at design-time:
 
@@ -165,3 +196,4 @@ This will typically mean it has your attributes assembly and your generator asse
 
 [NuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn
 [BuildTimeNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.BuildTime
+[AttrNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.Attributes
