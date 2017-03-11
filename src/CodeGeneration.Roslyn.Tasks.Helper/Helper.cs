@@ -23,7 +23,7 @@ namespace CodeGeneration.Roslyn.Tasks
     using Validation;
 
     public class Helper
-#if NET452
+#if NET46
         : MarshalByRefObject
 #endif
     {
@@ -61,7 +61,7 @@ namespace CodeGeneration.Roslyn.Tasks
         {
             Task.Run(async delegate
             {
-#if NET452
+#if NET46
                 AppDomain.CurrentDomain.AssemblyResolve += (s, e) =>
                 {
                     return this.TryLoadAssembly(new AssemblyName(e.Name));
@@ -180,7 +180,7 @@ namespace CodeGeneration.Roslyn.Tasks
 
             assemblyPaths.UnionWith(this.loadedAssemblies);
 
-#if NET452
+#if NET46
                 assemblyPaths.UnionWith(
                     from a in AppDomain.CurrentDomain.GetAssemblies()
                     where !a.IsDynamic
@@ -194,7 +194,7 @@ namespace CodeGeneration.Roslyn.Tasks
 
         private Assembly LoadAssemblyByFile(string path)
         {
-#if NET452
+#if NET46
                 return Assembly.LoadFile(path);
 #else
             return this.loadContext.LoadFromAssemblyPath(path);

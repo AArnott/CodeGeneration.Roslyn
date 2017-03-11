@@ -51,7 +51,7 @@ namespace CodeGeneration.Roslyn.Tasks
 
         public override bool Execute()
         {
-#if NET452
+#if NET46
             // Run under our own AppDomain so we can control the version of Roslyn we load.
             var appDomainSetup = new AppDomainSetup();
             appDomainSetup.ApplicationBase = Path.GetDirectoryName(this.GetType().Assembly.Location);
@@ -65,7 +65,7 @@ namespace CodeGeneration.Roslyn.Tasks
             {
                 var helperAssemblyName = new AssemblyName(typeof(GenerateCodeFromAttributes).GetTypeInfo().Assembly.GetName().FullName.Replace(ThisAssembly.AssemblyName, ThisAssembly.AssemblyName + ".Helper"));
                 const string helperTypeName = "CodeGeneration.Roslyn.Tasks.Helper";
-#if NET452
+#if NET46
                 var helper = (Helper)appDomain.CreateInstanceAndUnwrap(helperAssemblyName.FullName, helperTypeName);
 #else
                 this.taskLoadContext = new TaskLoadContext(Path.GetDirectoryName(new Uri(typeof(GenerateCodeFromAttributes).GetTypeInfo().Assembly.CodeBase).LocalPath));
@@ -99,14 +99,14 @@ namespace CodeGeneration.Roslyn.Tasks
             }
             finally
             {
-#if NET452
+#if NET46
                 AppDomain.CurrentDomain.AssemblyResolve -= this.CurrentDomain_AssemblyResolve;
                 AppDomain.Unload(appDomain);
 #endif
             }
         }
 
-#if NET452
+#if NET46
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
             try
