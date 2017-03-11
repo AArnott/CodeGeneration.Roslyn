@@ -3,7 +3,10 @@ skip_tags: true
 image: Visual Studio 2017
 configuration: Release
 build_script:
-- ps: msbuild src\CodeGeneration.Roslyn.sln /t:restore,build,pack /nologo /m
+- ps: >-
+    msbuild src\CodeGeneration.Roslyn.sln /nologo /m /t:restore
+
+    msbuild src\CodeGeneration.Roslyn.sln /nologo /m /t:build,pack
 artifacts:
 - path: bin\**\*.nupkg
   name: NuGet Package
