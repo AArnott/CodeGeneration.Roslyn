@@ -22,7 +22,7 @@
 
   <Target Name="CollectRuntimeOutputs" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
-      <Content Include="$(OutputPath)**\*.dll;$(OutputPath)**\*.json">
+      <Content Include="$(OutputPath)**\*.dll;$(OutputPath)**\*.dll.config;$(OutputPath)**\*.json">
         <Pack>true</Pack>
         <PackagePath>build\</PackagePath>
       </Content>

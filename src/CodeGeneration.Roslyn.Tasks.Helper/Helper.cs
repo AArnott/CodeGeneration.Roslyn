@@ -59,21 +59,21 @@ namespace CodeGeneration.Roslyn.Tasks
 
         public void Execute()
         {
-            Task.Run(async delegate
-            {
 #if NET46
-                AppDomain.CurrentDomain.AssemblyResolve += (s, e) =>
-                {
-                    return this.TryLoadAssembly(new AssemblyName(e.Name));
-                };
+            AppDomain.CurrentDomain.AssemblyResolve += (s, e) =>
+            {
+                return this.TryLoadAssembly(new AssemblyName(e.Name));
+            };
 #else
-                this.loadContext.Resolving += (lc, an) =>
-                {
-                    Assumes.True(ReferenceEquals(lc, this.loadContext));
-                    return this.TryLoadAssembly(an);
-                };
+            this.loadContext.Resolving += (lc, an) =>
+            {
+                Assumes.True(ReferenceEquals(lc, this.loadContext));
+                return this.TryLoadAssembly(an);
+            };
 #endif
 
+            Task.Run(async delegate
+            {
                 var project = this.CreateProject();
                 var outputFiles = new List<ITaskItem>();
                 var writtenFiles = new List<ITaskItem>();
@@ -195,7 +195,7 @@ namespace CodeGeneration.Roslyn.Tasks
         private Assembly LoadAssemblyByFile(string path)
         {
 #if NET46
-                return Assembly.LoadFile(path);
+            return Assembly.LoadFile(path);
 #else
             return this.loadContext.LoadFromAssemblyPath(path);
 #endif
