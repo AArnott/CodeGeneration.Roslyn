@@ -1,87 +1,27 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\CodeGeneration.Roslyn.Tasks\build\CodeGeneration.Roslyn.BuildTime.props" />
+
   <PropertyGroup>
-    <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{CF2097A8-C5FC-49C4-BB2A-5B2E6680C336}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>
-    </RootNamespace>
-    <AssemblyName>CodeGeneration.Roslyn.Tests</AssemblyName>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <CopyNuGetImplementations>true</CopyNuGetImplementations>
+    <TargetFrameworks>net46</TargetFrameworks>
+    <CodeGenerationRoslynToolsRootPath>$(OutputPath)..\..\CodeGeneration.Roslyn.Tasks\$(Configuration)\</CodeGenerationRoslynToolsRootPath>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>CodeGeneration.Roslyn.Tests.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>CodeGeneration.Roslyn.Tests.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
+
   <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
-    <ProjectReference Include="..\CodeGeneration.Roslyn.Tests.Generators\CodeGeneration.Roslyn.Tests.Generators.csproj">
-      <Project>{a638a7eb-3923-4596-8852-d90831d103ec}</Project>
-      <Name>CodeGeneration.Roslyn.Tests.Generators</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CodeGeneration.Roslyn\CodeGeneration.Roslyn.csproj">
-      <Project>{80cea17a-2175-4cd5-bed8-4b6cfb98cf3b}</Project>
-      <Name>CodeGeneration.Roslyn</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CodeGeneration.Roslyn.Tasks\CodeGeneration.Roslyn.Tasks.csproj">
-      <Project>{7230A93F-AE08-44BD-AFF1-D12690333F7F}</Project>
-      <Name>CodeGeneration.Roslyn.Tasks</Name>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="CodeGenerationTests.cs">
-      <Generator>MSBuild:GenerateCodeFromAttributes</Generator>
-    </Compile>
-    <Compile Include="NestedNamespacesAndTypesTests.cs">
-      <Generator>MSBuild:GenerateCodeFromAttributes</Generator>
-    </Compile>
-    <Compile Include="OtherFolder\CodeGenerationTests.cs">
+    <Compile Update="**\*.cs">
       <Generator>MSBuild:GenerateCodeFromAttributes</Generator>
     </Compile>
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="CodeGeneration.Roslyn.Tests.ruleset" />
-    <None Include="project.json" />
+    <PackageReference Include="Xunit" Version="2.1.0" />
+    <PackageReference Include="Xunit.runner.visualstudio" Version="2.1.0" />
   </ItemGroup>
+
   <ItemGroup>
-    <AdditionalFiles Include="..\stylecop.json">
-      <Visible>false</Visible>
-    </AdditionalFiles>
+    <ProjectReference Include="..\CodeGeneration.Roslyn.Tasks\CodeGeneration.Roslyn.Tasks.csproj" />
+    <ProjectReference Include="..\CodeGeneration.Roslyn.Tests.Generators\CodeGeneration.Roslyn.Tests.Generators.csproj" />
+    <ProjectReference Include="..\CodeGeneration.Roslyn\CodeGeneration.Roslyn.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <PropertyGroup>
-    <CodeGenerationRoslynToolsPath>$(MSBuildProjectDirectory)\$(RepoBinRoot)$(Configuration)\CodeGeneration.Roslyn.Tasks\</CodeGenerationRoslynToolsPath>
-  </PropertyGroup>
-  <Import Project="..\CodeGeneration.Roslyn.BuildTime.NuGet\build\CodeGeneration.Roslyn.BuildTime.targets" />
+
+  <Import Project="..\CodeGeneration.Roslyn.Tasks\build\CodeGeneration.Roslyn.BuildTime.targets" />
 </Project>

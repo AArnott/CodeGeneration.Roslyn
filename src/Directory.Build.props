@@ -1,0 +1,25 @@
+<Project>
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)..\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <OutputPath>$(MSBuildThisFileDirectory)..\bin\$(MSBuildProjectName)\$(Configuration)\</OutputPath>
+    <PackageProjectUrl>https://github.com/aarnott/CodeGeneration.Roslyn</PackageProjectUrl>
+    <Company>Andrew Arnott</Company>
+    <Copyright>Copyright © Andrew Arnott</Copyright>
+    <Authors>Andrew Arnott</Authors>
+    <RepositoryUrl>https://github.com/aarnott/CodeGeneration.Roslyn</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <IsPackable Condition=" $(MSBuildProjectName.Contains('Test')) ">false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Nerdbank.GitVersioning" Version="1.6.19-beta" PrivateAssets="all" />
+  </ItemGroup>
+
+  <Target Name="SetNuSpecProperties" BeforeTargets="GenerateNuspec" DependsOnTargets="GetBuildVersion">
+    <PropertyGroup>
+      <!-- https://github.com/NuGet/Home/issues/4649 -->
+      <!--<NuSpecProperties>$(NuSpecProperties);GitCommitIdShort=$(GitCommitIdShort)</NuSpecProperties>-->
+      <PackageLicenseUrl>https://raw.githubusercontent.com/AArnott/CodeGeneration.Roslyn/$(GitCommitIdShort)/LICENSE.txt</PackageLicenseUrl>
+    </PropertyGroup>
+  </Target>
+</Project>
