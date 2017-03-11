@@ -5,4 +5,10 @@
     <CodeGenerationRoslynToolsSubPath Condition=" '$(MSBuildRuntimeType)' == 'Core' ">netcoreapp1.0\</CodeGenerationRoslynToolsSubPath>
     <CodeGenerationRoslynToolsSubPath Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net46\</CodeGenerationRoslynToolsSubPath>
   </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <Compile>
+      <Generator>MSBuild:GenerateCodeFromAttributes</Generator>
+    </Compile>
+  </ItemDefinitionGroup>
 </Project>
