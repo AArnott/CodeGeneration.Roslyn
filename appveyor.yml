@@ -1,4 +1,4 @@
-version: 99version: 1.0.{build}
+version: 99.0.{build}
 skip_tags: true
 image: Visual Studio 2017 RC
 configuration: Release
