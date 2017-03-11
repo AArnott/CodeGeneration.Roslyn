@@ -170,10 +170,10 @@ to immediately see the effects of your changes on the generated code.
 You can also package up your code generator as a NuGet package for others to install
 and use. Your NuGet package should include a dependency on the `CodeGeneration.Roslyn.BuildTime`
 that matches the version of `CodeGeneration.Roslyn` that you used to produce your generator.
-For example, if you used version 0.1.57 of this project, your .nuspec file would include this tag:
+For example, if you used version 0.2.10 of this project, your .nuspec file would include this tag:
 
 ```xml
-<dependency id="CodeGeneration.Roslyn.BuildTime" version="0.1.57" />
+<dependency id="CodeGeneration.Roslyn.BuildTime" version="0.2.10" />
 ```
 
 In addition to this dependency, your NuGet package should include a `build` folder with an
@@ -192,7 +192,9 @@ For example your package should have a `build\MyPackage.targets` file with this 
 
 Then your package should also have a `tools` folder that contains your code generator and any of the runtime
 dependencies it needs *besides those delivered by the `CodeGeneration.Roslyn.BuildTime` package*.
-This will typically mean it has your attributes assembly and your generator assembly.
+
+Your attributes assembly should be placed under your package's `lib` folder` so consuming projects
+can apply those attributes.
 
 [NuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn
 [BuildTimeNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.BuildTime
