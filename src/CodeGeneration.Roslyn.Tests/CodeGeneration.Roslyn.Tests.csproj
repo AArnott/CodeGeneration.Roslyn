@@ -2,7 +2,7 @@
   <Import Project="..\CodeGeneration.Roslyn.Tasks\build\CodeGeneration.Roslyn.BuildTime.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net452</TargetFrameworks>
+    <TargetFrameworks>net46</TargetFrameworks>
     <CodeGenerationRoslynToolsRootPath>$(OutputPath)..\..\CodeGeneration.Roslyn.Tasks\$(Configuration)\</CodeGenerationRoslynToolsRootPath>
   </PropertyGroup>
 
