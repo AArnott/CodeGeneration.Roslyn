@@ -29,6 +29,8 @@ namespace CodeGeneration.Roslyn.Tasks
     {
         private readonly List<string> loadedAssemblies = new List<string>();
 
+        private readonly CancellationTokenSource cts = new CancellationTokenSource();
+
 #if NETCOREAPP1_0
         private readonly AssemblyLoadContext loadContext;
 
@@ -39,7 +41,7 @@ namespace CodeGeneration.Roslyn.Tasks
         }
 #endif
 
-        public CancellationToken CancellationToken { get; set; }
+        public CancellationToken CancellationToken => this.cts.Token;
 
         public ITaskItem[] Compile { get; set; }
 
@@ -155,6 +157,8 @@ namespace CodeGeneration.Roslyn.Tasks
                 this.AdditionalWrittenFiles = writtenFiles.ToArray();
             }).GetAwaiter().GetResult();
         }
+
+        public void Cancel() => this.cts.Cancel();
 
         private static DateTime GetLastModifiedAssemblyTime(string assemblyListPath)
         {

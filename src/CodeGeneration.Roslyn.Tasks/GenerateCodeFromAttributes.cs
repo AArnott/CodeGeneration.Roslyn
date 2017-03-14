@@ -49,6 +49,8 @@ namespace CodeGeneration.Roslyn.Tasks
         [Output]
         public ITaskItem[] AdditionalWrittenFiles { get; set; }
 
+        internal CancellationToken CancellationToken => this.cts.Token;
+
         public override bool Execute()
         {
 #if NET46
@@ -82,7 +84,11 @@ namespace CodeGeneration.Roslyn.Tasks
 
                 try
                 {
-                    helper.Execute();
+                    this.CancellationToken.ThrowIfCancellationRequested();
+                    using (this.CancellationToken.Register(() => helper.Cancel(), false))
+                    {
+                        helper.Execute();
+                    }
 
                     // Copy the contents of the output parameters into our own. Don't just copy the reference
                     // because we're going to unload the AppDomain.
@@ -120,10 +126,7 @@ namespace CodeGeneration.Roslyn.Tasks
         }
 #endif
 
-        public void Cancel()
-        {
-            this.cts.Cancel();
-        }
+        public void Cancel() => this.cts.Cancel();
 
 #if NETCOREAPP1_0
         private class TaskLoadContext : AssemblyLoadContext
