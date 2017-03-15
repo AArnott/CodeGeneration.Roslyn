@@ -9,6 +9,7 @@ namespace CodeGeneration.Roslyn
     using System.Threading.Tasks;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
+    using Microsoft.CodeAnalysis.CSharp;
 
     /// <summary>
     /// Describes a code generator that responds to attributes on members to generate code.
@@ -19,10 +20,10 @@ namespace CodeGeneration.Roslyn
         /// Create the syntax tree representing the expansion of some member to which this attribute is applied.
         /// </summary>
         /// <param name="applyTo">The syntax node this attribute is found on.</param>
-        /// <param name="document">The document with the semantic model in which this attribute was found.</param>
+        /// <param name="compilation">The overall compilation being generated for.</param>
         /// <param name="progress">A way to report diagnostic messages.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>The generated member syntax to be added to the project.</returns>
-        Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(MemberDeclarationSyntax applyTo, Document document, IProgress<Diagnostic> progress, CancellationToken cancellationToken);
+        Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(MemberDeclarationSyntax applyTo, CSharpCompilation compilation, IProgress<Diagnostic> progress, CancellationToken cancellationToken);
     }
 }

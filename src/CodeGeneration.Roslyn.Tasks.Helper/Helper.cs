@@ -21,6 +21,7 @@ namespace CodeGeneration.Roslyn.Tasks
     using Microsoft.CodeAnalysis.Text;
     using Task = System.Threading.Tasks.Task;
     using Validation;
+    using Microsoft.CodeAnalysis.CSharp.Syntax;
 
     public class Helper
 #if NET46
@@ -76,7 +77,7 @@ namespace CodeGeneration.Roslyn.Tasks
 
             Task.Run(async delegate
             {
-                var project = this.CreateProject();
+                var compilation = this.CreateCompilation();
                 var outputFiles = new List<ITaskItem>();
                 var writtenFiles = new List<ITaskItem>();
 
@@ -91,35 +92,36 @@ namespace CodeGeneration.Roslyn.Tasks
                     select item.ItemSpec,
                     StringComparer.OrdinalIgnoreCase);
 
-                foreach (var inputDocument in project.Documents)
+                foreach (var inputSyntaxTree in compilation.SyntaxTrees)
                 {
                     this.CancellationToken.ThrowIfCancellationRequested();
 
                     // Skip over documents that aren't on the prescribed list of files to scan.
-                    if (!explicitIncludeList.Contains(inputDocument.Name))
+                    if (!explicitIncludeList.Contains(inputSyntaxTree.FilePath))
                     {
                         continue;
                     }
 
-                    string sourceHash = inputDocument.Name.GetHashCode().ToString("x", CultureInfo.InvariantCulture);
-                    string outputFilePath = Path.Combine(this.IntermediateOutputDirectory, Path.GetFileNameWithoutExtension(inputDocument.Name) + $".{sourceHash}.generated.cs");
+                    string sourceHash = inputSyntaxTree.FilePath.GetHashCode().ToString("x", CultureInfo.InvariantCulture);
+                    string outputFilePath = Path.Combine(this.IntermediateOutputDirectory, Path.GetFileNameWithoutExtension(inputSyntaxTree.FilePath) + $".{sourceHash}.generated.cs");
 
                     // Code generation is relatively fast, but it's not free.
                     // And when we run the Simplifier.ReduceAsync it's dog slow.
                     // So skip files that haven't changed since we last generated them.
                     bool generated = false;
                     DateTime outputLastModified = File.GetLastWriteTime(outputFilePath);
-                    if (File.GetLastWriteTime(inputDocument.Name) > outputLastModified || assembliesLastModified > outputLastModified)
+                    if (File.GetLastWriteTime(inputSyntaxTree.FilePath) > outputLastModified || assembliesLastModified > outputLastModified)
                     {
-                        var outputDocument = await DocumentTransform.TransformAsync(
-                            inputDocument,
-                            new ProgressLogger(this.Log, inputDocument.Name));
+                        var generatedSyntaxTree = await DocumentTransform.TransformAsync(
+                            compilation,
+                            inputSyntaxTree,
+                            new ProgressLogger(this.Log, inputSyntaxTree.FilePath));
 
-                        // Only produce a new file if the generated document is not empty.
-                        var semanticModel = await outputDocument.GetSemanticModelAsync(this.CancellationToken);
-                        if (!CSharpDeclarationComputer.GetDeclarationsInSpan(semanticModel, TextSpan.FromBounds(0, semanticModel.SyntaxTree.Length), false, this.CancellationToken).IsEmpty)
+                        // Only produce a new file if the generated document has generated a type.
+                        bool anyMembersGenerated = generatedSyntaxTree?.GetRoot(this.CancellationToken).DescendantNodes().OfType<TypeDeclarationSyntax>().Any() ?? false;
+                        if (anyMembersGenerated)
                         {
-                            var outputText = await outputDocument.GetTextAsync(this.CancellationToken);
+                            var outputText = generatedSyntaxTree.GetText(this.CancellationToken);
                             using (var outputFileStream = File.OpenWrite(outputFilePath))
                             using (var outputWriter = new StreamWriter(outputFileStream))
                             {
@@ -130,12 +132,12 @@ namespace CodeGeneration.Roslyn.Tasks
                                 outputFileStream.SetLength(outputFileStream.Position);
                             }
 
-                            this.Log.LogMessage(MessageImportance.Normal, "{0} -> {1}", inputDocument.Name, outputFilePath);
+                            this.Log.LogMessage(MessageImportance.Normal, "{0} -> {1}", inputSyntaxTree.FilePath, outputFilePath);
                             generated = true;
                         }
                         else
                         {
-                            this.Log.LogMessage(MessageImportance.Low, "{0} used no code generation attributes.", inputDocument.Name);
+                            this.Log.LogMessage(MessageImportance.Low, "{0} used no code generation attributes.", inputSyntaxTree.FilePath);
                         }
                     }
                     else
@@ -238,24 +240,22 @@ namespace CodeGeneration.Roslyn.Tasks
             return null;
         }
 
-        private Project CreateProject()
+        private CSharpCompilation CreateCompilation()
         {
-            var workspace = new AdhocWorkspace();
-            var project = workspace.CurrentSolution.AddProject("codegen", "codegen", "C#")
-                .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
-                .WithMetadataReferences(this.ReferencePath.Select(p => MetadataReference.CreateFromFile(p.ItemSpec)));
-
+            var compilation = CSharpCompilation.Create("codegen")
+                .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
+                .WithReferences(this.ReferencePath.Select(p => MetadataReference.CreateFromFile(p.ItemSpec)));
             foreach (var sourceFile in this.Compile)
             {
-                using (var stream = File.OpenRead(sourceFile.ItemSpec))
+                using (var stream = File.OpenRead(sourceFile.GetMetadata("FullPath")))
                 {
                     this.CancellationToken.ThrowIfCancellationRequested();
                     var text = SourceText.From(stream);
-                    project = project.AddDocument(sourceFile.ItemSpec, text).Project;
+                    compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(text, path: sourceFile.ItemSpec, cancellationToken: this.CancellationToken));
                 }
             }
 
-            return project;
+            return compilation;
         }
     }
 
