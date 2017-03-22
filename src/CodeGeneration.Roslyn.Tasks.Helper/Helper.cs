@@ -106,9 +106,7 @@ namespace CodeGeneration.Roslyn.Tasks
                     string outputFilePath = Path.Combine(this.IntermediateOutputDirectory, Path.GetFileNameWithoutExtension(inputSyntaxTree.FilePath) + $".{sourceHash}.generated.cs");
 
                     // Code generation is relatively fast, but it's not free.
-                    // And when we run the Simplifier.ReduceAsync it's dog slow.
                     // So skip files that haven't changed since we last generated them.
-                    bool generated = false;
                     DateTime outputLastModified = File.Exists(outputFilePath) ? File.GetLastWriteTime(outputFilePath) : DateTime.MinValue;
                     if (File.GetLastWriteTime(inputSyntaxTree.FilePath) > outputLastModified || assembliesLastModified > outputLastModified)
                     {
@@ -117,39 +115,30 @@ namespace CodeGeneration.Roslyn.Tasks
                             inputSyntaxTree,
                             new ProgressLogger(this.Log, inputSyntaxTree.FilePath));
 
-                        // Only produce a new file if the generated document has generated a type.
-                        bool anyMembersGenerated = generatedSyntaxTree?.GetRoot(this.CancellationToken).DescendantNodes().OfType<TypeDeclarationSyntax>().Any() ?? false;
-                        if (anyMembersGenerated)
+                        var outputText = generatedSyntaxTree.GetText(this.CancellationToken);
+                        using (var outputFileStream = File.OpenWrite(outputFilePath))
+                        using (var outputWriter = new StreamWriter(outputFileStream))
                         {
-                            var outputText = generatedSyntaxTree.GetText(this.CancellationToken);
-                            using (var outputFileStream = File.OpenWrite(outputFilePath))
-                            using (var outputWriter = new StreamWriter(outputFileStream))
-                            {
-                                outputText.Write(outputWriter);
+                            outputText.Write(outputWriter);
 
-                                // Truncate any data that may be beyond this point if the file existed previously.
-                                outputWriter.Flush();
-                                outputFileStream.SetLength(outputFileStream.Position);
-                            }
+                            // Truncate any data that may be beyond this point if the file existed previously.
+                            outputWriter.Flush();
+                            outputFileStream.SetLength(outputFileStream.Position);
+                        }
 
+                        bool anyTypesGenerated = generatedSyntaxTree?.GetRoot(this.CancellationToken).DescendantNodes().OfType<TypeDeclarationSyntax>().Any() ?? false;
+                        if (anyTypesGenerated)
+                        {
                             this.Log.LogMessage(MessageImportance.Normal, "{0} -> {1}", inputSyntaxTree.FilePath, outputFilePath);
-                            generated = true;
                         }
                         else
                         {
                             this.Log.LogMessage(MessageImportance.Low, "{0} used no code generation attributes.", inputSyntaxTree.FilePath);
                         }
                     }
-                    else
-                    {
-                        generated = true;
-                    }
 
-                    if (generated)
-                    {
-                        var outputItem = new TaskItem(outputFilePath);
-                        outputFiles.Add(outputItem);
-                    }
+                    var outputItem = new TaskItem(outputFilePath);
+                    outputFiles.Add(outputItem);
                 }
 
                 this.SaveGeneratorAssemblyList(generatorAssemblyInputsFile);
