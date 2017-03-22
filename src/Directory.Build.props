@@ -2,6 +2,7 @@
   <PropertyGroup>
     <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)..\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
     <OutputPath>$(MSBuildThisFileDirectory)..\bin\$(MSBuildProjectName)\$(Configuration)\</OutputPath>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)..\bin\Packages\$(Configuration)\</PackageOutputPath>
     <PackageProjectUrl>https://github.com/aarnott/CodeGeneration.Roslyn</PackageProjectUrl>
     <Company>Andrew Arnott</Company>
     <Copyright>Copyright © Andrew Arnott</Copyright>
