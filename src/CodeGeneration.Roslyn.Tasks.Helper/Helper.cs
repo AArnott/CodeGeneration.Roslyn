@@ -109,7 +109,7 @@ namespace CodeGeneration.Roslyn.Tasks
                     // And when we run the Simplifier.ReduceAsync it's dog slow.
                     // So skip files that haven't changed since we last generated them.
                     bool generated = false;
-                    DateTime outputLastModified = File.GetLastWriteTime(outputFilePath);
+                    DateTime outputLastModified = File.Exists(outputFilePath) ? File.GetLastWriteTime(outputFilePath) : DateTime.MinValue;
                     if (File.GetLastWriteTime(inputSyntaxTree.FilePath) > outputLastModified || assembliesLastModified > outputLastModified)
                     {
                         var generatedSyntaxTree = await DocumentTransform.TransformAsync(
