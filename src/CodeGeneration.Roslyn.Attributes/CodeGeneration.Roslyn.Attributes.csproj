@@ -19,15 +19,5 @@
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.0.0" PrivateAssets="all" />
   </ItemGroup>
 
-  <!-- https://github.com/AArnott/Nerdbank.GitVersioning/issues/113#issuecomment-285903085 -->
-  <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' == 'true' ">
-    <Import Project="$(UserProfile)\.nuget\packages\nerdbank.gitversioning\1.6.19-beta\buildCrossTargeting\Nerdbank.GitVersioning.targets"
-            Condition="Exists('$(UserProfile)\.nuget\packages\nerdbank.gitversioning\1.6.19-beta\buildCrossTargeting\Nerdbank.GitVersioning.targets')" />
-  </ImportGroup>
-  <Target Name="FixUpVersion"
-      BeforeTargets="_GenerateRestoreProjectSpec"
-      DependsOnTargets="GetBuildVersion"
-      Condition=" '$(NerdbankGitVersioningTasksPath)' != '' " />
-
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
 </Project>
