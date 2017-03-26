@@ -2,7 +2,7 @@
   <Import Project="..\CodeGeneration.Roslyn.Tasks\build\CodeGeneration.Roslyn.BuildTime.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net46</TargetFrameworks>
+    <TargetFrameworks>net46;netcoreapp1.0</TargetFrameworks>
     <CodeGenerationRoslynToolsRootPath>$(OutputPath)..\..\CodeGeneration.Roslyn.Tasks\$(Configuration)\</CodeGenerationRoslynToolsRootPath>
   </PropertyGroup>
 
@@ -13,8 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Xunit" Version="2.1.0" />
-    <PackageReference Include="Xunit.runner.visualstudio" Version="2.1.0" />
+    <PackageReference Include="Xunit" Version="2.2.0" />
+    <PackageReference Include="Xunit.runner.visualstudio" Version="2.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
   </ItemGroup>
 
   <ItemGroup>

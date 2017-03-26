@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nerdbank.GitVersioning" Version="1.6.19-beta" PrivateAssets="all" />
+    <PackageReference Include="Nerdbank.GitVersioning" Version="1.6.25" PrivateAssets="all" />
   </ItemGroup>
 
   <Target Name="SetNuSpecProperties" BeforeTargets="GenerateNuspec" DependsOnTargets="GetBuildVersion">
