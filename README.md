@@ -50,7 +50,7 @@ public class DuplicateWithSuffixGenerator : ICodeGenerator
         this.suffix = (string)attributeData.ConstructorArguments[0].Value;
     }
 
-    public Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(MemberDeclarationSyntax applyTo, Document document, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
+    public Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(MemberDeclarationSyntax applyTo, CSharpCompilation compilation, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
     {
         var results = SyntaxFactory.List<MemberDeclarationSyntax>();
 
@@ -122,7 +122,8 @@ This is because the code generator must be compiled in order to execute before c
 the project that applies the attribute.
 
 Applying code generation is incredibly simple. Just add the attribute on any type
-or member supported by the attribute and generator you wrote:
+or member supported by the attribute and generator you wrote. Note you will need to
+add a project reference to the project that defines the attribute.
 
 ```csharp
 [DuplicateWithSuffix("A")]
