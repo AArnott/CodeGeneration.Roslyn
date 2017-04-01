@@ -7,33 +7,12 @@
     <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
     <PackageId>CodeGeneration.Roslyn.BuildTime</PackageId>
     <Description>The build-time development dependency that generates code for a project that consumes code generation attributes.</Description>
-
-    <!-- We're going to include it by virtue of sending the whole bin dir to the build folder. -->
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
     <AdditionalFiles Include="..\stylecop.json">
       <Visible>false</Visible>
     </AdditionalFiles>
-  </ItemGroup>
-
-  <Target Name="CollectRuntimeOutputs" BeforeTargets="_GetPackageFiles">
-    <ItemGroup>
-      <Content Include="$(OutputPath)**\*.dll;$(OutputPath)**\*.dll.config;$(OutputPath)**\*.json">
-        <Pack>true</Pack>
-        <PackagePath>build\</PackagePath>
-      </Content>
-    </ItemGroup>
-  </Target>
-
-  <ItemGroup>
-    <Content Include="build\*.props;build\*.targets">
-      <Pack>true</Pack>
-      <PackagePath>build\</PackagePath>
-    </Content>
   </ItemGroup>
 
   <ItemDefinitionGroup>
@@ -46,18 +25,12 @@
   </ItemDefinitionGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="14.3" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp1.0'">
-    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.1.548" />
-  </ItemGroup>
-
   <ItemGroup>
-
-    <ProjectReference Include="..\CodeGeneration.Roslyn.Tasks.Helper\CodeGeneration.Roslyn.Tasks.Helper.csproj" />
+    <PackageReference Include="Nerdbank.MSBuildExtension" Version="0.1.16-beta" />
+    <ProjectReference Include="..\CodeGeneration.Roslyn\CodeGeneration.Roslyn.csproj" />
   </ItemGroup>
 
 </Project>

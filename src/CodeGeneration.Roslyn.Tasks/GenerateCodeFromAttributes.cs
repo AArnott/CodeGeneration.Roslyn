@@ -12,19 +12,16 @@ namespace CodeGeneration.Roslyn.Tasks
 #if NETCOREAPP1_0
     using System.Runtime.Loader;
 #endif
-    using System.Text;
-    using System.Threading;
     using Microsoft.Build.Framework;
     using Microsoft.Build.Utilities;
-    using Task = System.Threading.Tasks.Task;
+    using Microsoft.CodeAnalysis.CSharp;
+    using Microsoft.CodeAnalysis.CSharp.Syntax;
+    using Microsoft.CodeAnalysis.Text;
+    using Microsoft.CodeAnalysis;
 
-    public class GenerateCodeFromAttributes : Microsoft.Build.Utilities.Task, ICancelableTask
+    public class GenerateCodeFromAttributes : Nerdbank.MSBuildExtension.ContextIsolatedTask
     {
-        private readonly CancellationTokenSource cts = new CancellationTokenSource();
-
-#if NETCOREAPP1_0
-        private TaskLoadContext taskLoadContext;
-#endif
+        private readonly List<string> loadedAssemblies = new List<string>();
 
         [Required]
         public ITaskItem[] Compile { get; set; }
@@ -49,114 +46,276 @@ namespace CodeGeneration.Roslyn.Tasks
         [Output]
         public ITaskItem[] AdditionalWrittenFiles { get; set; }
 
-        internal CancellationToken CancellationToken => this.cts.Token;
+        protected override bool ExecuteIsolated()
+        {
+            //System.Diagnostics.Debugger.Launch();
+            return ExecuteIsolatedInner();
+        }
 
-        public override bool Execute()
+        private bool ExecuteIsolatedInner()
         {
 #if NET46
-            // Run under our own AppDomain so we can control the version of Roslyn we load.
-            var appDomainSetup = new AppDomainSetup();
-            appDomainSetup.ApplicationBase = Path.GetDirectoryName(this.GetType().Assembly.Location);
-            appDomainSetup.ConfigurationFile = Assembly.GetExecutingAssembly().Location + ".config";
-            var appDomain = AppDomain.CreateDomain("codegen", AppDomain.CurrentDomain.Evidence, appDomainSetup);
-            AppDomain.CurrentDomain.AssemblyResolve += this.CurrentDomain_AssemblyResolve;
-#else
-
-#endif
-            try
+            AppDomain.CurrentDomain.AssemblyResolve += (s, e) =>
             {
-                var helperAssemblyName = new AssemblyName(typeof(GenerateCodeFromAttributes).GetTypeInfo().Assembly.GetName().FullName.Replace(ThisAssembly.AssemblyName, ThisAssembly.AssemblyName + ".Helper"));
-                const string helperTypeName = "CodeGeneration.Roslyn.Tasks.Helper";
-#if NET46
-                var helper = (Helper)appDomain.CreateInstanceAndUnwrap(helperAssemblyName.FullName, helperTypeName);
+                return this.TryLoadAssembly(new AssemblyName(e.Name));
+            };
 #else
-                this.taskLoadContext = new TaskLoadContext(Path.GetDirectoryName(new Uri(typeof(GenerateCodeFromAttributes).GetTypeInfo().Assembly.CodeBase).LocalPath));
-                var helperAssembly = this.taskLoadContext.LoadFromAssemblyName(helperAssemblyName);
-                var helperTypeInContext = helperAssembly.GetType(helperTypeName);
-                dynamic helper = Activator.CreateInstance(helperTypeInContext, this.taskLoadContext);
+            AssemblyLoadContext.GetLoadContext(this.GetType().GetTypeInfo().Assembly).Resolving += (lc, an) =>
+            {
+                return this.TryLoadAssembly(an);
+            };
 #endif
-                helper.Compile = this.Compile;
-                helper.TargetName = this.TargetName;
-                helper.ReferencePath = this.ReferencePath;
-                helper.GeneratorAssemblySearchPaths = this.GeneratorAssemblySearchPaths;
-                helper.IntermediateOutputDirectory = this.IntermediateOutputDirectory;
-                helper.Log = this.Log;
 
-                try
+            var compilation = this.CreateCompilation();
+            var outputFiles = new List<ITaskItem>();
+            var writtenFiles = new List<ITaskItem>();
+
+            string generatorAssemblyInputsFile = Path.Combine(this.IntermediateOutputDirectory, "CodeGeneration.Roslyn.InputAssemblies.txt");
+
+            // For incremental build, we want to consider the input->output files as well as the assemblies involved in code generation.
+            DateTime assembliesLastModified = GetLastModifiedAssemblyTime(generatorAssemblyInputsFile);
+
+            var explicitIncludeList = new HashSet<string>(
+                from item in this.Compile
+                where string.Equals(item.GetMetadata("Generator"), $"MSBuild:{this.TargetName}", StringComparison.OrdinalIgnoreCase)
+                select item.ItemSpec,
+                StringComparer.OrdinalIgnoreCase);
+
+            foreach (var inputSyntaxTree in compilation.SyntaxTrees)
+            {
+                this.CancellationToken.ThrowIfCancellationRequested();
+
+                // Skip over documents that aren't on the prescribed list of files to scan.
+                if (!explicitIncludeList.Contains(inputSyntaxTree.FilePath))
                 {
-                    this.CancellationToken.ThrowIfCancellationRequested();
-                    using (this.CancellationToken.Register(() => helper.Cancel(), false))
+                    continue;
+                }
+
+                string sourceHash = inputSyntaxTree.FilePath.GetHashCode().ToString("x", CultureInfo.InvariantCulture);
+                string outputFilePath = Path.Combine(this.IntermediateOutputDirectory, Path.GetFileNameWithoutExtension(inputSyntaxTree.FilePath) + $".{sourceHash}.generated.cs");
+
+                // Code generation is relatively fast, but it's not free.
+                // So skip files that haven't changed since we last generated them.
+                DateTime outputLastModified = File.Exists(outputFilePath) ? File.GetLastWriteTime(outputFilePath) : DateTime.MinValue;
+                if (File.GetLastWriteTime(inputSyntaxTree.FilePath) > outputLastModified || assembliesLastModified > outputLastModified)
+                {
+                    var generatedSyntaxTree = DocumentTransform.TransformAsync(
+                        compilation,
+                        inputSyntaxTree,
+                        new ProgressLogger(this.Log, inputSyntaxTree.FilePath)).GetAwaiter().GetResult();
+
+                    var outputText = generatedSyntaxTree.GetText(this.CancellationToken);
+                    using (var outputFileStream = File.OpenWrite(outputFilePath))
+                    using (var outputWriter = new StreamWriter(outputFileStream))
                     {
-                        helper.Execute();
+                        outputText.Write(outputWriter);
+
+                        // Truncate any data that may be beyond this point if the file existed previously.
+                        outputWriter.Flush();
+                        outputFileStream.SetLength(outputFileStream.Position);
                     }
 
-                    // Copy the contents of the output parameters into our own. Don't just copy the reference
-                    // because we're going to unload the AppDomain.
-                    this.GeneratedCompile = ((IEnumerable<ITaskItem>)helper.GeneratedCompile).Select(i => new TaskItem(i)).ToArray();
-                    this.AdditionalWrittenFiles = ((IEnumerable<ITaskItem>)helper.AdditionalWrittenFiles).Select(i => new TaskItem(i)).ToArray();
+                    bool anyTypesGenerated = generatedSyntaxTree?.GetRoot(this.CancellationToken).DescendantNodes().OfType<TypeDeclarationSyntax>().Any() ?? false;
+                    if (anyTypesGenerated)
+                    {
+                        this.Log.LogMessage(MessageImportance.Normal, "{0} -> {1}", inputSyntaxTree.FilePath, outputFilePath);
+                    }
+                    else
+                    {
+                        this.Log.LogMessage(MessageImportance.Low, "{0} used no code generation attributes.", inputSyntaxTree.FilePath);
+                    }
+                }
 
-                    return !this.Log.HasLoggedErrors;
-                }
-                catch (OperationCanceledException)
-                {
-                    this.Log.LogMessage(MessageImportance.High, "Canceled.");
-                    return false;
-                }
+                var outputItem = new TaskItem(outputFilePath);
+                outputFiles.Add(outputItem);
             }
-            finally
-            {
-#if NET46
-                AppDomain.CurrentDomain.AssemblyResolve -= this.CurrentDomain_AssemblyResolve;
-                AppDomain.Unload(appDomain);
-#endif
-            }
+
+            this.SaveGeneratorAssemblyList(generatorAssemblyInputsFile);
+            writtenFiles.Add(new TaskItem(generatorAssemblyInputsFile));
+
+            this.GeneratedCompile = outputFiles.ToArray();
+            this.AdditionalWrittenFiles = writtenFiles.ToArray();
+
+            return !this.Log.HasLoggedErrors;
         }
 
-#if NET46
-        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        protected override Assembly LoadAssemblyByName(AssemblyName assemblyName)
         {
             try
             {
-                return Assembly.Load(args.Name);
+                if (!assemblyName.Name.StartsWith("System.", StringComparison.OrdinalIgnoreCase) && !assemblyName.Name.Equals("mscorlib", StringComparison.OrdinalIgnoreCase))
+                {
+                    var referencePath = this.ReferencePath.FirstOrDefault(rp => string.Equals(rp.GetMetadata("FileName"), assemblyName.Name, StringComparison.OrdinalIgnoreCase));
+                    if (referencePath != null)
+                    {
+                        string fullPath = referencePath.GetMetadata("FullPath");
+                        this.loadedAssemblies.Add(fullPath);
+                        return this.LoadAssemblyByPath(fullPath);
+                    }
+                }
+
+                foreach (var searchPath in this.GeneratorAssemblySearchPaths)
+                {
+                    string searchDir = searchPath.GetMetadata("FullPath");
+                    const string extension = ".dll";
+                    string fileName = Path.Combine(searchDir, assemblyName.Name + extension);
+                    if (File.Exists(fileName))
+                    {
+                        return this.LoadAssemblyByPath(fileName);
+                    }
+                }
             }
-            catch
+            catch (BadImageFormatException)
             {
-                return null;
             }
+
+            return base.LoadAssemblyByName(assemblyName);
         }
-#endif
 
-        public void Cancel() => this.cts.Cancel();
-
-#if NETCOREAPP1_0
-        private class TaskLoadContext : AssemblyLoadContext
+        private static DateTime GetLastModifiedAssemblyTime(string assemblyListPath)
         {
-            private readonly string assemblyLoadPath;
-
-            internal TaskLoadContext(string assemblyLoadPath)
+            if (!File.Exists(assemblyListPath))
             {
-                this.assemblyLoadPath = assemblyLoadPath;
+                return DateTime.MinValue;
             }
 
-            protected override Assembly Load(AssemblyName assemblyName)
+            var timestamps = (from path in File.ReadAllLines(assemblyListPath)
+                              where File.Exists(path)
+                              select File.GetLastWriteTime(path)).ToList();
+            return timestamps.Any() ? timestamps.Max() : DateTime.MinValue;
+        }
+
+        private void SaveGeneratorAssemblyList(string assemblyListPath)
+        {
+            // Union our current list with the one on disk, since our incremental code generation
+            // may have skipped some up-to-date files, resulting in fewer assemblies being loaded
+            // this time.
+            var assemblyPaths = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if (File.Exists(assemblyListPath))
             {
-                if (assemblyName.Name.StartsWith("Microsoft.Build", StringComparison.OrdinalIgnoreCase) ||
-                    assemblyName.Name.StartsWith("System.", StringComparison.OrdinalIgnoreCase))
+                assemblyPaths.UnionWith(File.ReadAllLines(assemblyListPath));
+            }
+
+            assemblyPaths.UnionWith(this.loadedAssemblies);
+
+#if NET46
+            assemblyPaths.UnionWith(
+                from a in AppDomain.CurrentDomain.GetAssemblies()
+                where !a.IsDynamic
+                select a.Location);
+#endif
+
+            File.WriteAllLines(
+                assemblyListPath,
+                assemblyPaths);
+        }
+
+        private CSharpCompilation CreateCompilation()
+        {
+            var compilation = CSharpCompilation.Create("codegen")
+                .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
+                .WithReferences(this.ReferencePath.Select(p => MetadataReference.CreateFromFile(p.ItemSpec)));
+            foreach (var sourceFile in this.Compile)
+            {
+                using (var stream = File.OpenRead(sourceFile.GetMetadata("FullPath")))
                 {
-                    // MSBuild and System.* make up our exchange types. So don't load them in this LoadContext.
-                    // We need to inherit them from the default load context.
-                    return null;
+                    this.CancellationToken.ThrowIfCancellationRequested();
+                    var text = SourceText.From(stream);
+                    compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(text, path: sourceFile.ItemSpec, cancellationToken: this.CancellationToken));
+                }
+            }
+
+            return compilation;
+        }
+
+        private Assembly TryLoadAssembly(AssemblyName assemblyName)
+        {
+            try
+            {
+                var referencePath = this.ReferencePath.FirstOrDefault(rp => string.Equals(rp.GetMetadata("FileName"), assemblyName.Name, StringComparison.OrdinalIgnoreCase));
+                if (referencePath != null)
+                {
+                    string fullPath = referencePath.GetMetadata("FullPath");
+                    this.loadedAssemblies.Add(fullPath);
+                    return this.LoadAssemblyByPath(fullPath);
                 }
 
-                string assemblyPath = Path.Combine(this.assemblyLoadPath, assemblyName.Name) + ".dll";
-                if (File.Exists(assemblyPath))
+                foreach (var searchPath in this.GeneratorAssemblySearchPaths)
                 {
-                    return LoadFromAssemblyPath(assemblyPath);
+                    string searchDir = searchPath.GetMetadata("FullPath");
+                    const string extension = ".dll";
+                    string fileName = Path.Combine(searchDir, assemblyName.Name + extension);
+                    if (File.Exists(fileName))
+                    {
+                        return LoadAssemblyByPath(fileName);
+                    }
                 }
+            }
+            catch (BadImageFormatException)
+            {
+            }
 
-                return null;
+            return null;
+        }
+
+        internal class ProgressLogger : IProgress<Diagnostic>
+        {
+            private readonly TaskLoggingHelper logger;
+            private readonly string inputFilename;
+
+            internal ProgressLogger(TaskLoggingHelper logger, string inputFilename)
+            {
+                this.logger = logger;
+                this.inputFilename = inputFilename;
+            }
+
+            public void Report(Diagnostic value)
+            {
+                var lineSpan = value.Location.GetLineSpan();
+                switch (value.Severity)
+                {
+                    case DiagnosticSeverity.Info:
+                        this.logger.LogMessage(
+                            value.Descriptor.Category,
+                            value.Descriptor.Id,
+                            value.Descriptor.HelpLinkUri,
+                            value.Location.SourceTree.FilePath,
+                            lineSpan.StartLinePosition.Line + 1,
+                            lineSpan.StartLinePosition.Character + 1,
+                            lineSpan.EndLinePosition.Line + 1,
+                            lineSpan.EndLinePosition.Character + 1,
+                            MessageImportance.Normal,
+                            value.GetMessage(CultureInfo.CurrentCulture));
+                        break;
+                    case DiagnosticSeverity.Warning:
+                        this.logger.LogWarning(
+                            value.Descriptor.Category,
+                            value.Descriptor.Id,
+                            value.Descriptor.HelpLinkUri,
+                            value.Location.SourceTree.FilePath,
+                            lineSpan.StartLinePosition.Line + 1,
+                            lineSpan.StartLinePosition.Character + 1,
+                            lineSpan.EndLinePosition.Line + 1,
+                            lineSpan.EndLinePosition.Character + 1,
+                            value.GetMessage(CultureInfo.CurrentCulture));
+                        break;
+                    case DiagnosticSeverity.Error:
+                        this.logger.LogError(
+                            value.Descriptor.Category,
+                            value.Descriptor.Id,
+                            value.Descriptor.HelpLinkUri,
+                            value.Location.SourceTree.FilePath,
+                            lineSpan.StartLinePosition.Line + 1,
+                            lineSpan.StartLinePosition.Character + 1,
+                            lineSpan.EndLinePosition.Line + 1,
+                            lineSpan.EndLinePosition.Character + 1,
+                            value.GetMessage(CultureInfo.CurrentCulture));
+                        break;
+                    default:
+                        break;
+                }
             }
         }
-#endif
     }
 }
