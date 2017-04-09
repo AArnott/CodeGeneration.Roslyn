@@ -2,8 +2,8 @@
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <CodeGenerationRoslynToolsRootPath Condition=" '$(CodeGenerationRoslynToolsRootPath)' == '' ">$(MSBuildThisFileDirectory)</CodeGenerationRoslynToolsRootPath>
-    <CodeGenerationRoslynToolsSubPath Condition=" '$(MSBuildRuntimeType)' == 'Core' ">netcoreapp1.0\</CodeGenerationRoslynToolsSubPath>
-    <CodeGenerationRoslynToolsSubPath Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net46\</CodeGenerationRoslynToolsSubPath>
+    <CodeGenerationRoslynToolsSubPath>netstandard1.3\</CodeGenerationRoslynToolsSubPath>
+    <!--<CodeGenerationRoslynToolsSubPath Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net462\</CodeGenerationRoslynToolsSubPath>-->
   </PropertyGroup>
 
   <ItemDefinitionGroup>
