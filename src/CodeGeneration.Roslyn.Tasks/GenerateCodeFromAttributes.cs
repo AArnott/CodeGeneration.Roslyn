@@ -38,6 +38,8 @@ namespace CodeGeneration.Roslyn.Tasks
 
         protected override int ExecuteTool(string pathToTool, string responseFileCommands, string commandLineCommands)
         {
+            this.UseCommandProcessor = true;
+
             int exitCode = base.ExecuteTool(pathToTool, responseFileCommands, commandLineCommands);
 
             if (exitCode == 0)
