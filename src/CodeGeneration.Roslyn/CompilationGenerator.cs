@@ -77,44 +77,48 @@ namespace CodeGeneration.Roslyn
             // For incremental build, we want to consider the input->output files as well as the assemblies involved in code generation.
             DateTime assembliesLastModified = GetLastModifiedAssemblyTime(generatorAssemblyInputsFile);
 
-            foreach (var inputSyntaxTree in compilation.SyntaxTrees)
+            using (var hasher = System.Security.Cryptography.SHA1.Create())
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                string sourceHash = inputSyntaxTree.FilePath.GetHashCode().ToString("x", CultureInfo.InvariantCulture);
-                string outputFilePath = Path.Combine(this.IntermediateOutputDirectory, Path.GetFileNameWithoutExtension(inputSyntaxTree.FilePath) + $".{sourceHash}.generated.cs");
-
-                // Code generation is relatively fast, but it's not free.
-                // So skip files that haven't changed since we last generated them.
-                DateTime outputLastModified = File.Exists(outputFilePath) ? File.GetLastWriteTime(outputFilePath) : DateTime.MinValue;
-                if (File.GetLastWriteTime(inputSyntaxTree.FilePath) > outputLastModified || assembliesLastModified > outputLastModified)
+                foreach (var inputSyntaxTree in compilation.SyntaxTrees)
                 {
-                    var generatedSyntaxTree = DocumentTransform.TransformAsync(
-                        compilation,
-                        inputSyntaxTree,
-                        this.LoadAssembly,
-                        progress).GetAwaiter().GetResult();
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                    var outputText = generatedSyntaxTree.GetText(cancellationToken);
-                    using (var outputFileStream = File.OpenWrite(outputFilePath))
-                    using (var outputWriter = new StreamWriter(outputFileStream))
+                    string sourceHash = Convert.ToBase64String(hasher.ComputeHash(Encoding.UTF8.GetBytes(inputSyntaxTree.FilePath)), 0, 6).Replace('/', '-');
+                    Console.WriteLine($"File \"{inputSyntaxTree.FilePath}\" hashed to {sourceHash}");
+                    string outputFilePath = Path.Combine(this.IntermediateOutputDirectory, Path.GetFileNameWithoutExtension(inputSyntaxTree.FilePath) + $".{sourceHash}.generated.cs");
+
+                    // Code generation is relatively fast, but it's not free.
+                    // So skip files that haven't changed since we last generated them.
+                    DateTime outputLastModified = File.Exists(outputFilePath) ? File.GetLastWriteTime(outputFilePath) : DateTime.MinValue;
+                    if (File.GetLastWriteTime(inputSyntaxTree.FilePath) > outputLastModified || assembliesLastModified > outputLastModified)
                     {
-                        outputText.Write(outputWriter);
+                        var generatedSyntaxTree = DocumentTransform.TransformAsync(
+                            compilation,
+                            inputSyntaxTree,
+                            this.LoadAssembly,
+                            progress).GetAwaiter().GetResult();
 
-                        // Truncate any data that may be beyond this point if the file existed previously.
-                        outputWriter.Flush();
-                        outputFileStream.SetLength(outputFileStream.Position);
+                        var outputText = generatedSyntaxTree.GetText(cancellationToken);
+                        using (var outputFileStream = File.OpenWrite(outputFilePath))
+                        using (var outputWriter = new StreamWriter(outputFileStream))
+                        {
+                            outputText.Write(outputWriter);
+
+                            // Truncate any data that may be beyond this point if the file existed previously.
+                            outputWriter.Flush();
+                            outputFileStream.SetLength(outputFileStream.Position);
+                        }
+
+                        bool anyTypesGenerated = generatedSyntaxTree?.GetRoot(cancellationToken).DescendantNodes().OfType<TypeDeclarationSyntax>().Any() ?? false;
+                        if (anyTypesGenerated)
+                        {
+                            this.emptyGeneratedFiles.Add(outputFilePath);
+                        }
                     }
 
-                    bool anyTypesGenerated = generatedSyntaxTree?.GetRoot(cancellationToken).DescendantNodes().OfType<TypeDeclarationSyntax>().Any() ?? false;
-                    if (anyTypesGenerated)
-                    {
-                        this.emptyGeneratedFiles.Add(outputFilePath);
-                    }
+
+                    this.generatedFiles.Add(outputFilePath);
                 }
-
-
-                this.generatedFiles.Add(outputFilePath);
             }
 
             this.SaveGeneratorAssemblyList(generatorAssemblyInputsFile);
