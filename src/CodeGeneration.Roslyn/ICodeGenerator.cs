@@ -24,6 +24,6 @@ namespace CodeGeneration.Roslyn
         /// <param name="progress">A way to report diagnostic messages.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>The generated member syntax to be added to the project.</returns>
-        Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(MemberDeclarationSyntax applyTo, CSharpCompilation compilation, IProgress<Diagnostic> progress, CancellationToken cancellationToken);
+        Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(ITransformationContext context, CancellationToken cancellationToken);
     }
 }
