@@ -62,7 +62,7 @@ namespace CodeGeneration.Roslyn
                 var generators = FindCodeGenerators(inputSemanticModel, memberNode);
                 foreach (var generator in generators)
                 {
-					var context = new TransformationContext(memberNode, inputSemanticModel, compilation, progress);
+                    var context = new TransformationContext(memberNode, inputSemanticModel, compilation, progress);
                     var generatedTypes = await generator.GenerateAsync(context, CancellationToken.None);
 
                     // Figure out ancestry for the generated type, including nesting types and namespaces.

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Xml;
 using CodeGeneration.Roslyn.Tests.Generators;
 using Xunit;
 
@@ -27,11 +26,11 @@ public partial class CodeGenerationTests
     public class Foo
     {
     }
-	
-	[MultiplySuffix]
+    
+    [MultiplySuffix]
     public partial class MultipliedBar
     {
-		[Test(X = 10, Y = 20)]
-		public string Value { get; set; }
+        [Test(X = 10, Y = 20)]
+        public string Value { get; set; }
     }
 }

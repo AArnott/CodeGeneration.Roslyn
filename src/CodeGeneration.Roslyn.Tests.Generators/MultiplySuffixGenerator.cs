@@ -5,7 +5,7 @@ using System;
 
 namespace CodeGeneration.Roslyn.Tests.Generators
 {
-	using System.Collections.Generic;
+    using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Linq;
     using System.Text;
@@ -15,11 +15,11 @@ namespace CodeGeneration.Roslyn.Tests.Generators
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
     using Validation;
-	using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+    using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 
 
-	public class MultiplySuffixGenerator : ICodeGenerator
+    public class MultiplySuffixGenerator : ICodeGenerator
     {
         public MultiplySuffixGenerator(AttributeData attributeData)
         {
@@ -34,18 +34,18 @@ namespace CodeGeneration.Roslyn.Tests.Generators
             var applyToClass = context.ProcessingMember as ClassDeclarationSyntax;
             if (applyToClass != null)
             {
-	            var properties = applyToClass.Members.OfType<PropertyDeclarationSyntax>()
-		            .Select(x =>
-		            {
-			            var propertySymbol = context.SemanticModel.GetDeclaredSymbol(x);
-			            var attribute = propertySymbol?.GetAttributes()
-				            .FirstOrDefault(a => a.AttributeClass.Name == nameof(TestAttribute));
-			            string suffix = "Suff" + string.Concat(attribute?.NamedArguments.Select(a => a.Value.Value.ToString()) ?? Enumerable.Empty<string>());
-			            return (MemberDeclarationSyntax)  MethodDeclaration(ParseTypeName("void"), x.Identifier.ValueText + suffix)
-							.AddModifiers(Token(SyntaxKind.PublicKeyword))
-							.AddBodyStatements(Block());
-		            });
-	            copy = ClassDeclaration(applyToClass.Identifier).WithModifiers(applyToClass.Modifiers).AddMembers(properties.ToArray());
+                var properties = applyToClass.Members.OfType<PropertyDeclarationSyntax>()
+                    .Select(x =>
+                    {
+                        var propertySymbol = context.SemanticModel.GetDeclaredSymbol(x);
+                        var attribute = propertySymbol?.GetAttributes()
+                            .FirstOrDefault(a => a.AttributeClass.Name == nameof(TestAttribute));
+                        string suffix = "Suff" + string.Concat(attribute?.NamedArguments.Select(a => a.Value.Value.ToString()) ?? Enumerable.Empty<string>());
+                        return (MemberDeclarationSyntax)  MethodDeclaration(ParseTypeName("void"), x.Identifier.ValueText + suffix)
+                            .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                            .AddBodyStatements(Block());
+                    });
+                copy = ClassDeclaration(applyToClass.Identifier).WithModifiers(applyToClass.Modifiers).AddMembers(properties.ToArray());
             }
 
             if (copy != null)
