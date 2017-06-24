@@ -15,9 +15,15 @@
     </AdditionalFiles>
   </ItemGroup>
 
+  <ItemDefinitionGroup>
+    <PackageReference>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.1.548" PrivateAssets="all" />
-    <PackageReference Include="Nerdbank.MSBuildExtension" Version="0.1.16-beta" PrivateAssets="all" />
+    <PackageReference Include="Nerdbank.MSBuildExtension" Version="0.1.17-beta" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>
