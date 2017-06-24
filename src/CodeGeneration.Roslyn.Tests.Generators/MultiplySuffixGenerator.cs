@@ -17,8 +17,6 @@ namespace CodeGeneration.Roslyn.Tests.Generators
     using Validation;
     using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-
-
     public class MultiplySuffixGenerator : ICodeGenerator
     {
         public MultiplySuffixGenerator(AttributeData attributeData)
@@ -26,7 +24,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
             Requires.NotNull(attributeData, nameof(attributeData));
         }
 
-        public Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(ITransformationContext context, CancellationToken cancellationToken)
+        public Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(TransformationContext context, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
         {
             var results = SyntaxFactory.List<MemberDeclarationSyntax>();
 
@@ -41,7 +39,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
                         var attribute = propertySymbol?.GetAttributes()
                             .FirstOrDefault(a => a.AttributeClass.Name == nameof(TestAttribute));
                         string suffix = "Suff" + string.Concat(attribute?.NamedArguments.Select(a => a.Value.Value.ToString()) ?? Enumerable.Empty<string>());
-                        return (MemberDeclarationSyntax)  MethodDeclaration(ParseTypeName("void"), x.Identifier.ValueText + suffix)
+                        return (MemberDeclarationSyntax)MethodDeclaration(ParseTypeName("void"), x.Identifier.ValueText + suffix)
                             .AddModifiers(Token(SyntaxKind.PublicKeyword))
                             .AddBodyStatements(Block());
                     });

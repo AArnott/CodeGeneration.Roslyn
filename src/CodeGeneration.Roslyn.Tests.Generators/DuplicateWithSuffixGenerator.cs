@@ -30,7 +30,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
             this.data = this.attributeData.NamedArguments.ToImmutableDictionary(kv => kv.Key, kv => kv.Value);
         }
 
-        public Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(ITransformationContext context, CancellationToken cancellationToken)
+        public Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(TransformationContext context, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
         {
             var results = SyntaxFactory.List<MemberDeclarationSyntax>();
 
