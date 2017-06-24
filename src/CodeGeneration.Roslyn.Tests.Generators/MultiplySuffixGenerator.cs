@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Andrew Arnott. All rights reserved.
 // Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
 
+using System;
+
 namespace CodeGeneration.Roslyn.Tests.Generators
 {
-    using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Linq;
@@ -14,20 +15,13 @@ namespace CodeGeneration.Roslyn.Tests.Generators
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
     using Validation;
+    using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-    public class DuplicateWithSuffixGenerator : ICodeGenerator
+    public class MultiplySuffixGenerator : ICodeGenerator
     {
-        private readonly AttributeData attributeData;
-        private readonly ImmutableDictionary<string, TypedConstant> data;
-        private readonly string suffix;
-
-        public DuplicateWithSuffixGenerator(AttributeData attributeData)
+        public MultiplySuffixGenerator(AttributeData attributeData)
         {
             Requires.NotNull(attributeData, nameof(attributeData));
-
-            this.suffix = (string)attributeData.ConstructorArguments[0].Value;
-            this.attributeData = attributeData;
-            this.data = this.attributeData.NamedArguments.ToImmutableDictionary(kv => kv.Key, kv => kv.Value);
         }
 
         public Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(TransformationContext context, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
@@ -38,8 +32,18 @@ namespace CodeGeneration.Roslyn.Tests.Generators
             var applyToClass = context.ProcessingMember as ClassDeclarationSyntax;
             if (applyToClass != null)
             {
-                copy = applyToClass
-                    .WithIdentifier(SyntaxFactory.Identifier(applyToClass.Identifier.ValueText + this.suffix));
+                var properties = applyToClass.Members.OfType<PropertyDeclarationSyntax>()
+                    .Select(x =>
+                    {
+                        var propertySymbol = context.SemanticModel.GetDeclaredSymbol(x);
+                        var attribute = propertySymbol?.GetAttributes()
+                            .FirstOrDefault(a => a.AttributeClass.Name == nameof(TestAttribute));
+                        string suffix = "Suff" + string.Concat(attribute?.NamedArguments.Select(a => a.Value.Value.ToString()) ?? Enumerable.Empty<string>());
+                        return (MemberDeclarationSyntax)MethodDeclaration(ParseTypeName("void"), x.Identifier.ValueText + suffix)
+                            .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                            .AddBodyStatements(Block());
+                    });
+                copy = ClassDeclaration(applyToClass.Identifier).WithModifiers(applyToClass.Modifiers).AddMembers(properties.ToArray());
             }
 
             if (copy != null)
