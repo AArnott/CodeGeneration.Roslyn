@@ -19,11 +19,20 @@ public partial class CodeGenerationTests
         var foo = new CodeGenerationTests.Foo();
         var fooA = new CodeGenerationTests.FooA();
         var fooB = new CodeGenerationTests.FooB();
+        var multiplied = new MultipliedBar();
+        multiplied.ValueSuff1020();
     }
 
     [DuplicateWithSuffixByName("A")]
     [DuplicateWithSuffixByType("B")]
     public class Foo
     {
+    }
+    
+    [MultiplySuffix]
+    public partial class MultipliedBar
+    {
+        [Test(X = 10, Y = 20)]
+        public string Value { get; set; }
     }
 }

@@ -19,11 +19,10 @@ namespace CodeGeneration.Roslyn
         /// <summary>
         /// Create the syntax tree representing the expansion of some member to which this attribute is applied.
         /// </summary>
-        /// <param name="applyTo">The syntax node this attribute is found on.</param>
-        /// <param name="compilation">The overall compilation being generated for.</param>
+        /// <param name="context">All the inputs necessary to perform the code generation.</param>
         /// <param name="progress">A way to report diagnostic messages.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>The generated member syntax to be added to the project.</returns>
-        Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(MemberDeclarationSyntax applyTo, CSharpCompilation compilation, IProgress<Diagnostic> progress, CancellationToken cancellationToken);
+        Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(TransformationContext context, IProgress<Diagnostic> progress, CancellationToken cancellationToken);
     }
 }
