@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <CodeGenerationRoslynToolsPath Condition=" '$(CodeGenerationRoslynToolsPath)' == '' ">$(CodeGenerationRoslynToolsRootPath)$(CodeGenerationRoslynToolsSubPath)</CodeGenerationRoslynToolsPath>
 
@@ -18,9 +18,9 @@
 
   <Target Name="GenerateCodeFromAttributes" DependsOnTargets="ResolveReferences" BeforeTargets="CoreCompile">
     <GenerateCodeFromAttributes
+      ToolLocationOverride="$(GenerateCodeFromAttributesToolPathOverride)"
       Compile="@(Compile)"
       ReferencePath="@(ReferencePath)"
-      TargetName="GenerateCodeFromAttributes"
       GeneratorAssemblySearchPaths="@(GeneratorAssemblySearchPaths)"
       IntermediateOutputDirectory="$(IntermediateOutputPath)">
       <Output TaskParameter="GeneratedCompile" ItemName="GeneratedCodeFromAttribute_Compile" />

@@ -3,36 +3,17 @@
 
 namespace CodeGeneration.Roslyn.Tasks
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
-#if NETCOREAPP1_0
-    using System.Runtime.Loader;
-#endif
-    using System.Text;
-    using System.Threading;
     using Microsoft.Build.Framework;
     using Microsoft.Build.Utilities;
-    using Task = System.Threading.Tasks.Task;
 
-    public class GenerateCodeFromAttributes : Microsoft.Build.Utilities.Task, ICancelableTask
+    public class GenerateCodeFromAttributes : ToolTask
     {
-        private readonly CancellationTokenSource cts = new CancellationTokenSource();
-
-#if NETCOREAPP1_0
-        private TaskLoadContext taskLoadContext;
-#endif
+        private string generatedCompileItemsFilePath;
 
         [Required]
         public ITaskItem[] Compile { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the target running code generation.
-        /// </summary>
-        public string TargetName { get; set; }
 
         [Required]
         public ITaskItem[] ReferencePath { get; set; }
@@ -43,120 +24,64 @@ namespace CodeGeneration.Roslyn.Tasks
         [Required]
         public string IntermediateOutputDirectory { get; set; }
 
+        public string ToolLocationOverride { get; set; }
+
         [Output]
         public ITaskItem[] GeneratedCompile { get; set; }
 
         [Output]
         public ITaskItem[] AdditionalWrittenFiles { get; set; }
 
-        internal CancellationToken CancellationToken => this.cts.Token;
+        protected override string ToolName => "dotnet";
 
-        public override bool Execute()
+        protected override string GenerateFullPathToTool() => this.ToolName;
+
+        protected override int ExecuteTool(string pathToTool, string responseFileCommands, string commandLineCommands)
         {
-#if NET46
-            // Run under our own AppDomain so we can control the version of Roslyn we load.
-            var appDomainSetup = new AppDomainSetup();
-            appDomainSetup.ApplicationBase = Path.GetDirectoryName(this.GetType().Assembly.Location);
-            appDomainSetup.ConfigurationFile = Assembly.GetExecutingAssembly().Location + ".config";
-            var appDomain = AppDomain.CreateDomain("codegen", AppDomain.CurrentDomain.Evidence, appDomainSetup);
-            AppDomain.CurrentDomain.AssemblyResolve += this.CurrentDomain_AssemblyResolve;
-#else
+            this.UseCommandProcessor = true;
 
-#endif
-            try
+            int exitCode = base.ExecuteTool(pathToTool, responseFileCommands, commandLineCommands);
+
+            if (exitCode == 0)
             {
-                var helperAssemblyName = new AssemblyName(typeof(GenerateCodeFromAttributes).GetTypeInfo().Assembly.GetName().FullName.Replace(ThisAssembly.AssemblyName, ThisAssembly.AssemblyName + ".Helper"));
-                const string helperTypeName = "CodeGeneration.Roslyn.Tasks.Helper";
-#if NET46
-                var helper = (Helper)appDomain.CreateInstanceAndUnwrap(helperAssemblyName.FullName, helperTypeName);
-#else
-                this.taskLoadContext = new TaskLoadContext(Path.GetDirectoryName(new Uri(typeof(GenerateCodeFromAttributes).GetTypeInfo().Assembly.CodeBase).LocalPath));
-                var helperAssembly = this.taskLoadContext.LoadFromAssemblyName(helperAssemblyName);
-                var helperTypeInContext = helperAssembly.GetType(helperTypeName);
-                dynamic helper = Activator.CreateInstance(helperTypeInContext, this.taskLoadContext);
-#endif
-                helper.Compile = this.Compile;
-                helper.TargetName = this.TargetName;
-                helper.ReferencePath = this.ReferencePath;
-                helper.GeneratorAssemblySearchPaths = this.GeneratorAssemblySearchPaths;
-                helper.IntermediateOutputDirectory = this.IntermediateOutputDirectory;
-                helper.Log = this.Log;
-
-                try
-                {
-                    this.CancellationToken.ThrowIfCancellationRequested();
-                    using (this.CancellationToken.Register(() => helper.Cancel(), false))
-                    {
-                        helper.Execute();
-                    }
-
-                    // Copy the contents of the output parameters into our own. Don't just copy the reference
-                    // because we're going to unload the AppDomain.
-                    this.GeneratedCompile = ((IEnumerable<ITaskItem>)helper.GeneratedCompile).Select(i => new TaskItem(i)).ToArray();
-                    this.AdditionalWrittenFiles = ((IEnumerable<ITaskItem>)helper.AdditionalWrittenFiles).Select(i => new TaskItem(i)).ToArray();
-
-                    return !this.Log.HasLoggedErrors;
-                }
-                catch (OperationCanceledException)
-                {
-                    this.Log.LogMessage(MessageImportance.High, "Canceled.");
-                    return false;
-                }
+                this.AdditionalWrittenFiles = new ITaskItem[] { new TaskItem(this.generatedCompileItemsFilePath) };
+                this.GeneratedCompile = File.ReadAllLines(this.generatedCompileItemsFilePath).Select(f => new TaskItem(f)).ToArray();
             }
-            finally
-            {
-#if NET46
-                AppDomain.CurrentDomain.AssemblyResolve -= this.CurrentDomain_AssemblyResolve;
-                AppDomain.Unload(appDomain);
-#endif
-            }
+
+            return exitCode;
         }
 
-#if NET46
-        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        protected override string GenerateCommandLineCommands()
         {
-            try
+            var argBuilder = new CommandLineBuilder();
+
+            argBuilder.AppendFileNameIfNotNull(string.IsNullOrWhiteSpace(this.ToolLocationOverride)
+                ? "codegen"
+                : this.ToolLocationOverride);
+
+            foreach (var item in this.ReferencePath)
             {
-                return Assembly.Load(args.Name);
+                argBuilder.AppendSwitch("-r");
+                argBuilder.AppendFileNameIfNotNull(item);
             }
-            catch
+
+            foreach (var item in this.GeneratorAssemblySearchPaths)
             {
-                return null;
+                argBuilder.AppendSwitch("--generatorSearchPath");
+                argBuilder.AppendFileNameIfNotNull(item);
             }
+
+            argBuilder.AppendSwitch("--out");
+            argBuilder.AppendFileNameIfNotNull(this.IntermediateOutputDirectory);
+
+            this.generatedCompileItemsFilePath = Path.Combine(this.IntermediateOutputDirectory, Path.GetRandomFileName());
+            argBuilder.AppendSwitch("--generatedFilesList");
+            argBuilder.AppendFileNameIfNotNull(this.generatedCompileItemsFilePath);
+
+            argBuilder.AppendSwitch("--");
+            argBuilder.AppendFileNamesIfNotNull(this.Compile, " ");
+
+            return argBuilder.ToString();
         }
-#endif
-
-        public void Cancel() => this.cts.Cancel();
-
-#if NETCOREAPP1_0
-        private class TaskLoadContext : AssemblyLoadContext
-        {
-            private readonly string assemblyLoadPath;
-
-            internal TaskLoadContext(string assemblyLoadPath)
-            {
-                this.assemblyLoadPath = assemblyLoadPath;
-            }
-
-            protected override Assembly Load(AssemblyName assemblyName)
-            {
-                if (assemblyName.Name.StartsWith("Microsoft.Build", StringComparison.OrdinalIgnoreCase) ||
-                    assemblyName.Name.StartsWith("System.", StringComparison.OrdinalIgnoreCase))
-                {
-                    // MSBuild and System.* make up our exchange types. So don't load them in this LoadContext.
-                    // We need to inherit them from the default load context.
-                    return null;
-                }
-
-                string assemblyPath = Path.Combine(this.assemblyLoadPath, assemblyName.Name) + ".dll";
-                if (File.Exists(assemblyPath))
-                {
-                    return LoadFromAssemblyPath(assemblyPath);
-                }
-
-                return null;
-            }
-        }
-#endif
     }
 }

@@ -2,8 +2,9 @@
   <Import Project="..\CodeGeneration.Roslyn.Tasks\build\CodeGeneration.Roslyn.BuildTime.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net46;netcoreapp1.0</TargetFrameworks>
+    <TargetFramework>net462</TargetFramework>
     <CodeGenerationRoslynToolsRootPath>$(OutputPath)..\..\CodeGeneration.Roslyn.Tasks\$(Configuration)\</CodeGenerationRoslynToolsRootPath>
+    <GenerateCodeFromAttributesToolPathOverride>$(OutputPath)..\..\CodeGeneration.Roslyn.Tool\$(Configuration)\netcoreapp1.0\dotnet-codegen.dll</GenerateCodeFromAttributesToolPathOverride>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,6 +23,11 @@
     <ProjectReference Include="..\CodeGeneration.Roslyn.Tasks\CodeGeneration.Roslyn.Tasks.csproj" />
     <ProjectReference Include="..\CodeGeneration.Roslyn.Tests.Generators\CodeGeneration.Roslyn.Tests.Generators.csproj" />
     <ProjectReference Include="..\CodeGeneration.Roslyn\CodeGeneration.Roslyn.csproj" />
+    <ProjectReference Include="..\CodeGeneration.Roslyn.Tool\CodeGeneration.Roslyn.Tool.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <UndefineProperties>TargetFramework</UndefineProperties>
+    </ProjectReference>
   </ItemGroup>
 
   <Import Project="..\CodeGeneration.Roslyn.Tasks\build\CodeGeneration.Roslyn.BuildTime.targets" />
