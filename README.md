@@ -171,10 +171,10 @@ to immediately see the effects of your changes on the generated code.
 You can also package up your code generator as a NuGet package for others to install
 and use. Your NuGet package should include a dependency on the `CodeGeneration.Roslyn.BuildTime`
 that matches the version of `CodeGeneration.Roslyn` that you used to produce your generator.
-For example, if you used version 0.2.10 of this project, your .nuspec file would include this tag:
+For example, if you used version 0.4.6 of this project, your .nuspec file would include this tag:
 
 ```xml
-<dependency id="CodeGeneration.Roslyn.BuildTime" version="0.2.10" />
+<dependency id="CodeGeneration.Roslyn.BuildTime" version="0.4.6" />
 ```
 
 In addition to this dependency, your NuGet package should include a `build` folder with an
@@ -203,7 +203,7 @@ so that the MSBuild Task can invoke the `dotnet codegen` command line tool:
 ```xml
 <ItemGroup>
   <PackageReference Include="YourCodeGenPackage" Version="1.2.3" PrivateAssets="all" />
-  <DotNetCliToolReference Include="dotnet-codegen" Version="0.2.10" />
+  <DotNetCliToolReference Include="dotnet-codegen" Version="0.4.6" />
 </ItemGroup>
 ```
 
