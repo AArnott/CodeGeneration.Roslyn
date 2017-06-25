@@ -50,12 +50,12 @@ public class DuplicateWithSuffixGenerator : ICodeGenerator
         this.suffix = (string)attributeData.ConstructorArguments[0].Value;
     }
 
-    public Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(MemberDeclarationSyntax applyTo, CSharpCompilation compilation, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
+    public Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(TransformationContext context, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
     {
         var results = SyntaxFactory.List<MemberDeclarationSyntax>();
 
         // Our generator is applied to any class that our attribute is applied to.
-        var applyToClass = (ClassDeclarationSyntax)applyTo;
+        var applyToClass = (ClassDeclarationSyntax)context.ProcessingMember;
 
         // Apply a suffix to the name of a copy of the class.
         var copy = applyToClass
@@ -196,6 +196,19 @@ dependencies it needs *besides those delivered by the `CodeGeneration.Roslyn.Bui
 
 Your attributes assembly should be placed under your package's `lib` folder` so consuming projects
 can apply those attributes.
+
+Your consumers should depend on your package, and the required dotnet CLI tool,
+so that the MSBuild Task can invoke the `dotnet codegen` command line tool:
+
+```xml
+<ItemGroup>
+  <PackageReference Include="YourCodeGenPackage" Version="1.2.3" PrivateAssets="all" />
+  <DotNetCliToolReference Include="dotnet-codegen" Version="0.2.10" />
+</ItemGroup>
+```
+
+Make sure that the DotNetCliToolReference version matches the version of the
+`CodeGeneration.Roslyn` package your package depends on.
 
 [NuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn
 [BuildTimeNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.BuildTime
