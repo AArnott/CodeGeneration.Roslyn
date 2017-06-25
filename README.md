@@ -207,6 +207,18 @@ so that the MSBuild Task can invoke the `dotnet codegen` command line tool:
 </ItemGroup>
 ```
 
+Also, any consumer must have a nuget.config file with at least this content:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="api.nuget.org" value="https://api.nuget.org/v3/index.json" />
+    <add key="corefxlab" value="https://dotnet.myget.org/F/dotnet-corefxlab/api/v3/index.json" />
+  </packageSources>
+</configuration>
+```
+
 Make sure that the DotNetCliToolReference version matches the version of the
 `CodeGeneration.Roslyn` package your package depends on.
 
