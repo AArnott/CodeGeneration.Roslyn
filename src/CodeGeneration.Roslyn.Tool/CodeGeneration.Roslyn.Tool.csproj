@@ -17,6 +17,7 @@
     <ProjectReference Include="..\CodeGeneration.Roslyn\CodeGeneration.Roslyn.csproj" />
     <PackageReference Include="System.CommandLine" Version="0.1.0-e170407-3" />
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
+    <PackageReference Include="Microsoft.NETCore.App" Version="1.0.4" />
   </ItemGroup>
 
 </Project>
