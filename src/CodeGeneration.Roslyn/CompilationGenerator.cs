@@ -92,27 +92,54 @@ namespace CodeGeneration.Roslyn
                     DateTime outputLastModified = File.Exists(outputFilePath) ? File.GetLastWriteTime(outputFilePath) : DateTime.MinValue;
                     if (File.GetLastWriteTime(inputSyntaxTree.FilePath) > outputLastModified || assembliesLastModified > outputLastModified)
                     {
-                        var generatedSyntaxTree = DocumentTransform.TransformAsync(
-                            compilation,
-                            inputSyntaxTree,
-                            this.LoadAssembly,
-                            progress).GetAwaiter().GetResult();
-
-                        var outputText = generatedSyntaxTree.GetText(cancellationToken);
-                        using (var outputFileStream = File.OpenWrite(outputFilePath))
-                        using (var outputWriter = new StreamWriter(outputFileStream))
+                        try
                         {
-                            outputText.Write(outputWriter);
+                            var generatedSyntaxTree = DocumentTransform.TransformAsync(
+                                compilation,
+                                inputSyntaxTree,
+                                this.LoadAssembly,
+                                progress).GetAwaiter().GetResult();
 
-                            // Truncate any data that may be beyond this point if the file existed previously.
-                            outputWriter.Flush();
-                            outputFileStream.SetLength(outputFileStream.Position);
+                            var outputText = generatedSyntaxTree.GetText(cancellationToken);
+                            using (var outputFileStream = File.OpenWrite(outputFilePath))
+                            using (var outputWriter = new StreamWriter(outputFileStream))
+                            {
+                                outputText.Write(outputWriter);
+
+                                // Truncate any data that may be beyond this point if the file existed previously.
+                                outputWriter.Flush();
+                                outputFileStream.SetLength(outputFileStream.Position);
+                            }
+
+                            bool anyTypesGenerated = generatedSyntaxTree?.GetRoot(cancellationToken).DescendantNodes().OfType<TypeDeclarationSyntax>().Any() ?? false;
+                            if (anyTypesGenerated)
+                            {
+                                this.emptyGeneratedFiles.Add(outputFilePath);
+                            }
                         }
-
-                        bool anyTypesGenerated = generatedSyntaxTree?.GetRoot(cancellationToken).DescendantNodes().OfType<TypeDeclarationSyntax>().Any() ?? false;
-                        if (anyTypesGenerated)
+                        catch (Exception ex)
                         {
-                            this.emptyGeneratedFiles.Add(outputFilePath);
+                            const string category = "CodeGen.Roslyn: Transformation";
+                            const string messageFormat = "{0}";
+
+                            var descriptor = new DiagnosticDescriptor(
+                                "CGR001",
+                                "Error during transformation",
+                                messageFormat,
+                                category,
+                                DiagnosticSeverity.Error,
+                                true);
+
+                            var location = Location.Create(inputSyntaxTree, TextSpan.FromBounds(0,0));
+
+                            var messageArgs = new[]
+                            {
+                                ex
+                            };
+
+                            var reportDiagnostic = Diagnostic.Create(descriptor, location, messageArgs);
+
+                            progress.Report(reportDiagnostic);
                         }
                     }
 
