@@ -45,7 +45,15 @@ namespace CodeGeneration.Roslyn.Generate
                 GeneratorAssemblySearchPaths = generatorSearchPaths,
                 IntermediateOutputDirectory = outputDirectory,
             };
-            generator.Generate();
+
+            try
+            {
+                generator.Generate();
+            }
+            catch
+            {
+                return 3;
+            }
 
             if (generatedCompileItemFile != null)
             {

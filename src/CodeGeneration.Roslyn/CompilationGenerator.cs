@@ -77,6 +77,8 @@ namespace CodeGeneration.Roslyn
             // For incremental build, we want to consider the input->output files as well as the assemblies involved in code generation.
             DateTime assembliesLastModified = GetLastModifiedAssemblyTime(generatorAssemblyInputsFile);
 
+            var fileFailures = new List<Exception>();
+
             using (var hasher = System.Security.Cryptography.SHA1.Create())
             {
                 foreach (var inputSyntaxTree in compilation.SyntaxTrees)
@@ -119,27 +121,8 @@ namespace CodeGeneration.Roslyn
                         }
                         catch (Exception ex)
                         {
-                            const string category = "CodeGen.Roslyn: Transformation";
-                            const string messageFormat = "{0}";
-
-                            var descriptor = new DiagnosticDescriptor(
-                                "CGR001",
-                                "Error during transformation",
-                                messageFormat,
-                                category,
-                                DiagnosticSeverity.Error,
-                                true);
-
-                            var location = Location.Create(inputSyntaxTree, TextSpan.FromBounds(0,0));
-
-                            var messageArgs = new[]
-                            {
-                                ex
-                            };
-
-                            var reportDiagnostic = Diagnostic.Create(descriptor, location, messageArgs);
-
-                            progress.Report(reportDiagnostic);
+                            ReportError(progress, "CGR001", inputSyntaxTree, ex);
+                            fileFailures.Add(ex);
                         }
                     }
 
@@ -149,6 +132,11 @@ namespace CodeGeneration.Roslyn
             }
 
             this.SaveGeneratorAssemblyList(generatorAssemblyInputsFile);
+
+            if (fileFailures.Count > 0)
+            {
+                throw new AggregateException(fileFailures);
+            }
         }
 
         protected virtual Assembly LoadAssembly(string path)
@@ -168,6 +156,38 @@ namespace CodeGeneration.Roslyn
                               where File.Exists(path)
                               select File.GetLastWriteTime(path)).ToList();
             return timestamps.Any() ? timestamps.Max() : DateTime.MinValue;
+        }
+
+        private static void ReportError(IProgress<Diagnostic> progress, string id, SyntaxTree inputSyntaxTree, Exception ex)
+        {
+            Console.Error.WriteLine($"Exception in file processing: {ex}");
+
+            if (progress == null)
+            {
+                return;
+            }
+
+            const string category = "CodeGen.Roslyn: Transformation";
+            const string messageFormat = "{0}";
+
+            var descriptor = new DiagnosticDescriptor(
+                id,
+                "Error during transformation",
+                messageFormat,
+                category,
+                DiagnosticSeverity.Error,
+                true);
+
+            var location = inputSyntaxTree != null ? Location.Create(inputSyntaxTree, TextSpan.FromBounds(0, 0)) : Location.None;
+
+            var messageArgs = new object[]
+            {
+                ex
+            };
+
+            var reportDiagnostic = Diagnostic.Create(descriptor, location, messageArgs);
+
+            progress.Report(reportDiagnostic);
         }
 
         private Assembly LoadAssembly(AssemblyName assemblyName)
