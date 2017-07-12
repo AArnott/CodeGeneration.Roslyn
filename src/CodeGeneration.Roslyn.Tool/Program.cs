@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using Microsoft.CodeAnalysis;
 
 namespace CodeGeneration.Roslyn.Generate
 {
@@ -46,9 +47,11 @@ namespace CodeGeneration.Roslyn.Generate
                 IntermediateOutputDirectory = outputDirectory,
             };
 
+            var progress = new Progress<Diagnostic>(OnDiagnosticProgress);
+
             try
             {
-                generator.Generate();
+                generator.Generate(progress);
             }
             catch
             {
@@ -66,6 +69,11 @@ namespace CodeGeneration.Roslyn.Generate
             }
 
             return 0;
+        }
+
+        private static void OnDiagnosticProgress(Diagnostic diagnostic)
+        {
+            Console.WriteLine(diagnostic.ToString());
         }
     }
 }
