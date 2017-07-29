@@ -15,17 +15,11 @@ your code generation attribute is applied to, but with a suffix appended to its 
 
 ### Define code generator
 
-This must be done in a library that targets netstandard1.3 or net46 (or later).
+This must be done in a library that targets netstandard1.5 or net462 (or later).
 Your generator cannot be defined in the same project that will have code generated
 for it because code generation runs *before* the receiving project is itself compiled.
 
 Install the [CodeGeneration.Roslyn][NuPkg] NuGet Package.
-You may need to define this property in your .NET SDK netstandard project to
-workaround the problem with the `Microsoft.Composition` NuGet package:
-
-```xml
-<PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
-```
 
 Define the generator class:
 
