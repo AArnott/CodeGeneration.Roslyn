@@ -1,3 +1,4 @@
+
 # Contribution Guidelines
 
 ## Build failures due to locked files
@@ -15,3 +16,6 @@ There are two workarounds for this:
    This will prevent the design-time builds in Visual Studio from loading and locking
    the output of the CodeGeneration.Roslyn.Tasks project, allowing you to make changes
    to that project and build them.
+
+## Requirements
+If you're running on Windows 10, you need to install the .net 3.5 optional feature in order to compile the project.
