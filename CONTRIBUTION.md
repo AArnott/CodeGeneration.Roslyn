@@ -1,4 +1,3 @@
-
 # Contribution Guidelines
 
 ## Build failures due to locked files
