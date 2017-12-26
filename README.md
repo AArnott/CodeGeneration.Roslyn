@@ -146,6 +146,28 @@ If you execute Go To Definition on it, Visual Studio will open the generated cod
 that actually defines `FooA`, and you'll notice it's exactly like `Foo`, just renamed
 as our code generator defined it to be.
 
+### Using `dotnet build`
+
+If you build with `dotnet build`, you need to take a couple extra steps. First, define a `nuget.config` file with an extra package source:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="api.nuget.org" value="https://api.nuget.org/v3/index.json" />
+    <add key="corefxlab" value="https://dotnet.myget.org/F/dotnet-corefxlab/api/v3/index.json" />
+  </packageSources>
+</configuration>
+```
+
+Second, add this item to an `<ItemGroup>` in the project that will execute the code generator as part of your build:
+
+```xml
+<DotNetCliToolReference Include="dotnet-codegen" Version="0.4.11" />
+```
+
+You should adjust the version in the above xml to match the version of this tool you are using.
+
 ### Shared Projects
 
 When using shared projects and partial classes across the definitions of your class in shared and platform projects:
@@ -165,10 +187,10 @@ to immediately see the effects of your changes on the generated code.
 You can also package up your code generator as a NuGet package for others to install
 and use. Your NuGet package should include a dependency on the `CodeGeneration.Roslyn.BuildTime`
 that matches the version of `CodeGeneration.Roslyn` that you used to produce your generator.
-For example, if you used version 0.4.6 of this project, your .nuspec file would include this tag:
+For example, if you used version 0.4.11 of this project, your .nuspec file would include this tag:
 
 ```xml
-<dependency id="CodeGeneration.Roslyn.BuildTime" version="0.4.6" />
+<dependency id="CodeGeneration.Roslyn.BuildTime" version="0.4.11" />
 ```
 
 In addition to this dependency, your NuGet package should include a `build` folder with an
@@ -197,7 +219,7 @@ so that the MSBuild Task can invoke the `dotnet codegen` command line tool:
 ```xml
 <ItemGroup>
   <PackageReference Include="YourCodeGenPackage" Version="1.2.3" PrivateAssets="all" />
-  <DotNetCliToolReference Include="dotnet-codegen" Version="0.4.6" />
+  <DotNetCliToolReference Include="dotnet-codegen" Version="0.4.11" />
 </ItemGroup>
 ```
 
