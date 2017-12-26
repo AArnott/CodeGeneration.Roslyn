@@ -16,11 +16,13 @@ namespace CodeGeneration.Roslyn
     using System.Runtime.Loader;
     using System.Text;
     using System.Threading;
+    using System.Threading.Tasks;
     using Validation;
 
     public class CompilationGenerator
     {
         private const string InputAssembliesIntermediateOutputFileName = "CodeGeneration.Roslyn.InputAssemblies.txt";
+        private const int ProcessCannotAccessFileHR = unchecked((int)0x80070020);
         private static readonly HashSet<string> AllowedAssemblyExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".dll" };
 
         private readonly List<string> emptyGeneratedFiles = new List<string>();
@@ -94,36 +96,53 @@ namespace CodeGeneration.Roslyn
                     DateTime outputLastModified = File.Exists(outputFilePath) ? File.GetLastWriteTime(outputFilePath) : DateTime.MinValue;
                     if (File.GetLastWriteTime(inputSyntaxTree.FilePath) > outputLastModified || assembliesLastModified > outputLastModified)
                     {
-                        try
+                        int retriesLeft = 3;
+                        do
                         {
-                            var generatedSyntaxTree = DocumentTransform.TransformAsync(
-                                compilation,
-                                inputSyntaxTree,
-                                this.LoadAssembly,
-                                progress).GetAwaiter().GetResult();
-
-                            var outputText = generatedSyntaxTree.GetText(cancellationToken);
-                            using (var outputFileStream = File.OpenWrite(outputFilePath))
-                            using (var outputWriter = new StreamWriter(outputFileStream))
+                            try
                             {
-                                outputText.Write(outputWriter);
+                                var generatedSyntaxTree = DocumentTransform.TransformAsync(
+                                    compilation,
+                                    inputSyntaxTree,
+                                    this.LoadAssembly,
+                                    progress).GetAwaiter().GetResult();
 
-                                // Truncate any data that may be beyond this point if the file existed previously.
-                                outputWriter.Flush();
-                                outputFileStream.SetLength(outputFileStream.Position);
+                                var outputText = generatedSyntaxTree.GetText(cancellationToken);
+                                using (var outputFileStream = File.OpenWrite(outputFilePath))
+                                using (var outputWriter = new StreamWriter(outputFileStream))
+                                {
+                                    outputText.Write(outputWriter);
+
+                                    // Truncate any data that may be beyond this point if the file existed previously.
+                                    outputWriter.Flush();
+                                    outputFileStream.SetLength(outputFileStream.Position);
+                                }
+
+                                bool anyTypesGenerated = generatedSyntaxTree?.GetRoot(cancellationToken).DescendantNodes().OfType<TypeDeclarationSyntax>().Any() ?? false;
+                                if (anyTypesGenerated)
+                                {
+                                    this.emptyGeneratedFiles.Add(outputFilePath);
+                                }
+
+                                break;
                             }
-
-                            bool anyTypesGenerated = generatedSyntaxTree?.GetRoot(cancellationToken).DescendantNodes().OfType<TypeDeclarationSyntax>().Any() ?? false;
-                            if (anyTypesGenerated)
+                            catch (IOException ex) when (ex.HResult == ProcessCannotAccessFileHR)
                             {
-                                this.emptyGeneratedFiles.Add(outputFilePath);
+                                if (retriesLeft-- <= 0)
+                                {
+                                    break;
+                                }
+
+                                Task.Delay(200).Wait();
+                            }
+                            catch (Exception ex)
+                            {
+                                ReportError(progress, "CGR001", inputSyntaxTree, ex);
+                                fileFailures.Add(ex);
+                                break;
                             }
                         }
-                        catch (Exception ex)
-                        {
-                            ReportError(progress, "CGR001", inputSyntaxTree, ex);
-                            fileFailures.Add(ex);
-                        }
+                        while (true);
                     }
 
 
