@@ -5,6 +5,7 @@ namespace CodeGeneration.Roslyn.Tasks
 {
     using System.IO;
     using System.Linq;
+    using System.Text;
     using Microsoft.Build.Framework;
     using Microsoft.Build.Utilities;
 
@@ -38,8 +39,6 @@ namespace CodeGeneration.Roslyn.Tasks
 
         protected override int ExecuteTool(string pathToTool, string responseFileCommands, string commandLineCommands)
         {
-            this.UseCommandProcessor = true;
-
             int exitCode = base.ExecuteTool(pathToTool, responseFileCommands, commandLineCommands);
 
             if (exitCode == 0)
@@ -59,27 +58,37 @@ namespace CodeGeneration.Roslyn.Tasks
                 ? "codegen"
                 : this.ToolLocationOverride);
 
+            return argBuilder.ToString();
+        }
+
+        protected override string GenerateResponseFileCommands()
+        {
+            var argBuilder = new StringBuilder();
+
             foreach (var item in this.ReferencePath)
             {
-                argBuilder.AppendSwitch("-r");
-                argBuilder.AppendFileNameIfNotNull(item);
+                argBuilder.AppendLine("-r");
+                argBuilder.AppendLine(item.ItemSpec);
             }
 
             foreach (var item in this.GeneratorAssemblySearchPaths)
             {
-                argBuilder.AppendSwitch("--generatorSearchPath");
-                argBuilder.AppendFileNameIfNotNull(item);
+                argBuilder.AppendLine("--generatorSearchPath");
+                argBuilder.AppendLine(item.ItemSpec);
             }
 
-            argBuilder.AppendSwitch("--out");
-            argBuilder.AppendFileNameIfNotNull(this.IntermediateOutputDirectory);
+            argBuilder.AppendLine("--out");
+            argBuilder.AppendLine(this.IntermediateOutputDirectory);
 
             this.generatedCompileItemsFilePath = Path.Combine(this.IntermediateOutputDirectory, Path.GetRandomFileName());
-            argBuilder.AppendSwitch("--generatedFilesList");
-            argBuilder.AppendFileNameIfNotNull(this.generatedCompileItemsFilePath);
+            argBuilder.AppendLine("--generatedFilesList");
+            argBuilder.AppendLine(this.generatedCompileItemsFilePath);
 
-            argBuilder.AppendSwitch("--");
-            argBuilder.AppendFileNamesIfNotNull(this.Compile, " ");
+            argBuilder.AppendLine("--");
+            foreach(var item in this.Compile)
+            {
+                argBuilder.AppendLine(item.ItemSpec);
+            }
 
             return argBuilder.ToString();
         }
