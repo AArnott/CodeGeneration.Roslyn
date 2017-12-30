@@ -126,13 +126,9 @@ namespace CodeGeneration.Roslyn
 
                                 break;
                             }
-                            catch (IOException ex) when (ex.HResult == ProcessCannotAccessFileHR)
+                            catch (IOException ex) when (ex.HResult == ProcessCannotAccessFileHR && retriesLeft > 0)
                             {
-                                if (retriesLeft-- <= 0)
-                                {
-                                    break;
-                                }
-
+                                retriesLeft--;
                                 Task.Delay(200).Wait();
                             }
                             catch (Exception ex)
