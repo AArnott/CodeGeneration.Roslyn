@@ -7,6 +7,8 @@ namespace CodeGeneration.Roslyn
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
     using Microsoft.CodeAnalysis.Text;
+    using Microsoft.Extensions.DependencyModel;
+    using Microsoft.Extensions.DependencyModel.Resolution;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
@@ -157,7 +159,40 @@ namespace CodeGeneration.Roslyn
         protected virtual Assembly LoadAssembly(string path)
         {
             var loadContext = AssemblyLoadContext.GetLoadContext(this.GetType().GetTypeInfo().Assembly);
-            return loadContext.LoadFromAssemblyPath(path);
+            var assembly = loadContext.LoadFromAssemblyPath(path);
+
+            var dependencyContext = DependencyContext.Load(assembly);
+
+            var assemblyResolver = new CompositeCompilationAssemblyResolver(new ICompilationAssemblyResolver[]
+            {
+                new AppBaseCompilationAssemblyResolver(Path.GetDirectoryName(path)),
+                new ReferenceAssemblyPathResolver(),
+                new PackageCompilationAssemblyResolver()
+            });
+
+            loadContext.Resolving += resolveAssembly;
+
+            Assembly resolveAssembly(AssemblyLoadContext context, AssemblyName name)
+            {
+
+                var library = dependencyContext.RuntimeLibraries.FirstOrDefault(runtime => string.Equals(runtime.Name, name.Name, StringComparison.OrdinalIgnoreCase));
+                if (library == null)
+                    return null;
+                var wrapper = new CompilationLibrary(
+                    library.Type,
+                    library.Name,
+                    library.Version,
+                    library.Hash,
+                    library.RuntimeAssemblyGroups.SelectMany(g => g.AssetPaths),
+                    library.Dependencies,
+                    library.Serviceable);
+
+                var assemblyPathes = new List<string>();
+                assemblyResolver.TryResolveAssemblyPaths(wrapper, assemblyPathes);
+
+                return assemblyPathes.Select(loadContext.LoadFromAssemblyPath).FirstOrDefault();
+            }
+            return assembly;
         }
 
         private static DateTime GetLastModifiedAssemblyTime(string assemblyListPath)
