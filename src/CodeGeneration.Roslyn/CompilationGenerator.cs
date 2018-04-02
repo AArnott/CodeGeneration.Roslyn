@@ -31,6 +31,10 @@ namespace CodeGeneration.Roslyn
         private readonly List<string> generatedFiles = new List<string>();
         private readonly List<string> additionalWrittenFiles = new List<string>();
         private readonly List<string> loadedAssemblies = new List<string>();
+        private readonly Dictionary<string, Assembly> assemblysByPath = new Dictionary<string, Assembly>();
+        private readonly HashSet<string> directorysWithResolver = new HashSet<string>();
+        private CompositeCompilationAssemblyResolver assemblyResolver;
+        private DependencyContext dependencyContext;
 
         /// <summary>
         /// Gets or sets the list of paths of files to be compiled.
@@ -66,6 +70,19 @@ namespace CodeGeneration.Roslyn
         /// Gets the subset of <see cref="GeneratedFiles"/> that contain no types.
         /// </summary>
         public IEnumerable<string> EmptyGeneratedFiles => this.emptyGeneratedFiles;
+
+        public CompilationGenerator()
+        {
+            this.assemblyResolver = new CompositeCompilationAssemblyResolver(new ICompilationAssemblyResolver[]
+            {
+                new ReferenceAssemblyPathResolver(),
+                new PackageCompilationAssemblyResolver()
+            });
+            this.dependencyContext = DependencyContext.Default;
+
+            var loadContext = AssemblyLoadContext.GetLoadContext(this.GetType().GetTypeInfo().Assembly);
+            loadContext.Resolving += this.ResolveAssembly;
+        }
 
         public void Generate(IProgress<Diagnostic> progress = null, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -158,41 +175,45 @@ namespace CodeGeneration.Roslyn
 
         protected virtual Assembly LoadAssembly(string path)
         {
+            if (this.assemblysByPath.ContainsKey(path))
+                return this.assemblysByPath[path];
+
             var loadContext = AssemblyLoadContext.GetLoadContext(this.GetType().GetTypeInfo().Assembly);
             var assembly = loadContext.LoadFromAssemblyPath(path);
 
-            var dependencyContext = DependencyContext.Load(assembly);
-
-            var assemblyResolver = new CompositeCompilationAssemblyResolver(new ICompilationAssemblyResolver[]
+            this.dependencyContext = this.dependencyContext.Merge(DependencyContext.Load(assembly));
+            var basePath = Path.GetDirectoryName(path);
+            if (!this.directorysWithResolver.Contains(basePath))
             {
-                new AppBaseCompilationAssemblyResolver(Path.GetDirectoryName(path)),
-                new ReferenceAssemblyPathResolver(),
-                new PackageCompilationAssemblyResolver()
-            });
-
-            loadContext.Resolving += resolveAssembly;
-
-            Assembly resolveAssembly(AssemblyLoadContext context, AssemblyName name)
-            {
-
-                var library = dependencyContext.RuntimeLibraries.FirstOrDefault(runtime => string.Equals(runtime.Name, name.Name, StringComparison.OrdinalIgnoreCase));
-                if (library == null)
-                    return null;
-                var wrapper = new CompilationLibrary(
-                    library.Type,
-                    library.Name,
-                    library.Version,
-                    library.Hash,
-                    library.RuntimeAssemblyGroups.SelectMany(g => g.AssetPaths),
-                    library.Dependencies,
-                    library.Serviceable);
-
-                var assemblyPathes = new List<string>();
-                assemblyResolver.TryResolveAssemblyPaths(wrapper, assemblyPathes);
-
-                return assemblyPathes.Select(loadContext.LoadFromAssemblyPath).FirstOrDefault();
+                this.assemblyResolver = new CompositeCompilationAssemblyResolver(new ICompilationAssemblyResolver[]
+                {
+                    new AppBaseCompilationAssemblyResolver(basePath),
+                    this.assemblyResolver
+                });
             }
+
+            this.assemblysByPath.Add(path, assembly);
             return assembly;
+        }
+
+        private Assembly ResolveAssembly(AssemblyLoadContext context, AssemblyName name)
+        {
+            var library = this.dependencyContext.RuntimeLibraries.FirstOrDefault(runtime => string.Equals(runtime.Name, name.Name, StringComparison.OrdinalIgnoreCase));
+            if (library == null)
+                return null;
+            var wrapper = new CompilationLibrary(
+                library.Type,
+                library.Name,
+                library.Version,
+                library.Hash,
+                library.RuntimeAssemblyGroups.SelectMany(g => g.AssetPaths),
+                library.Dependencies,
+                library.Serviceable);
+
+            var assemblyPathes = new List<string>();
+            this.assemblyResolver.TryResolveAssemblyPaths(wrapper, assemblyPathes);
+
+            return assemblyPathes.Select(context.LoadFromAssemblyPath).FirstOrDefault();
         }
 
         private static DateTime GetLastModifiedAssemblyTime(string assemblyListPath)
