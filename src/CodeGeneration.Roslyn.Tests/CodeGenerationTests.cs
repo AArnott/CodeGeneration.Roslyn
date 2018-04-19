@@ -20,7 +20,7 @@ public partial class CodeGenerationTests
         var fooB = new CodeGenerationTests.FooB();
         var multiplied = new MultipliedBar();
         multiplied.ValueSuff1020();
-        Assert.EndsWith(@"CodeGeneration.Roslyn\src\CodeGeneration.Roslyn.Tests", DirectoryPathTest.Path, StringComparison.OrdinalIgnoreCase);
+        Assert.EndsWith(@"src\CodeGeneration.Roslyn.Tests", DirectoryPathTest.Path, StringComparison.OrdinalIgnoreCase);
     }
 
     [DuplicateWithSuffixByName("A")]
