@@ -23,6 +23,9 @@ namespace CodeGeneration.Roslyn.Tasks
         public ITaskItem[] GeneratorAssemblySearchPaths { get; set; }
 
         [Required]
+        public string ProjectDirectory { get; set; }
+
+        [Required]
         public string IntermediateOutputDirectory { get; set; }
 
         public string ToolLocationOverride { get; set; }
@@ -79,6 +82,9 @@ namespace CodeGeneration.Roslyn.Tasks
 
             argBuilder.AppendLine("--out");
             argBuilder.AppendLine(this.IntermediateOutputDirectory);
+
+            argBuilder.AppendLine("--projectDir");
+            argBuilder.AppendLine(ProjectDirectory);
 
             this.generatedCompileItemsFilePath = Path.Combine(this.IntermediateOutputDirectory, Path.GetRandomFileName());
             argBuilder.AppendLine("--generatedFilesList");

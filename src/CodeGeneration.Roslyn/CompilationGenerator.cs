@@ -65,6 +65,8 @@ namespace CodeGeneration.Roslyn
         /// </summary>
         public IEnumerable<string> EmptyGeneratedFiles => this.emptyGeneratedFiles;
 
+        public string ProjectDirectory { get; set; }
+
         public void Generate(IProgress<Diagnostic> progress = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             Verify.Operation(this.Compile != null, $"{nameof(Compile)} must be set first.");
@@ -104,6 +106,7 @@ namespace CodeGeneration.Roslyn
                                 var generatedSyntaxTree = DocumentTransform.TransformAsync(
                                     compilation,
                                     inputSyntaxTree,
+                                    ProjectDirectory,
                                     this.LoadAssembly,
                                     progress).GetAwaiter().GetResult();
 
