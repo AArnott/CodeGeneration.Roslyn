@@ -19,7 +19,7 @@ public partial class CodeGenerationTests
         var fooB = new CodeGenerationTests.FooB();
         var multiplied = new MultipliedBar();
         multiplied.ValueSuff1020();
-        Assert.NotNull(DirectoryGenerationTest.S);
+        Assert.True(DirectoryAttributeTest.Path.EndsWith(@"CodeGeneration.Roslyn\src\CodeGeneration.Roslyn.Tests"));
     }
 
     [DuplicateWithSuffixByName("A")]

@@ -21,13 +21,13 @@ namespace CodeGeneration.Roslyn.Tests.Generators
 
         public Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(TransformationContext context, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
         {
-            var member = ClassDeclaration("DirectoryGenerationTest")
+            var member = ClassDeclaration("DirectoryAttributeTest")
                 .AddMembers(
                     FieldDeclaration(
                         VariableDeclaration(
                             PredefinedType(Token(SyntaxKind.StringKeyword)))
                         .AddVariables(
-                            VariableDeclarator(Identifier("S"))
+                            VariableDeclarator(Identifier("Path"))
                             .WithInitializer(
                                 EqualsValueClause(
                                     LiteralExpression(
