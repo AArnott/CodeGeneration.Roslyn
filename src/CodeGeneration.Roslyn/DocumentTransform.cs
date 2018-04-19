@@ -114,18 +114,12 @@ namespace CodeGeneration.Roslyn
             return compilationUnit.SyntaxTree;
         }
 
-        private static ImmutableArray<AttributeData>? GetAttributeData(CSharpCompilation compilation, SemanticModel document, CSharpSyntaxNode memberNode)
+        private static ImmutableArray<AttributeData>? GetAttributeData(Compilation compilation, SemanticModel document, SyntaxNode memberNode)
         {
             switch (memberNode)
             {
                 case CompilationUnitSyntax syntax:
-                    var validAttributesName = syntax.AttributeLists
-                                                    .SelectMany(x => x.Attributes)
-                                                    .Select(x => (x.Name as IdentifierNameSyntax)?.Identifier.ValueText)
-                                                    .Where(x => x != null)
-                                                    .Select(x => x.EndsWith("Attribute") ? x : x + "Attribute")
-                                                    .ToImmutableHashSet();
-                    return compilation.Assembly.GetAttributes().Where(x => validAttributesName.Contains(x.AttributeClass.MetadataName)).ToImmutableArray();
+                    return compilation.Assembly.GetAttributes().Where(x => x.ApplicationSyntaxReference.SyntaxTree == syntax.SyntaxTree).ToImmutableArray();
                 default:
                     return document.GetDeclaredSymbol(memberNode)?.GetAttributes();
             }
