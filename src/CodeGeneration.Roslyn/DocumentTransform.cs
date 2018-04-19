@@ -56,10 +56,7 @@ namespace CodeGeneration.Roslyn
             foreach (var memberNode in memberNodes)
             {
                 var attributeData = GetAttributeData(compilation, inputSemanticModel, memberNode);
-                if (attributeData == null)
-                    continue;
-
-                var generators = FindCodeGenerators(attributeData.Value, assemblyLoader);
+                var generators = FindCodeGenerators(attributeData, assemblyLoader);
                 foreach (var generator in generators)
                 {
                     var context = new TransformationContext(memberNode, inputSemanticModel, compilation, projectDirectory);
@@ -114,7 +111,7 @@ namespace CodeGeneration.Roslyn
             return compilationUnit.SyntaxTree;
         }
 
-        private static ImmutableArray<AttributeData>? GetAttributeData(Compilation compilation, SemanticModel document, SyntaxNode memberNode)
+        private static ImmutableArray<AttributeData> GetAttributeData(Compilation compilation, SemanticModel document, SyntaxNode memberNode)
         {
             Requires.NotNull(document, nameof(document));
             Requires.NotNull(memberNode, nameof(memberNode));
@@ -124,7 +121,7 @@ namespace CodeGeneration.Roslyn
                 case CompilationUnitSyntax syntax:
                     return compilation.Assembly.GetAttributes().Where(x => x.ApplicationSyntaxReference.SyntaxTree == syntax.SyntaxTree).ToImmutableArray();
                 default:
-                    return document.GetDeclaredSymbol(memberNode)?.GetAttributes();
+                    return document.GetDeclaredSymbol(memberNode)?.GetAttributes() ?? ImmutableArray<AttributeData>.Empty;
             }
         }
 
