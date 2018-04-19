@@ -21,7 +21,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
 
         public Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(TransformationContext context, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
         {
-            var member = ClassDeclaration("DirectoryAttributeTest")
+            var member = ClassDeclaration("DirectoryPathTest")
                 .AddMembers(
                     FieldDeclaration(
                         VariableDeclaration(
