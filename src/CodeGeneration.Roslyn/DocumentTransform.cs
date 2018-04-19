@@ -116,6 +116,9 @@ namespace CodeGeneration.Roslyn
 
         private static ImmutableArray<AttributeData>? GetAttributeData(Compilation compilation, SemanticModel document, SyntaxNode memberNode)
         {
+            Requires.NotNull(document, nameof(document));
+            Requires.NotNull(memberNode, nameof(memberNode));
+
             switch (memberNode)
             {
                 case CompilationUnitSyntax syntax:
