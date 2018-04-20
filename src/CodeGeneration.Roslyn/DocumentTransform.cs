@@ -50,7 +50,7 @@ namespace CodeGeneration.Roslyn
 
             var inputFileLevelUsingDirectives = inputSyntaxTree.GetRoot().ChildNodes().OfType<UsingDirectiveSyntax>();
 
-            var memberNodes = inputSyntaxTree.GetRoot().DescendantNodesAndSelf().OfType<CSharpSyntaxNode>();
+            var memberNodes = inputSyntaxTree.GetRoot().DescendantNodesAndSelf(n => n is CompilationUnitSyntax || n is NamespaceDeclarationSyntax || n is TypeDeclarationSyntax).OfType<CSharpSyntaxNode>();
 
             var emittedMembers = SyntaxFactory.List<MemberDeclarationSyntax>();
             foreach (var memberNode in memberNodes)
