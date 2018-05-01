@@ -8,21 +8,21 @@ namespace CodeGeneration.Roslyn
         /// <summary>
         /// Initializes a new instance of the <see cref="TransformationContext" /> class.
         /// </summary>
-        /// <param name="processingMember">The syntax node the generator attribute is found on.</param>
+        /// <param name="processingNode">The syntax node the generator attribute is found on.</param>
         /// <param name="semanticModel">The semantic model.</param>
         /// <param name="compilation">The overall compilation being generated for.</param>
         /// <param name="projectDirectory">The absolute path of the directory where the project file is located</param>
-        public TransformationContext(CSharpSyntaxNode processingMember, SemanticModel semanticModel, CSharpCompilation compilation,
+        public TransformationContext(CSharpSyntaxNode processingNode, SemanticModel semanticModel, CSharpCompilation compilation,
                                      string projectDirectory)
         {
-            ProcessingMember = processingMember;
+            ProcessingNode = processingNode;
             SemanticModel = semanticModel;
             Compilation = compilation;
             ProjectDirectory = projectDirectory;
         }
 
         /// <summary>Gets the syntax node the generator attribute is found on.</summary>
-        public CSharpSyntaxNode ProcessingMember { get; }
+        public CSharpSyntaxNode ProcessingNode { get; }
 
         /// <summary>Gets the semantic model for the <see cref="Compilation" />.</summary>
         public SemanticModel SemanticModel { get; }
