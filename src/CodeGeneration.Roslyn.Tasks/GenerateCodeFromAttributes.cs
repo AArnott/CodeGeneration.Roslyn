@@ -84,7 +84,7 @@ namespace CodeGeneration.Roslyn.Tasks
             argBuilder.AppendLine(this.IntermediateOutputDirectory);
 
             argBuilder.AppendLine("--projectDir");
-            argBuilder.AppendLine(ProjectDirectory);
+            argBuilder.AppendLine(this.ProjectDirectory);
 
             this.generatedCompileItemsFilePath = Path.Combine(this.IntermediateOutputDirectory, Path.GetRandomFileName());
             argBuilder.AppendLine("--generatedFilesList");

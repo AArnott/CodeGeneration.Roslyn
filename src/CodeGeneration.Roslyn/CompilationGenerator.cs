@@ -106,7 +106,7 @@ namespace CodeGeneration.Roslyn
                                 var generatedSyntaxTree = DocumentTransform.TransformAsync(
                                     compilation,
                                     inputSyntaxTree,
-                                    ProjectDirectory,
+                                    this.ProjectDirectory,
                                     this.LoadAssembly,
                                     progress).GetAwaiter().GetResult();
 

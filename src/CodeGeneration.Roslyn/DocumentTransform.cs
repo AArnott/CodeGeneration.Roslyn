@@ -111,17 +111,17 @@ namespace CodeGeneration.Roslyn
             return compilationUnit.SyntaxTree;
         }
 
-        private static ImmutableArray<AttributeData> GetAttributeData(Compilation compilation, SemanticModel document, SyntaxNode memberNode)
+        private static ImmutableArray<AttributeData> GetAttributeData(Compilation compilation, SemanticModel document, SyntaxNode syntaxNode)
         {
             Requires.NotNull(document, nameof(document));
-            Requires.NotNull(memberNode, nameof(memberNode));
+            Requires.NotNull(syntaxNode, nameof(syntaxNode));
 
-            switch (memberNode)
+            switch (syntaxNode)
             {
                 case CompilationUnitSyntax syntax:
                     return compilation.Assembly.GetAttributes().Where(x => x.ApplicationSyntaxReference.SyntaxTree == syntax.SyntaxTree).ToImmutableArray();
                 default:
-                    return document.GetDeclaredSymbol(memberNode)?.GetAttributes() ?? ImmutableArray<AttributeData>.Empty;
+                    return document.GetDeclaredSymbol(syntaxNode)?.GetAttributes() ?? ImmutableArray<AttributeData>.Empty;
             }
         }
 
