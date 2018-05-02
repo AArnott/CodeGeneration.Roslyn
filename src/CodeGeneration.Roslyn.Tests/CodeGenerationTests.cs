@@ -2,11 +2,10 @@
 // Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using CodeGeneration.Roslyn.Tests.Generators;
 using Xunit;
+
+[assembly: DirectoryPath]
 
 public partial class CodeGenerationTests
 {
@@ -21,6 +20,7 @@ public partial class CodeGenerationTests
         var fooB = new CodeGenerationTests.FooB();
         var multiplied = new MultipliedBar();
         multiplied.ValueSuff1020();
+        Assert.EndsWith(@"src\CodeGeneration.Roslyn.Tests", DirectoryPathTest.Path, StringComparison.OrdinalIgnoreCase);
     }
 
     [DuplicateWithSuffixByName("A")]

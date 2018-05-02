@@ -18,11 +18,13 @@ namespace CodeGeneration.Roslyn.Generate
             IReadOnlyList<string> generatorSearchPaths = Array.Empty<string>();
             string generatedCompileItemFile = null;
             string outputDirectory = null;
+            string projectDir = null;
             ArgumentSyntax.Parse(args, syntax =>
             {
                 syntax.DefineOptionList("r|reference", ref refs, "Paths to assemblies being referenced");
                 syntax.DefineOptionList("generatorSearchPath", ref generatorSearchPaths, "Paths to folders that may contain generator assemblies");
                 syntax.DefineOption("out", ref outputDirectory, true, "The directory to write generated source files to");
+                syntax.DefineOption("projectDir", ref projectDir, true, "The absolute path of the directory where the project file is located");
                 syntax.DefineOption("generatedFilesList", ref generatedCompileItemFile, "The path to the file to create with a list of generated source files");
                 syntax.DefineParameterList("compile", ref compile, "Source files included in compilation");
             });
@@ -41,6 +43,7 @@ namespace CodeGeneration.Roslyn.Generate
 
             var generator = new CompilationGenerator
             {
+                ProjectDirectory = projectDir,
                 Compile = compile,
                 ReferencePath = refs,
                 GeneratorAssemblySearchPaths = generatorSearchPaths,

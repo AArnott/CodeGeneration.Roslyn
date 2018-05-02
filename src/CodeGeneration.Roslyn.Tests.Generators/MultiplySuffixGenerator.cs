@@ -29,7 +29,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
             var results = SyntaxFactory.List<MemberDeclarationSyntax>();
 
             MemberDeclarationSyntax copy = null;
-            var applyToClass = context.ProcessingMember as ClassDeclarationSyntax;
+            var applyToClass = context.ProcessingNode as ClassDeclarationSyntax;
             if (applyToClass != null)
             {
                 var properties = applyToClass.Members.OfType<PropertyDeclarationSyntax>()

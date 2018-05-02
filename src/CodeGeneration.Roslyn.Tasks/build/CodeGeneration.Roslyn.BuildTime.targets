@@ -19,6 +19,7 @@
   <Target Name="GenerateCodeFromAttributes" DependsOnTargets="ResolveReferences" BeforeTargets="CoreCompile">
     <GenerateCodeFromAttributes
       ToolLocationOverride="$(GenerateCodeFromAttributesToolPathOverride)"
+      ProjectDirectory="$(MSBuildProjectDirectory)"
       Compile="@(Compile)"
       ReferencePath="@(ReferencePath)"
       GeneratorAssemblySearchPaths="@(GeneratorAssemblySearchPaths)"
