@@ -5,13 +5,12 @@ namespace CodeGeneration.Roslyn
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
+    using System.Collections.Immutable;
     using System.Linq;
     using System.Reflection;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -40,7 +39,7 @@ namespace CodeGeneration.Roslyn
         /// <param name="assemblyLoader">A function that can load an assembly with the given name.</param>
         /// <param name="progress">Reports warnings and errors in code generation.</param>
         /// <returns>A task whose result is the generated document.</returns>
-        public static async Task<SyntaxTree> TransformAsync(CSharpCompilation compilation, SyntaxTree inputDocument, Func<AssemblyName, Assembly> assemblyLoader, IProgress<Diagnostic> progress)
+        public static async Task<SyntaxTree> TransformAsync(CSharpCompilation compilation, SyntaxTree inputDocument, string projectDirectory, Func<AssemblyName, Assembly> assemblyLoader, IProgress<Diagnostic> progress)
         {
             Requires.NotNull(compilation, nameof(compilation));
             Requires.NotNull(inputDocument, nameof(inputDocument));
@@ -51,16 +50,16 @@ namespace CodeGeneration.Roslyn
 
             var inputFileLevelUsingDirectives = inputSyntaxTree.GetRoot().ChildNodes().OfType<UsingDirectiveSyntax>();
 
-            var memberNodes = from syntax in inputSyntaxTree.GetRoot().DescendantNodes(n => n is CompilationUnitSyntax || n is NamespaceDeclarationSyntax || n is TypeDeclarationSyntax).OfType<MemberDeclarationSyntax>()
-                              select syntax;
+            var memberNodes = inputSyntaxTree.GetRoot().DescendantNodesAndSelf(n => n is CompilationUnitSyntax || n is NamespaceDeclarationSyntax || n is TypeDeclarationSyntax).OfType<CSharpSyntaxNode>();
 
             var emittedMembers = SyntaxFactory.List<MemberDeclarationSyntax>();
             foreach (var memberNode in memberNodes)
             {
-                var generators = FindCodeGenerators(inputSemanticModel, memberNode, assemblyLoader);
+                var attributeData = GetAttributeData(compilation, inputSemanticModel, memberNode);
+                var generators = FindCodeGenerators(attributeData, assemblyLoader);
                 foreach (var generator in generators)
                 {
-                    var context = new TransformationContext(memberNode, inputSemanticModel, compilation);
+                    var context = new TransformationContext(memberNode, inputSemanticModel, compilation, projectDirectory);
                     var generatedTypes = await generator.GenerateAsync(context, progress, CancellationToken.None);
 
                     // Figure out ancestry for the generated type, including nesting types and namespaces.
@@ -112,22 +111,29 @@ namespace CodeGeneration.Roslyn
             return compilationUnit.SyntaxTree;
         }
 
-        private static IEnumerable<ICodeGenerator> FindCodeGenerators(SemanticModel document, SyntaxNode nodeWithAttributesApplied, Func<AssemblyName, Assembly> assemblyLoader)
+        private static ImmutableArray<AttributeData> GetAttributeData(Compilation compilation, SemanticModel document, SyntaxNode syntaxNode)
         {
-            Requires.NotNull(document, "document");
-            Requires.NotNull(nodeWithAttributesApplied, "nodeWithAttributesApplied");
+            Requires.NotNull(document, nameof(document));
+            Requires.NotNull(syntaxNode, nameof(syntaxNode));
 
-            var symbol = document.GetDeclaredSymbol(nodeWithAttributesApplied);
-            if (symbol != null)
+            switch (syntaxNode)
             {
-                foreach (var attributeData in symbol.GetAttributes())
+                case CompilationUnitSyntax syntax:
+                    return compilation.Assembly.GetAttributes().Where(x => x.ApplicationSyntaxReference.SyntaxTree == syntax.SyntaxTree).ToImmutableArray();
+                default:
+                    return document.GetDeclaredSymbol(syntaxNode)?.GetAttributes() ?? ImmutableArray<AttributeData>.Empty;
+            }
+        }
+
+        private static IEnumerable<ICodeGenerator> FindCodeGenerators(ImmutableArray<AttributeData> nodeAttributes, Func<AssemblyName, Assembly> assemblyLoader)
+        {
+            foreach (var attributeData in nodeAttributes)
+            {
+                Type generatorType = GetCodeGeneratorTypeForAttribute(attributeData.AttributeClass, assemblyLoader);
+                if (generatorType != null)
                 {
-                    Type generatorType = GetCodeGeneratorTypeForAttribute(attributeData.AttributeClass, assemblyLoader);
-                    if (generatorType != null)
-                    {
-                        ICodeGenerator generator = (ICodeGenerator)Activator.CreateInstance(generatorType, attributeData);
-                        yield return generator;
-                    }
+                    ICodeGenerator generator = (ICodeGenerator)Activator.CreateInstance(generatorType, attributeData);
+                    yield return generator;
                 }
             }
         }

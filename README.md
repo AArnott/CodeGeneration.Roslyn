@@ -163,7 +163,7 @@ If you build with `dotnet build`, you need to take a couple extra steps. First, 
 Second, add this item to an `<ItemGroup>` in the project that will execute the code generator as part of your build:
 
 ```xml
-<DotNetCliToolReference Include="dotnet-codegen" Version="0.4.11" />
+<DotNetCliToolReference Include="dotnet-codegen" Version="0.4.12" />
 ```
 
 You should adjust the version in the above xml to match the version of this tool you are using.
@@ -187,10 +187,10 @@ to immediately see the effects of your changes on the generated code.
 You can also package up your code generator as a NuGet package for others to install
 and use. Your NuGet package should include a dependency on the `CodeGeneration.Roslyn.BuildTime`
 that matches the version of `CodeGeneration.Roslyn` that you used to produce your generator.
-For example, if you used version 0.4.11 of this project, your .nuspec file would include this tag:
+For example, if you used version 0.4.12 of this project, your .nuspec file would include this tag:
 
 ```xml
-<dependency id="CodeGeneration.Roslyn.BuildTime" version="0.4.11" />
+<dependency id="CodeGeneration.Roslyn.BuildTime" version="0.4.12" />
 ```
 
 In addition to this dependency, your NuGet package should include a `build` folder with an
@@ -219,7 +219,7 @@ so that the MSBuild Task can invoke the `dotnet codegen` command line tool:
 ```xml
 <ItemGroup>
   <PackageReference Include="YourCodeGenPackage" Version="1.2.3" PrivateAssets="all" />
-  <DotNetCliToolReference Include="dotnet-codegen" Version="0.4.11" />
+  <DotNetCliToolReference Include="dotnet-codegen" Version="0.4.12" />
 </ItemGroup>
 ```
 

@@ -1,7 +1,5 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CodeGeneration.Roslyn
 {
@@ -10,23 +8,31 @@ namespace CodeGeneration.Roslyn
         /// <summary>
         /// Initializes a new instance of the <see cref="TransformationContext" /> class.
         /// </summary>
-        /// <param name="processingMember">The syntax node the generator attribute is found on.</param>
+        /// <param name="processingNode">The syntax node the generator attribute is found on.</param>
         /// <param name="semanticModel">The semantic model.</param>
         /// <param name="compilation">The overall compilation being generated for.</param>
-        public TransformationContext(MemberDeclarationSyntax processingMember, SemanticModel semanticModel, CSharpCompilation compilation)
+        /// <param name="projectDirectory">The absolute path of the directory where the project file is located</param>
+        public TransformationContext(CSharpSyntaxNode processingNode, SemanticModel semanticModel, CSharpCompilation compilation,
+                                     string projectDirectory)
         {
-            ProcessingMember = processingMember;
+            ProcessingNode = processingNode;
             SemanticModel = semanticModel;
             Compilation = compilation;
+            ProjectDirectory = projectDirectory;
         }
 
         /// <summary>Gets the syntax node the generator attribute is found on.</summary>
-        public MemberDeclarationSyntax ProcessingMember { get; }
+        public CSharpSyntaxNode ProcessingNode { get; }
 
         /// <summary>Gets the semantic model for the <see cref="Compilation" />.</summary>
         public SemanticModel SemanticModel { get; }
 
         /// <summary>Gets the overall compilation being generated for.</summary>
         public CSharpCompilation Compilation { get; }
+
+        /// <summary>
+        /// Gets the absolute path of the directory where the project file is located
+        /// </summary>
+        public string ProjectDirectory { get; }
     }
 }

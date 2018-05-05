@@ -71,6 +71,8 @@ namespace CodeGeneration.Roslyn
         /// </summary>
         public IEnumerable<string> EmptyGeneratedFiles => this.emptyGeneratedFiles;
 
+        public string ProjectDirectory { get; set; }
+
         public CompilationGenerator()
         {
             this.assemblyResolver = new CompositeCompilationAssemblyResolver(new ICompilationAssemblyResolver[]
@@ -123,6 +125,7 @@ namespace CodeGeneration.Roslyn
                                 var generatedSyntaxTree = DocumentTransform.TransformAsync(
                                     compilation,
                                     inputSyntaxTree,
+                                    this.ProjectDirectory,
                                     this.LoadAssembly,
                                     progress).GetAwaiter().GetResult();
 
