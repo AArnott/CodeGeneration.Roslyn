@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.CommandLine;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Loader;
+using CodeGeneration.Roslyn.Tool.CommandLine;
 using Microsoft.CodeAnalysis;
 
 namespace CodeGeneration.Roslyn.Generate
