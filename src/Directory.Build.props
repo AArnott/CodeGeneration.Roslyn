@@ -11,8 +11,7 @@
     <RepositoryUrl>https://github.com/aarnott/CodeGeneration.Roslyn</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <IsPackable Condition=" $(MSBuildProjectName.Contains('Test')) ">false</IsPackable>
-
-    <NerdbankGitVersioningVersion>1.6.25</NerdbankGitVersioningVersion>
+    <NerdbankGitVersioningVersion>2.1.23</NerdbankGitVersioningVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,13 +25,4 @@
       <PackageLicenseUrl>https://raw.githubusercontent.com/AArnott/CodeGeneration.Roslyn/$(GitCommitIdShort)/LICENSE.txt</PackageLicenseUrl>
     </PropertyGroup>
   </Target>
-
-  <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' == 'true' ">
-    <Import Project="$(UserProfile)\.nuget\packages\nerdbank.gitversioning\$(NerdbankGitVersioningVersion)\buildCrossTargeting\Nerdbank.GitVersioning.targets"
-            Condition="Exists('$(UserProfile)\.nuget\packages\nerdbank.gitversioning\$(NerdbankGitVersioningVersion)\buildCrossTargeting\Nerdbank.GitVersioning.targets')" />
-  </ImportGroup>
-  <Target Name="FixUpVersion"
-      BeforeTargets="_GenerateRestoreProjectSpec"
-      DependsOnTargets="GetBuildVersion"
-      Condition=" '$(NerdbankGitVersioningTasksPath)' != '' " />
 </Project>

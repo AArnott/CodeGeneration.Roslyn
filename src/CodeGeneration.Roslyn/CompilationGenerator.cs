@@ -7,6 +7,8 @@ namespace CodeGeneration.Roslyn
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
     using Microsoft.CodeAnalysis.Text;
+    using Microsoft.Extensions.DependencyModel;
+    using Microsoft.Extensions.DependencyModel.Resolution;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
@@ -29,6 +31,10 @@ namespace CodeGeneration.Roslyn
         private readonly List<string> generatedFiles = new List<string>();
         private readonly List<string> additionalWrittenFiles = new List<string>();
         private readonly List<string> loadedAssemblies = new List<string>();
+        private readonly Dictionary<string, Assembly> assembliesByPath = new Dictionary<string, Assembly>();
+        private readonly HashSet<string> directoriesWithResolver = new HashSet<string>();
+        private CompositeCompilationAssemblyResolver assemblyResolver;
+        private DependencyContext dependencyContext;
 
         /// <summary>
         /// Gets or sets the list of paths of files to be compiled.
@@ -66,6 +72,19 @@ namespace CodeGeneration.Roslyn
         public IEnumerable<string> EmptyGeneratedFiles => this.emptyGeneratedFiles;
 
         public string ProjectDirectory { get; set; }
+
+        public CompilationGenerator()
+        {
+            this.assemblyResolver = new CompositeCompilationAssemblyResolver(new ICompilationAssemblyResolver[]
+            {
+                new ReferenceAssemblyPathResolver(),
+                new PackageCompilationAssemblyResolver()
+            });
+            this.dependencyContext = DependencyContext.Default;
+
+            var loadContext = AssemblyLoadContext.GetLoadContext(this.GetType().GetTypeInfo().Assembly);
+            loadContext.Resolving += this.ResolveAssembly;
+        }
 
         public void Generate(IProgress<Diagnostic> progress = null, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -159,8 +178,45 @@ namespace CodeGeneration.Roslyn
 
         protected virtual Assembly LoadAssembly(string path)
         {
+            if (this.assembliesByPath.ContainsKey(path))
+                return this.assembliesByPath[path];
+
             var loadContext = AssemblyLoadContext.GetLoadContext(this.GetType().GetTypeInfo().Assembly);
-            return loadContext.LoadFromAssemblyPath(path);
+            var assembly = loadContext.LoadFromAssemblyPath(path);
+
+            this.dependencyContext = this.dependencyContext.Merge(DependencyContext.Load(assembly));
+            var basePath = Path.GetDirectoryName(path);
+            if (!this.directoriesWithResolver.Contains(basePath))
+            {
+                this.assemblyResolver = new CompositeCompilationAssemblyResolver(new ICompilationAssemblyResolver[]
+                {
+                    new AppBaseCompilationAssemblyResolver(basePath),
+                    this.assemblyResolver
+                });
+            }
+
+            this.assembliesByPath.Add(path, assembly);
+            return assembly;
+        }
+
+        private Assembly ResolveAssembly(AssemblyLoadContext context, AssemblyName name)
+        {
+            var library = this.dependencyContext.RuntimeLibraries.FirstOrDefault(runtime => string.Equals(runtime.Name, name.Name, StringComparison.OrdinalIgnoreCase));
+            if (library == null)
+                return null;
+            var wrapper = new CompilationLibrary(
+                library.Type,
+                library.Name,
+                library.Version,
+                library.Hash,
+                library.RuntimeAssemblyGroups.SelectMany(g => g.AssetPaths),
+                library.Dependencies,
+                library.Serviceable);
+
+            var assemblyPathes = new List<string>();
+            this.assemblyResolver.TryResolveAssemblyPaths(wrapper, assemblyPathes);
+
+            return assemblyPathes.Select(context.LoadFromAssemblyPath).FirstOrDefault();
         }
 
         private static DateTime GetLastModifiedAssemblyTime(string assemblyListPath)
