@@ -31,8 +31,8 @@ namespace CodeGeneration.Roslyn
         private readonly List<string> generatedFiles = new List<string>();
         private readonly List<string> additionalWrittenFiles = new List<string>();
         private readonly List<string> loadedAssemblies = new List<string>();
-        private readonly Dictionary<string, Assembly> assemblysByPath = new Dictionary<string, Assembly>();
-        private readonly HashSet<string> directorysWithResolver = new HashSet<string>();
+        private readonly Dictionary<string, Assembly> assembliesByPath = new Dictionary<string, Assembly>();
+        private readonly HashSet<string> directoriesWithResolver = new HashSet<string>();
         private CompositeCompilationAssemblyResolver assemblyResolver;
         private DependencyContext dependencyContext;
 
@@ -178,15 +178,15 @@ namespace CodeGeneration.Roslyn
 
         protected virtual Assembly LoadAssembly(string path)
         {
-            if (this.assemblysByPath.ContainsKey(path))
-                return this.assemblysByPath[path];
+            if (this.assembliesByPath.ContainsKey(path))
+                return this.assembliesByPath[path];
 
             var loadContext = AssemblyLoadContext.GetLoadContext(this.GetType().GetTypeInfo().Assembly);
             var assembly = loadContext.LoadFromAssemblyPath(path);
 
             this.dependencyContext = this.dependencyContext.Merge(DependencyContext.Load(assembly));
             var basePath = Path.GetDirectoryName(path);
-            if (!this.directorysWithResolver.Contains(basePath))
+            if (!this.directoriesWithResolver.Contains(basePath))
             {
                 this.assemblyResolver = new CompositeCompilationAssemblyResolver(new ICompilationAssemblyResolver[]
                 {
@@ -195,7 +195,7 @@ namespace CodeGeneration.Roslyn
                 });
             }
 
-            this.assemblysByPath.Add(path, assembly);
+            this.assembliesByPath.Add(path, assembly);
             return assembly;
         }
 
