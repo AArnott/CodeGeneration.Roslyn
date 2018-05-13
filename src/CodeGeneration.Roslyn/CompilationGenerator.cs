@@ -193,6 +193,7 @@ namespace CodeGeneration.Roslyn
                     new AppBaseCompilationAssemblyResolver(basePath),
                     this.assemblyResolver
                 });
+                this.directoriesWithResolver.Add(basePath);
             }
 
             this.assembliesByPath.Add(path, assembly);
