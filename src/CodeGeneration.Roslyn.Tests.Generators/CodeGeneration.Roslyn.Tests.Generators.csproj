@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CodeGeneration.Roslyn.Attributes\CodeGeneration.Roslyn.Attributes.csproj" />
+    <ProjectReference Include="..\CodeGeneration.Roslyn.Tests.Generators.Dependency\CodeGeneration.Roslyn.Tests.Generators.Dependency.csproj" />
     <ProjectReference Include="..\CodeGeneration.Roslyn\CodeGeneration.Roslyn.csproj" />
   </ItemGroup>
 </Project>

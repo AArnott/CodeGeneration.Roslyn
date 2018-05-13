@@ -23,12 +23,26 @@ public partial class CodeGenerationTests
         Assert.EndsWith(@"src\CodeGeneration.Roslyn.Tests", DirectoryPathTest.Path, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void ExternalDependencyFound()
+    {
+        dynamic d = new Wraper();
+        d.TestMethdoSuffix();
+    }
+
+    public partial class Wraper
+    {
+        [ExternalDuplicateWithSuffixByName("Suffix")]
+        public void TestMethdo() { }
+    }
+
+
     [DuplicateWithSuffixByName("A")]
     [DuplicateWithSuffixByType("B")]
     public class Foo
     {
     }
-    
+
     [MultiplySuffix]
     public partial class MultipliedBar
     {
@@ -36,3 +50,4 @@ public partial class CodeGenerationTests
         public string Value { get; set; }
     }
 }
+
