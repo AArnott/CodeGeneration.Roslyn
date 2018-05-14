@@ -30,7 +30,7 @@ public partial class CodeGenerationTests
         d.TestMethdoSuffix();
     }
 
-    public partial class Wraper
+    public partial class Wrapper
     {
         [ExternalDuplicateWithSuffixByName("Suffix")]
         public void TestMethod() { }
