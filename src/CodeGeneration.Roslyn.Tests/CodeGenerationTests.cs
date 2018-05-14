@@ -33,7 +33,7 @@ public partial class CodeGenerationTests
     public partial class Wraper
     {
         [ExternalDuplicateWithSuffixByName("Suffix")]
-        public void TestMethdo() { }
+        public void TestMethod() { }
     }
 
 

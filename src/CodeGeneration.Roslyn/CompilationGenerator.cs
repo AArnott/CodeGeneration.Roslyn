@@ -185,7 +185,7 @@ namespace CodeGeneration.Roslyn
             var assembly = loadContext.LoadFromAssemblyPath(path);
 
             var newDependencyContext = DependencyContext.Load(assembly);
-            if(newDependencyContext!=null)
+            if (newDependencyContext != null)
                 this.dependencyContext = this.dependencyContext.Merge(newDependencyContext);
             var basePath = Path.GetDirectoryName(path);
             if (!this.directoriesWithResolver.Contains(basePath))
