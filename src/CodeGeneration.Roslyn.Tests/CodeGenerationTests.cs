@@ -26,8 +26,8 @@ public partial class CodeGenerationTests
     [Fact]
     public void ExternalDependencyFound()
     {
-        dynamic d = new Wraper();
-        d.TestMethdoSuffix();
+        dynamic d = new Wrapper();
+        d.TestMethodSuffix();
     }
 
     public partial class Wrapper
