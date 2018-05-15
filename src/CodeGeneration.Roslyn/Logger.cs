@@ -29,11 +29,17 @@ namespace CodeGeneration.Roslyn
             // Prefix every Line with loglevel
             var begin = 0;
             var end = message.IndexOf('\n');
+            bool foundR = end > 0 && message[end - 1] == '\r';
+            if(foundR)
+                end--;
             while (end != -1)
             {
                 Print(message.Substring(begin, end - begin));
-                begin = end;
+                begin = end + (foundR ? 2 : 1);
                 end = message.IndexOf('\n', begin);
+                bool foundR = end > 0 && message[end - 1] == '\r';
+                if(foundR)
+                    end--;
             }
             Print(message.Substring(begin, message.Length - begin));
 
