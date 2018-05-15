@@ -37,7 +37,7 @@ namespace CodeGeneration.Roslyn
                 Print(message.Substring(begin, end - begin));
                 begin = end + (foundR ? 2 : 1);
                 end = message.IndexOf('\n', begin);
-                bool foundR = end > 0 && message[end - 1] == '\r';
+                foundR = end > 0 && message[end - 1] == '\r';
                 if(foundR)
                     end--;
             }
