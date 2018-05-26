@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <PackageType>DotnetCliTool</PackageType>
@@ -6,6 +6,7 @@
     <TargetFramework>netcoreapp1.0</TargetFramework>
     <AssemblyName>dotnet-codegen</AssemblyName>
     <LangVersion>7.1</LangVersion>
+    <Description>The dotnet code generation tool that works with the CodeGeneration.Roslyn nuget package.</Description>
   </PropertyGroup>
 
   <ItemGroup>
