@@ -42,23 +42,23 @@ public abstract class CompilationTestsBase
     internal const string CSharpDefaultFileExt = "cs";
     internal const string TestProjectName = "TestProject";
 
-    internal static readonly string NormalizedPreamble = NormalizeToCrLf(DocumentTransform.GeneratedByAToolPreamble) + CrLf;
+    internal static readonly string NormalizedPreamble = NormalizeToLf(DocumentTransform.GeneratedByAToolPreamble + Lf);
 
     internal static readonly ImmutableArray<MetadataReference> MetadataReferences;
 
-    protected static void AssertGeneratedAsExpected(string source, string expectedGenerated)
+    protected static void AssertGeneratedAsExpected(string source, string expected)
     {
         var generatedTree = Generate(source);
-        var generatedText = generatedTree.GetText().ToString();
-        // normalize line endings to the same as defaults from NormalizeWhitespace called in TransformAsync
-        // and append preamble
-        var expected = NormalizedPreamble + NormalizeToCrLf(expectedGenerated).Trim();
-        Assert.Equal(expected, generatedText);
+        // normalize line endings to just LF
+        var generatedText = NormalizeToLf(generatedTree.GetText().ToString());
+        // and append preamble to the expected
+        var expectedText = NormalizedPreamble + NormalizeToLf(expected).Trim();
+        Assert.Equal(expectedText, generatedText);
     }
 
-    protected static string NormalizeToCrLf(string input)
+    protected static string NormalizeToLf(string input)
     {
-        return input?.Replace(CrLf, Lf).Replace(Lf, CrLf);
+        return input?.Replace(CrLf, Lf);
     }
 
     protected static SyntaxTree Generate(string source)
