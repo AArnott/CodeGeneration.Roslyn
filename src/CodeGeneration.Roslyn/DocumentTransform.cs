@@ -68,34 +68,15 @@ namespace CodeGeneration.Roslyn
                 foreach (var generator in generators)
                 {
                     var context = new TransformationContext(memberNode, inputSemanticModel, compilation, projectDirectory);
-                    var generatedTypes = await generator.GenerateAsync(context, progress, CancellationToken.None);
+                    var generatedMembers = await generator.GenerateAsync(context, progress, CancellationToken.None);
 
                     // Figure out ancestry for the generated type, including nesting types and namespaces.
                     foreach (var ancestor in memberNode.Ancestors())
                     {
-                        switch (ancestor)
-                        {
-                            case NamespaceDeclarationSyntax ancestorNamespace:
-                                generatedTypes = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
-                                    CopyAsAncestor(ancestorNamespace)
-                                    .WithMembers(generatedTypes));
-                                break;
-                            case ClassDeclarationSyntax nestingClass:
-                                generatedTypes = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
-                                    CopyAsAncestor(nestingClass)
-                                    .WithMembers(generatedTypes));
-                                break;
-                            case StructDeclarationSyntax nestingStruct:
-                                generatedTypes = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
-                                    CopyAsAncestor(nestingStruct)
-                                    .WithMembers(generatedTypes));
-                                break;
-                            default:
-                                break;
-                        }
+                        generatedMembers = WrapInAncestor(generatedMembers, ancestor);
                     }
 
-                    emittedMembers = emittedMembers.AddRange(generatedTypes);
+                    emittedMembers = emittedMembers.AddRange(generatedMembers);
                 }
             }
 
@@ -112,6 +93,31 @@ namespace CodeGeneration.Roslyn
                 .NormalizeWhitespace();
 
             return compilationUnit.SyntaxTree;
+        }
+
+        private static SyntaxList<MemberDeclarationSyntax> WrapInAncestor(SyntaxList<MemberDeclarationSyntax> generatedMembers, SyntaxNode ancestor)
+        {
+            switch (ancestor)
+            {
+                case NamespaceDeclarationSyntax ancestorNamespace:
+                    generatedMembers = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
+                        CopyAsAncestor(ancestorNamespace)
+                        .WithMembers(generatedMembers));
+                    break;
+                case ClassDeclarationSyntax nestingClass:
+                    generatedMembers = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
+                        CopyAsAncestor(nestingClass)
+                        .WithMembers(generatedMembers));
+                    break;
+                case StructDeclarationSyntax nestingStruct:
+                    generatedMembers = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
+                        CopyAsAncestor(nestingStruct)
+                        .WithMembers(generatedMembers));
+                    break;
+                default:
+                    break;
+            }
+            return generatedMembers;
         }
 
         private static NamespaceDeclarationSyntax CopyAsAncestor(NamespaceDeclarationSyntax syntax)
