@@ -73,32 +73,25 @@ namespace CodeGeneration.Roslyn
                     // Figure out ancestry for the generated type, including nesting types and namespaces.
                     foreach (var ancestor in memberNode.Ancestors())
                     {
-                        var ancestorNamespace = ancestor as NamespaceDeclarationSyntax;
-                        var nestingClass = ancestor as ClassDeclarationSyntax;
-                        var nestingStruct = ancestor as StructDeclarationSyntax;
-                        if (ancestorNamespace != null)
+                        switch (ancestor)
                         {
-                            generatedTypes = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
-                                ancestorNamespace
-                                    .WithMembers(generatedTypes)
-                                    .WithLeadingTrivia(SyntaxFactory.TriviaList())
-                                    .WithTrailingTrivia(SyntaxFactory.TriviaList()));
-                        }
-                        else if (nestingClass != null)
-                        {
-                            generatedTypes = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
-                                nestingClass
-                                    .WithMembers(generatedTypes)
-                                    .WithLeadingTrivia(SyntaxFactory.TriviaList())
-                                    .WithTrailingTrivia(SyntaxFactory.TriviaList()));
-                        }
-                        else if (nestingStruct != null)
-                        {
-                            generatedTypes = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
-                                nestingStruct
-                                    .WithMembers(generatedTypes)
-                                    .WithLeadingTrivia(SyntaxFactory.TriviaList())
-                                    .WithTrailingTrivia(SyntaxFactory.TriviaList()));
+                            case NamespaceDeclarationSyntax ancestorNamespace:
+                                generatedTypes = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
+                                    CopyAsAncestor(ancestorNamespace)
+                                    .WithMembers(generatedTypes));
+                                break;
+                            case ClassDeclarationSyntax nestingClass:
+                                generatedTypes = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
+                                    CopyAsAncestor(nestingClass)
+                                    .WithMembers(generatedTypes));
+                                break;
+                            case StructDeclarationSyntax nestingStruct:
+                                generatedTypes = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
+                                    CopyAsAncestor(nestingStruct)
+                                    .WithMembers(generatedTypes));
+                                break;
+                            default:
+                                break;
                         }
                     }
 
@@ -119,6 +112,27 @@ namespace CodeGeneration.Roslyn
                 .NormalizeWhitespace();
 
             return compilationUnit.SyntaxTree;
+        }
+
+        private static NamespaceDeclarationSyntax CopyAsAncestor(NamespaceDeclarationSyntax syntax)
+        {
+            return SyntaxFactory.NamespaceDeclaration(syntax.Name.WithoutTrivia())
+                .WithExterns(SyntaxFactory.List(syntax.Externs.Select(x => x.WithoutTrivia())))
+                .WithUsings(SyntaxFactory.List(syntax.Usings.Select(x => x.WithoutTrivia())));
+        }
+
+        private static ClassDeclarationSyntax CopyAsAncestor(ClassDeclarationSyntax syntax)
+        {
+            return SyntaxFactory.ClassDeclaration(syntax.Identifier.WithoutTrivia())
+                .WithModifiers(SyntaxFactory.TokenList(syntax.Modifiers.Select(x => x.WithoutTrivia())))
+                .WithTypeParameterList(syntax.TypeParameterList);
+        }
+
+        private static StructDeclarationSyntax CopyAsAncestor(StructDeclarationSyntax syntax)
+        {
+            return SyntaxFactory.StructDeclaration(syntax.Identifier.WithoutTrivia())
+                .WithModifiers(SyntaxFactory.TokenList(syntax.Modifiers.Select(x => x.WithoutTrivia())))
+                .WithTypeParameterList(syntax.TypeParameterList);
         }
 
         private static ImmutableArray<AttributeData> GetAttributeData(Compilation compilation, SemanticModel document, SyntaxNode syntaxNode)

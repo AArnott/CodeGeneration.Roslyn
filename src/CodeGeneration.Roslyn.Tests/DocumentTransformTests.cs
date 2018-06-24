@@ -33,6 +33,8 @@ partial class Empty {}
 
 namespace Testing.Middle
 {
+    using System.Linq;
+
     namespace Inner
     {
         partial class OuterClass<T>
@@ -55,6 +57,8 @@ partial class Empty
 
 namespace Testing.Middle
 {
+    using System.Linq;
+
     namespace Inner
     {
         partial class OuterClass<T>
@@ -135,7 +139,7 @@ partial class Empty
     }
 
     [Fact]
-    public void RegionDirective_InsideClass_TrailingEnd_LeftDangling()
+    public void RegionDirective_InsideClass_Dropped()
     {
         const string source = @"
 using System;
@@ -154,13 +158,12 @@ using CodeGeneration.Roslyn.Tests.Generators;
 
 partial class Empty
 {
-#endregion
 }";
         AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void RegionDirective_InsideStruct_TrailingEnd_LeftDangling()
+    public void RegionDirective_InsideStruct_Dropped()
     {
         const string source = @"
 using System;
@@ -179,13 +182,12 @@ using CodeGeneration.Roslyn.Tests.Generators;
 
 partial struct Empty
 {
-#endregion
 }";
         AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void RegionDirective_InsideNamespace_TrailingEnd_LeftDangling()
+    public void RegionDirective_InsideNamespace_Dropped()
     {
         const string source = @"
 using System;
@@ -207,7 +209,120 @@ namespace Testing
     partial class Empty
     {
     }
-#endregion
+}";
+        AssertGeneratedAsExpected(source, generated);
+    }
+
+    [Fact]
+    public void Class_Modifiers_ArePreserved_WithoutTrivia()
+    {
+        const string source = @"
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+
+namespace Testing
+{
+    // some one-line comment
+    public static partial class Empty
+    {
+        [EmptyPartial]
+        public static int Method() => 0;
+    }
+}";
+        const string generated = @"
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+
+namespace Testing
+{
+    public static partial class Empty
+    {
+    }
+}";
+        AssertGeneratedAsExpected(source, generated);
+    }
+
+    [Fact]
+    public void Struct_Modifiers_ArePreserved_WithoutTrivia()
+    {
+        const string source = @"
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+
+namespace Testing
+{
+    // some one-line comment
+    internal partial struct Empty
+    {
+        [EmptyPartial]
+        public static int Method() => 0;
+    }
+}";
+        const string generated = @"
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+
+namespace Testing
+{
+    internal partial struct Empty
+    {
+    }
+}";
+        AssertGeneratedAsExpected(source, generated);
+    }
+
+    [Fact]
+    public void Class_TypeParameters_ArePreserved()
+    {
+        const string source = @"
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+
+namespace Testing
+{
+    partial class Empty<T> where T : class
+    {
+        [EmptyPartial]
+        public static T Method() => null;
+    }
+}";
+        const string generated = @"
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+
+namespace Testing
+{
+    partial class Empty<T>
+    {
+    }
+}";
+        AssertGeneratedAsExpected(source, generated);
+    }
+
+    [Fact]
+    public void Struct_TypeParameters_ArePreserved()
+    {
+        const string source = @"
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+
+namespace Testing
+{
+    partial struct Empty<T> where T : class
+    {
+        [EmptyPartial]
+        public static T Method() => null;
+    }
+}";
+        const string generated = @"
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+
+namespace Testing
+{
+    partial struct Empty<T>
+    {
+    }
 }";
         AssertGeneratedAsExpected(source, generated);
     }
