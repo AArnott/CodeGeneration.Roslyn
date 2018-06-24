@@ -49,14 +49,15 @@ namespace CodeGeneration.Roslyn
             var inputSyntaxTree = inputSemanticModel.SyntaxTree;
             var inputCompilationUnit = inputSyntaxTree.GetCompilationUnitRoot();
 
-            var inputFileLevelExternAliases = inputCompilationUnit
+            var compilationUnitExterns = inputCompilationUnit
                 .Externs
                 .Select(x => x.WithoutTrivia())
                 .ToImmutableArray();
-            var inputFileLevelUsingDirectives = inputCompilationUnit
+            var compilationUnitUsings = inputCompilationUnit
                 .Usings
                 .Select(x => x.WithoutTrivia())
                 .ToImmutableArray();
+            var compilationUnitAttributeLists = ImmutableArray<AttributeListSyntax>.Empty;
 
             var memberNodes = inputSyntaxTree.GetRoot().DescendantNodesAndSelf(n => n is CompilationUnitSyntax || n is NamespaceDeclarationSyntax || n is TypeDeclarationSyntax).OfType<CSharpSyntaxNode>();
 
@@ -67,26 +68,34 @@ namespace CodeGeneration.Roslyn
                 var generators = FindCodeGenerators(attributeData, assemblyLoader);
                 foreach (var generator in generators)
                 {
-                    var context = new TransformationContext(memberNode, inputSemanticModel, compilation, projectDirectory);
-                    var generatedMembers = await generator.GenerateAsync(context, progress, CancellationToken.None);
+                    var context = new TransformationContext(memberNode, inputSemanticModel, compilation, projectDirectory,
+                        compilationUnitUsings, compilationUnitExterns);
 
-                    // Figure out ancestry for the generated type, including nesting types and namespaces.
-                    foreach (var ancestor in memberNode.Ancestors())
+                    if (generator is IRichCodeGenerator richGenerator)
                     {
-                        generatedMembers = WrapInAncestor(generatedMembers, ancestor);
+                        var (members, usings, attributeLists, externs) = await richGenerator.GenerateRichAsync(context, progress, CancellationToken.None);
+                        compilationUnitExterns = compilationUnitExterns.AddRange(externs);
+                        compilationUnitUsings =  compilationUnitUsings.AddRange(usings);
+                        compilationUnitAttributeLists = compilationUnitAttributeLists.AddRange(attributeLists);
+                        emittedMembers = emittedMembers.AddRange(members);
                     }
-
-                    emittedMembers = emittedMembers.AddRange(generatedMembers);
+                    else
+                    {
+                        var generatedMembers = await generator.GenerateAsync(context, progress, CancellationToken.None);
+                        // Figure out ancestry for the generated type, including nesting types and namespaces.
+                        generatedMembers = memberNode.Ancestors().Aggregate(generatedMembers, WrapInAncestor);
+                        emittedMembers = emittedMembers.AddRange(generatedMembers);
+                    }
                 }
             }
 
             // By default, retain all the using directives that came from the input file.
-            var resultFileLevelExternAliases = SyntaxFactory.List(inputFileLevelExternAliases);
-            var resultFileLevelUsingDirectives = SyntaxFactory.List(inputFileLevelUsingDirectives);
+            var resultFileLevelExterns = SyntaxFactory.List(compilationUnitExterns);
+            var resultFileLevelUsings = SyntaxFactory.List(compilationUnitUsings);
 
             var compilationUnit = SyntaxFactory.CompilationUnit()
-                .WithExterns(resultFileLevelExternAliases)
-                .WithUsings(resultFileLevelUsingDirectives)
+                .WithExterns(resultFileLevelExterns)
+                .WithUsings(resultFileLevelUsings)
                 .WithMembers(emittedMembers)
                 .WithLeadingTrivia(SyntaxFactory.Comment(GeneratedByAToolPreamble))
                 .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed)
