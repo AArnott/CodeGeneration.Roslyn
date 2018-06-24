@@ -85,11 +85,14 @@ using System.Linq;";
     [Fact]
     public void Comment_BetweenUsings_Dropped()
     {
-        const string usings = @"
+        const string source = @"
 using System;
 // one line comment
 using System.Linq;";
-        AssertGeneratedAsExpected(usings, usings);
+        const string generated = @"
+using System;
+using System.Linq;";
+        AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
@@ -102,13 +105,12 @@ using System.Linq;
 #endregion //CustomRegion";
         const string generated = @"
 using System;
-#region CustomRegion
 using System.Linq;";
         AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void IfElseDirective_OnUsings_TrailingEndIf_Dropped()
+    public void IfElseDirective_OnUsings_InactiveUsingAndDirectives_Dropped()
     {
         const string source = @"
 using System;
@@ -116,7 +118,7 @@ using CodeGeneration.Roslyn.Tests.Generators;
 #if SOMETHING
 using System.Linq;
 #else
-using System.Linq;
+using System.Diagnostics;
 #endif
 
 [EmptyPartial]
@@ -124,10 +126,7 @@ partial class Empty {}";
         const string generated = @"
 using System;
 using CodeGeneration.Roslyn.Tests.Generators;
-#if SOMETHING
-using System.Linq;
-#else
-using System.Linq;
+using System.Diagnostics;
 
 partial class Empty
 {

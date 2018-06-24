@@ -47,8 +47,16 @@ namespace CodeGeneration.Roslyn
 
             var inputSemanticModel = compilation.GetSemanticModel(inputDocument);
             var inputSyntaxTree = inputSemanticModel.SyntaxTree;
+            var inputCompilationUnit = inputSyntaxTree.GetCompilationUnitRoot();
 
-            var inputFileLevelUsingDirectives = inputSyntaxTree.GetRoot().ChildNodes().OfType<UsingDirectiveSyntax>();
+            var inputFileLevelExternAliases = inputCompilationUnit
+                .Externs
+                .Select(x => x.WithoutTrivia())
+                .ToImmutableArray();
+            var inputFileLevelUsingDirectives = inputCompilationUnit
+                .Usings
+                .Select(x => x.WithoutTrivia())
+                .ToImmutableArray();
 
             var memberNodes = inputSyntaxTree.GetRoot().DescendantNodesAndSelf(n => n is CompilationUnitSyntax || n is NamespaceDeclarationSyntax || n is TypeDeclarationSyntax).OfType<CSharpSyntaxNode>();
 
@@ -99,9 +107,11 @@ namespace CodeGeneration.Roslyn
             }
 
             // By default, retain all the using directives that came from the input file.
+            var resultFileLevelExternAliases = SyntaxFactory.List(inputFileLevelExternAliases);
             var resultFileLevelUsingDirectives = SyntaxFactory.List(inputFileLevelUsingDirectives);
 
             var compilationUnit = SyntaxFactory.CompilationUnit()
+                .WithExterns(resultFileLevelExternAliases)
                 .WithUsings(resultFileLevelUsingDirectives)
                 .WithMembers(emittedMembers)
                 .WithLeadingTrivia(SyntaxFactory.Comment(GeneratedByAToolPreamble))
