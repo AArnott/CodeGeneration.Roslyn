@@ -8,20 +8,30 @@ This includes design-time support, such that code generation can respond to
 changes made in hand-authored code files by generating new code that shows
 up to Intellisense as soon as the file is saved to disk.
 
+## Table of Contents
+
+* [How to write your own code generator][]
+* [Apply code generation][]
+* [Developing your code generator][]
+* [Packaging up your code generator for others' use][]
+
 ## How to write your own code generator
+[How to write your own code generator]: #how-to-write-your-own-code-generator
 
 In this walkthrough, we will define a code generator that replicates any class
 your code generation attribute is applied to, but with a suffix appended to its name.
 
 ### Define code generator
+[Define code generator]: #define-code-generator
 
-This must be done in a library that targets netstandard1.5 or net462 (or later).
+This must be done in a library that targets netstandard1.6 or net461 (or later;
+net461 is supported if you have .NET Core SDK v2.0+ installed, [see docs for details][netstandard-table]).
 Your generator cannot be defined in the same project that will have code generated
 for it because code generation runs *before* the receiving project is itself compiled.
 
 Install the [CodeGeneration.Roslyn][NuPkg] NuGet Package.
 
-Define the generator class:
+Define the generator class (*note: constructor accepting `AttributeData` parameter is required*):
 
 ```csharp
 using CodeGeneration.Roslyn;
@@ -67,7 +77,7 @@ public class DuplicateWithSuffixGenerator : ICodeGenerator
 To activate your code generator, you need to define an attribute that can be
 applied to the class to be copied. This attribute may be defined in the same
 assembly as defines your code generator, but since your code generator must
-be defined in a netstandard1.3 or net46 library, this may limit which projects
+be defined in a netstandard1.6+ or net461+ library, this may limit which projects
 can apply your attribute. So define your attribute in another assembly if
 it must be applied to projects that target older platforms.
 
@@ -76,7 +86,7 @@ If your attributes are in their own project, you must install the
 
 Define your attribute class.
 For this walkthrough, we will assume that the attributes are defined in the same
-netstandard1.3 project that defines the generator which allows us to use the more
+netstandard1.6 project that defines the generator which allows us to use the more
 convenient `typeof` syntax when declaring the code generator type.
 If the attributes and code generator classes were in separate assemblies, you must
 specify the assembly-qualified name of the generator type as a string instead.
@@ -110,10 +120,13 @@ instead as just a compile-time hint to code generation, and allowing you to not 
 with a dependency on your code generation assembly.
 
 ## Apply code generation
+[Apply code generation]: #apply-code-generation
 
 The attribute may not be applied in the same assembly that defines the generator.
 This is because the code generator must be compiled in order to execute before compiling
-the project that applies the attribute.
+the project that applies the attribute. Also, the consuming project (where the code
+will be generated) must use SDK-style csproj, which implies using VS2017+ or `dotnet`
+CLI tooling (VS Code with omnisharp, for example).
 
 Applying code generation is incredibly simple. Just add the attribute on any type
 or member supported by the attribute and generator you wrote. Note you will need to
@@ -128,7 +141,14 @@ public class Foo
 
 Install the [CodeGeneration.Roslyn.BuildTime][BuildTimeNuPkg] package into the
 project that uses your attribute. You may set `PrivateAssets="all"` on this reference
-because this is a build-time only package.
+because this is a build-time only package. You must also add this item to an `<ItemGroup>` in the project
+that will execute the code generator as part of your build:
+
+```xml
+<DotNetCliToolReference Include="dotnet-codegen" Version="0.4.12" />
+```
+
+You should adjust the version in the above xml to match the version of this tool you are using.
 
 You can then consume the generated code at design-time:
 
@@ -146,43 +166,23 @@ If you execute Go To Definition on it, Visual Studio will open the generated cod
 that actually defines `FooA`, and you'll notice it's exactly like `Foo`, just renamed
 as our code generator defined it to be.
 
-### Using `dotnet build`
-
-If you build with `dotnet build`, you need to take a couple extra steps. First, define a `nuget.config` file with an extra package source:
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <packageSources>
-    <add key="api.nuget.org" value="https://api.nuget.org/v3/index.json" />
-    <add key="corefxlab" value="https://dotnet.myget.org/F/dotnet-corefxlab/api/v3/index.json" />
-  </packageSources>
-</configuration>
-```
-
-Second, add this item to an `<ItemGroup>` in the project that will execute the code generator as part of your build:
-
-```xml
-<DotNetCliToolReference Include="dotnet-codegen" Version="0.4.12" />
-```
-
-You should adjust the version in the above xml to match the version of this tool you are using.
-
 ### Shared Projects
 
 When using shared projects and partial classes across the definitions of your class in shared and platform projects:
 
 * The code generation attributes should be applied only to the files in the shared project
   (or in other words, the attribute should only be applied once per type to avoid multiple generator invocations).
-* The MSBuild:GenerateCodeFromAttributes custom tool must be applied to every file we want to auto generate code from.
+* The `MSBuild:GenerateCodeFromAttributes` custom tool must be applied to every file we want to auto generate code from.
 
 ## Developing your code generator
+[Developing your code generator]: #developing-your-code-generator
 
 Your code generator can be defined in a project in the same solution as the solution with
 the project that consumes it. You can edit your code generator and build the solution
 to immediately see the effects of your changes on the generated code.
 
 ## Packaging up your code generator for others' use
+[Packaging up your code generator for others' use]: #packaging-up-your-code-generator-for-others-use
 
 You can also package up your code generator as a NuGet package for others to install
 and use. Your NuGet package should include a dependency on the `CodeGeneration.Roslyn.BuildTime`
@@ -210,7 +210,7 @@ For example your package should have a `build\MyPackage.targets` file with this 
 Then your package should also have a `tools` folder that contains your code generator and any of the runtime
 dependencies it needs *besides those delivered by the `CodeGeneration.Roslyn.BuildTime` package*.
 
-Your attributes assembly should be placed under your package's `lib` folder` so consuming projects
+Your attributes assembly should be placed under your package's `lib` folder so consuming projects
 can apply those attributes.
 
 Your consumers should depend on your package, and the required dotnet CLI tool,
@@ -223,21 +223,10 @@ so that the MSBuild Task can invoke the `dotnet codegen` command line tool:
 </ItemGroup>
 ```
 
-Also, any consumer must have a nuget.config file with at least this content:
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <packageSources>
-    <add key="api.nuget.org" value="https://api.nuget.org/v3/index.json" />
-    <add key="corefxlab" value="https://dotnet.myget.org/F/dotnet-corefxlab/api/v3/index.json" />
-  </packageSources>
-</configuration>
-```
-
 Make sure that the DotNetCliToolReference version matches the version of the
 `CodeGeneration.Roslyn` package your package depends on.
 
 [NuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn
 [BuildTimeNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.BuildTime
 [AttrNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.Attributes
+[netstandard-table]: https://docs.microsoft.com/dotnet/standard/net-standard#net-implementation-support
