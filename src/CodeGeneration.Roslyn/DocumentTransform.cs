@@ -36,32 +36,42 @@ namespace CodeGeneration.Roslyn
         /// </summary>
         /// <param name="compilation">The compilation to which the document belongs.</param>
         /// <param name="inputDocument">The document to scan for generator attributes.</param>
+        /// <param name="projectDirectory">The path of the <c>.csproj</c> project file.</param>
         /// <param name="assemblyLoader">A function that can load an assembly with the given name.</param>
         /// <param name="progress">Reports warnings and errors in code generation.</param>
         /// <returns>A task whose result is the generated document.</returns>
-        public static async Task<SyntaxTree> TransformAsync(CSharpCompilation compilation, SyntaxTree inputDocument, string projectDirectory, Func<AssemblyName, Assembly> assemblyLoader, IProgress<Diagnostic> progress)
+        public static async Task<SyntaxTree> TransformAsync(
+            CSharpCompilation compilation,
+            SyntaxTree inputDocument,
+            string projectDirectory,
+            Func<AssemblyName, Assembly> assemblyLoader,
+            IProgress<Diagnostic> progress)
         {
             Requires.NotNull(compilation, nameof(compilation));
             Requires.NotNull(inputDocument, nameof(inputDocument));
             Requires.NotNull(assemblyLoader, nameof(assemblyLoader));
 
             var inputSemanticModel = compilation.GetSemanticModel(inputDocument);
-            var inputSyntaxTree = inputSemanticModel.SyntaxTree;
-            var inputCompilationUnit = inputSyntaxTree.GetCompilationUnitRoot();
+            var inputCompilationUnit = inputDocument.GetCompilationUnitRoot();
 
-            var compilationUnitExterns = inputCompilationUnit
+            var emittedExterns = inputCompilationUnit
                 .Externs
                 .Select(x => x.WithoutTrivia())
                 .ToImmutableArray();
-            var compilationUnitUsings = inputCompilationUnit
+
+            var emittedUsings = inputCompilationUnit
                 .Usings
                 .Select(x => x.WithoutTrivia())
                 .ToImmutableArray();
-            var compilationUnitAttributeLists = ImmutableArray<AttributeListSyntax>.Empty;
 
-            var memberNodes = inputSyntaxTree.GetRoot().DescendantNodesAndSelf(n => n is CompilationUnitSyntax || n is NamespaceDeclarationSyntax || n is TypeDeclarationSyntax).OfType<CSharpSyntaxNode>();
+            var emittedAttributeLists = ImmutableArray<AttributeListSyntax>.Empty;
+            var emittedMembers = ImmutableArray<MemberDeclarationSyntax>.Empty;
 
-            var emittedMembers = SyntaxFactory.List<MemberDeclarationSyntax>();
+            var memberNodes = inputDocument
+                .GetRoot()
+                .DescendantNodesAndSelf(n => n is CompilationUnitSyntax || n is NamespaceDeclarationSyntax || n is TypeDeclarationSyntax)
+                .OfType<CSharpSyntaxNode>();
+
             foreach (var memberNode in memberNodes)
             {
                 var attributeData = GetAttributeData(compilation, inputSemanticModel, memberNode);
@@ -69,89 +79,36 @@ namespace CodeGeneration.Roslyn
                 foreach (var generator in generators)
                 {
                     var context = new TransformationContext(memberNode, inputSemanticModel, compilation, projectDirectory,
-                        compilationUnitUsings, compilationUnitExterns);
+                        emittedUsings, emittedExterns);
 
-                    if (generator is IRichCodeGenerator richGenerator)
-                    {
-                        var (members, usings, attributeLists, externs) = await richGenerator.GenerateRichAsync(context, progress, CancellationToken.None);
-                        compilationUnitExterns = compilationUnitExterns.AddRange(externs);
-                        compilationUnitUsings =  compilationUnitUsings.AddRange(usings);
-                        compilationUnitAttributeLists = compilationUnitAttributeLists.AddRange(attributeLists);
-                        emittedMembers = emittedMembers.AddRange(members);
-                    }
-                    else
-                    {
-                        var generatedMembers = await generator.GenerateAsync(context, progress, CancellationToken.None);
-                        // Figure out ancestry for the generated type, including nesting types and namespaces.
-                        generatedMembers = memberNode.Ancestors().Aggregate(generatedMembers, WrapInAncestor);
-                        emittedMembers = emittedMembers.AddRange(generatedMembers);
-                    }
+                    var richGenerator = generator as IRichCodeGenerator ?? new EnrichingCodeGeneratorProxy(generator);
+
+                    var (members, usings, attributeLists, externs) =
+                        await richGenerator.GenerateRichAsync(context, progress, CancellationToken.None);
+
+                    emittedExterns = emittedExterns.AddRange(externs);
+                    emittedUsings = emittedUsings.AddRange(usings);
+                    emittedAttributeLists = emittedAttributeLists.AddRange(attributeLists);
+                    emittedMembers = emittedMembers.AddRange(members);
                 }
             }
 
-            // By default, retain all the using directives that came from the input file.
-            var resultFileLevelExterns = SyntaxFactory.List(compilationUnitExterns);
-            var resultFileLevelUsings = SyntaxFactory.List(compilationUnitUsings);
-
-            var compilationUnit = SyntaxFactory.CompilationUnit()
-                .WithExterns(resultFileLevelExterns)
-                .WithUsings(resultFileLevelUsings)
-                .WithMembers(emittedMembers)
-                .WithLeadingTrivia(SyntaxFactory.Comment(GeneratedByAToolPreamble))
-                .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed)
-                .NormalizeWhitespace();
+            var compilationUnit =
+                SyntaxFactory.CompilationUnit(
+                        SyntaxFactory.List(emittedExterns),
+                        SyntaxFactory.List(emittedUsings),
+                        SyntaxFactory.List(emittedAttributeLists),
+                        SyntaxFactory.List(emittedMembers))
+                    .WithLeadingTrivia(SyntaxFactory.Comment(GeneratedByAToolPreamble))
+                    .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed)
+                    .NormalizeWhitespace();
 
             return compilationUnit.SyntaxTree;
         }
 
-        private static SyntaxList<MemberDeclarationSyntax> WrapInAncestor(SyntaxList<MemberDeclarationSyntax> generatedMembers, SyntaxNode ancestor)
-        {
-            switch (ancestor)
-            {
-                case NamespaceDeclarationSyntax ancestorNamespace:
-                    generatedMembers = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
-                        CopyAsAncestor(ancestorNamespace)
-                        .WithMembers(generatedMembers));
-                    break;
-                case ClassDeclarationSyntax nestingClass:
-                    generatedMembers = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
-                        CopyAsAncestor(nestingClass)
-                        .WithMembers(generatedMembers));
-                    break;
-                case StructDeclarationSyntax nestingStruct:
-                    generatedMembers = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
-                        CopyAsAncestor(nestingStruct)
-                        .WithMembers(generatedMembers));
-                    break;
-                default:
-                    break;
-            }
-            return generatedMembers;
-        }
-
-        private static NamespaceDeclarationSyntax CopyAsAncestor(NamespaceDeclarationSyntax syntax)
-        {
-            return SyntaxFactory.NamespaceDeclaration(syntax.Name.WithoutTrivia())
-                .WithExterns(SyntaxFactory.List(syntax.Externs.Select(x => x.WithoutTrivia())))
-                .WithUsings(SyntaxFactory.List(syntax.Usings.Select(x => x.WithoutTrivia())));
-        }
-
-        private static ClassDeclarationSyntax CopyAsAncestor(ClassDeclarationSyntax syntax)
-        {
-            return SyntaxFactory.ClassDeclaration(syntax.Identifier.WithoutTrivia())
-                .WithModifiers(SyntaxFactory.TokenList(syntax.Modifiers.Select(x => x.WithoutTrivia())))
-                .WithTypeParameterList(syntax.TypeParameterList);
-        }
-
-        private static StructDeclarationSyntax CopyAsAncestor(StructDeclarationSyntax syntax)
-        {
-            return SyntaxFactory.StructDeclaration(syntax.Identifier.WithoutTrivia())
-                .WithModifiers(SyntaxFactory.TokenList(syntax.Modifiers.Select(x => x.WithoutTrivia())))
-                .WithTypeParameterList(syntax.TypeParameterList);
-        }
-
         private static ImmutableArray<AttributeData> GetAttributeData(Compilation compilation, SemanticModel document, SyntaxNode syntaxNode)
         {
+            Requires.NotNull(compilation, nameof(compilation));
             Requires.NotNull(document, nameof(document));
             Requires.NotNull(syntaxNode, nameof(syntaxNode));
 
@@ -248,6 +205,76 @@ namespace CodeGeneration.Roslyn
             }
 
             return nameBuilder.ToString();
+        }
+
+        private class EnrichingCodeGeneratorProxy : IRichCodeGenerator
+        {
+            public EnrichingCodeGeneratorProxy(ICodeGenerator codeGenerator)
+            {
+                CodeGenerator = codeGenerator;
+            }
+
+            private ICodeGenerator CodeGenerator { get; }
+
+            public Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(
+                TransformationContext context,
+                IProgress<Diagnostic> progress,
+                CancellationToken cancellationToken)
+            {
+                return CodeGenerator.GenerateAsync(context, progress, cancellationToken);
+            }
+
+            public async Task<RichGenerationResult> GenerateRichAsync(TransformationContext context, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
+            {
+                var generatedMembers = await CodeGenerator.GenerateAsync(context, progress, CancellationToken.None);
+                // Figure out ancestry for the generated type, including nesting types and namespaces.
+                var wrappedMembers = context.ProcessingNode.Ancestors().Aggregate(generatedMembers, WrapInAncestor);
+                return new RichGenerationResult(wrappedMembers);
+            }
+
+            private static SyntaxList<MemberDeclarationSyntax> WrapInAncestor(SyntaxList<MemberDeclarationSyntax> generatedMembers, SyntaxNode ancestor)
+            {
+                switch (ancestor)
+                {
+                    case NamespaceDeclarationSyntax ancestorNamespace:
+                        generatedMembers = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
+                            CopyAsAncestor(ancestorNamespace)
+                            .WithMembers(generatedMembers));
+                        break;
+                    case ClassDeclarationSyntax nestingClass:
+                        generatedMembers = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
+                            CopyAsAncestor(nestingClass)
+                            .WithMembers(generatedMembers));
+                        break;
+                    case StructDeclarationSyntax nestingStruct:
+                        generatedMembers = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
+                            CopyAsAncestor(nestingStruct)
+                            .WithMembers(generatedMembers));
+                        break;
+                }
+                return generatedMembers;
+            }
+
+            private static NamespaceDeclarationSyntax CopyAsAncestor(NamespaceDeclarationSyntax syntax)
+            {
+                return SyntaxFactory.NamespaceDeclaration(syntax.Name.WithoutTrivia())
+                    .WithExterns(SyntaxFactory.List(syntax.Externs.Select(x => x.WithoutTrivia())))
+                    .WithUsings(SyntaxFactory.List(syntax.Usings.Select(x => x.WithoutTrivia())));
+            }
+
+            private static ClassDeclarationSyntax CopyAsAncestor(ClassDeclarationSyntax syntax)
+            {
+                return SyntaxFactory.ClassDeclaration(syntax.Identifier.WithoutTrivia())
+                    .WithModifiers(SyntaxFactory.TokenList(syntax.Modifiers.Select(x => x.WithoutTrivia())))
+                    .WithTypeParameterList(syntax.TypeParameterList);
+            }
+
+            private static StructDeclarationSyntax CopyAsAncestor(StructDeclarationSyntax syntax)
+            {
+                return SyntaxFactory.StructDeclaration(syntax.Identifier.WithoutTrivia())
+                    .WithModifiers(SyntaxFactory.TokenList(syntax.Modifiers.Select(x => x.WithoutTrivia())))
+                    .WithTypeParameterList(syntax.TypeParameterList);
+            }
         }
     }
 }
