@@ -324,4 +324,150 @@ namespace Testing
 }";
         AssertGeneratedAsExpected(source, generated);
     }
+
+    [Fact]
+    public void RichGenerator_Wraps_InOtherNamespace()
+    {
+        const string source = @"
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+
+namespace Testing
+{
+    [DuplicateInOtherNamespace(""Other.Namespace"")]
+    class Something
+    {
+    }
+}";
+        const string generated = @"
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+
+namespace Other.Namespace
+{
+    class Something
+    {
+    }
+}";
+        AssertGeneratedAsExpected(source, generated);
+    }
+
+    [Fact]
+    public void RichGenerator_Adds_Using()
+    {
+        const string source = @"
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+
+namespace Testing
+{
+    [AddGeneratedUsing(""System.Collections.Generic"")]
+    partial class Something
+    {
+    }
+}";
+        const string generated = @"
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+using System.Collections.Generic;
+
+";
+        AssertGeneratedAsExpected(source, generated);
+    }
+
+    [Fact]
+    public void RichGenerator_Adds_ExternAlias()
+    {
+        const string source = @"
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+
+namespace Testing
+{
+    [AddGeneratedExtern(""MyExternAlias"")]
+    partial class Something
+    {
+    }
+}";
+        const string generated = @"
+extern alias MyExternAlias;
+
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+
+";
+        AssertGeneratedAsExpected(source, generated);
+    }
+
+    [Fact]
+    public void RichGenerator_Adds_Attribute()
+    {
+        const string source = @"
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+
+namespace Testing
+{
+    [AddGeneratedAttribute(""GeneratedAttribute"")]
+    partial class Something
+    {
+    }
+}";
+        const string generated = @"
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+
+[GeneratedAttribute]
+";
+        AssertGeneratedAsExpected(source, generated);
+    }
+
+    [Fact]
+    public void RichGenerator_Appends_MultipleResults()
+    {
+        const string source = @"
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+
+namespace Testing
+{
+    [DuplicateInOtherNamespace(""Other.Namespace1"")]
+    [DuplicateInOtherNamespace(""Other.Namespace2"")]
+    [AddGeneratedUsing(""System.Collections"")]
+    [AddGeneratedUsing(""System.Collections.Generic"")]
+    [AddGeneratedExtern(""MyExternAlias1"")]
+    [AddGeneratedExtern(""MyExternAlias2"")]
+    [AddGeneratedAttribute(""GeneratedAttribute"")]
+    [AddGeneratedAttribute(""GeneratedAttribute"")]
+    partial class Something
+    {
+    }
+}";
+        const string generated = @"
+extern alias MyExternAlias1;
+extern alias MyExternAlias2;
+
+using System;
+using CodeGeneration.Roslyn.Tests.Generators;
+using System.Collections;
+using System.Collections.Generic;
+
+[GeneratedAttribute]
+[GeneratedAttribute]
+namespace Other.Namespace1
+{
+    class Something
+    {
+    }
+}
+
+namespace Other.Namespace2
+{
+    class Something
+    {
+    }
+}
+";
+        AssertGeneratedAsExpected(source, generated);
+    }
 }
