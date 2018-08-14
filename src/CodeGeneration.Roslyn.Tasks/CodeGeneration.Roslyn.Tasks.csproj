@@ -6,9 +6,14 @@
     <SignAssembly>true</SignAssembly>
     <PackageId>CodeGeneration.Roslyn.BuildTime</PackageId>
     <Description>The build-time development dependency that generates code for a project that consumes code generation attributes.</Description>
+    <PackDependsOn>SetPackageVersionInProps;$(PackDependsOn)</PackDependsOn>
+    <PropsFileName>$(PackageId).props</PropsFileName>
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="build\$(PropsFileName)">
+      <Pack>false</Pack>
+    </Content>
     <AdditionalFiles Include="..\stylecop.json">
       <Visible>false</Visible>
     </AdditionalFiles>
@@ -27,4 +32,22 @@
     <PackageReference Include="Nerdbank.MSBuildExtension" Version="0.1.17-beta" PrivateAssets="all" />
   </ItemGroup>
 
+  <Target Name="SetPackageVersionInProps" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <PropsFileDestinationDirectory>$(IntermediateOutputPath)build\</PropsFileDestinationDirectory>
+      <PropsFilePath>$(PropsFileDestinationDirectory)\$(PropsFileName)</PropsFilePath>
+      <_ProjectNamespaces>
+        <Namespace Prefix="dn" Uri="http://schemas.microsoft.com/developer/msbuild/2003" />
+      </_ProjectNamespaces>
+    </PropertyGroup>
+    <MakeDir Directories="$(PropsFileDestinationDirectory)" />
+    <Copy SourceFiles="build\$(PropsFileName)" DestinationFiles="$(PropsFilePath)" />
+    <XmlPoke XmlInputPath="$(PropsFilePath)" Value="$(PackageVersion)" Query="/dn:Project/dn:ItemGroup/dn:DotNetCliToolReference/@Version" Namespaces="$(_ProjectNamespaces)" />
+    <ItemGroup>
+      <Content Include="$(PropsFilePath)">
+        <Pack>true</Pack>
+        <PackagePath>build\</PackagePath>
+      </Content>
+    </ItemGroup>
+  </Target>
 </Project>
