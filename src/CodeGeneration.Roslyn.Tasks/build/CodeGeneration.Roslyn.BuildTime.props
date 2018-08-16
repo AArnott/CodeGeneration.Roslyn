@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <DotNetCliToolReference Include="dotnet-codegen" Version="0.4.58-g06d31db7a7" />
+    <!--This item's Version metadata is updated to match the package's one in .csproj-->
+    <DotNetCliToolReference Include="dotnet-codegen" Version="*" />
   </ItemGroup>
 </Project>

@@ -32,7 +32,7 @@ $(_CodeGenerationRoslynGeneratedFilesFileName)
     <Delete Condition="Exists('$(_CodeGenerationRoslynGeneratedFilesFileName)') == 'true'" Files="$(_CodeGenerationRoslynGeneratedFilesFileName)" ContinueOnError="true" />
     <Message Text="Running CodeGeneration.Roslyn.Tool" Importance="normal" />
     <Exec Command="dotnet $(GenerateCodeFromAttributesToolPathOverride) &quot;%40$(_CodeGenResponseFileName)&quot;" ContinueOnError="true" />
-    <Warning Condition="Exists('$(_CodeGenerationRoslynGeneratedFilesFileName)') != 'true'" Text="$(_CodeGenToolWarningText)" />
+    <Warning Condition="Exists('$(_CodeGenerationRoslynGeneratedFilesFileName)') != 'true'" Text="$(_CodeGenToolWarningText)" Code="CGR1000" />
     <ReadLinesFromFile File="$(_CodeGenerationRoslynGeneratedFilesFileName)">
       <Output TaskParameter="Lines" ItemName="CodeGenerationRoslynOutput_Compile"/>
       <Output TaskParameter="Lines" ItemName="FileWrites"/>
