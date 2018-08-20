@@ -91,12 +91,51 @@ namespace CodeGeneration.Roslyn.Tasks
             argBuilder.AppendLine(this.generatedCompileItemsFilePath);
 
             argBuilder.AppendLine("--");
-            foreach(var item in this.Compile)
+            foreach (var item in this.Compile)
             {
                 argBuilder.AppendLine(item.ItemSpec);
             }
 
             return argBuilder.ToString();
+        }
+
+        protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance)
+        {
+            MessageImportance newImportance;
+            if (DidExtractPrefix("High"))
+            {
+                newImportance = MessageImportance.High;
+            }
+            else if (DidExtractPrefix("Normal"))
+            {
+                newImportance = MessageImportance.Normal;
+            }
+            else if (DidExtractPrefix("Low"))
+            {
+                newImportance = MessageImportance.Low;
+            }
+            else
+            {
+                newImportance = messageImportance;
+            }
+
+            if (newImportance < messageImportance)
+            {
+                messageImportance = newImportance; // Lower value => higher importance
+            }
+
+            base.LogEventsFromTextOutput(singleLine, messageImportance);
+
+            bool DidExtractPrefix(string importanceString)
+            {
+                var prefix = $"::{importanceString}::";
+                if (singleLine.StartsWith(prefix))
+                {
+                    singleLine = singleLine.Substring(prefix.Length);
+                    return true;
+                }
+                return false;
+            }
         }
     }
 }
