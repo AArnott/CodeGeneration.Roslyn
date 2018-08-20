@@ -1,5 +1,10 @@
-﻿using Microsoft.CodeAnalysis;
+﻿// Copyright (c) Andrew Arnott. All rights reserved.
+// Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
+
+using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CodeGeneration.Roslyn
 {
@@ -12,13 +17,19 @@ namespace CodeGeneration.Roslyn
         /// <param name="semanticModel">The semantic model.</param>
         /// <param name="compilation">The overall compilation being generated for.</param>
         /// <param name="projectDirectory">The absolute path of the directory where the project file is located</param>
+        /// <param name="compilationUnitUsings">The using directives already queued to be generated.</param>
+        /// <param name="compilationUnitExterns">The extern aliases already queued to be generated.</param>
         public TransformationContext(CSharpSyntaxNode processingNode, SemanticModel semanticModel, CSharpCompilation compilation,
-                                     string projectDirectory)
+                                     string projectDirectory,
+                                     IEnumerable<UsingDirectiveSyntax> compilationUnitUsings,
+                                     IEnumerable<ExternAliasDirectiveSyntax> compilationUnitExterns)
         {
             ProcessingNode = processingNode;
             SemanticModel = semanticModel;
             Compilation = compilation;
             ProjectDirectory = projectDirectory;
+            CompilationUnitUsings = compilationUnitUsings;
+            CompilationUnitExterns = compilationUnitExterns;
         }
 
         /// <summary>Gets the syntax node the generator attribute is found on.</summary>
@@ -30,9 +41,13 @@ namespace CodeGeneration.Roslyn
         /// <summary>Gets the overall compilation being generated for.</summary>
         public CSharpCompilation Compilation { get; }
 
-        /// <summary>
-        /// Gets the absolute path of the directory where the project file is located
-        /// </summary>
+        /// <summary>Gets the absolute path of the directory where the project file is located.</summary>
         public string ProjectDirectory { get; }
+
+        /// <summary>Gets a collection of using directives already queued to be generated.</summary>
+        public IEnumerable<UsingDirectiveSyntax> CompilationUnitUsings { get; }
+
+        /// <summary>Gets a collection of extern aliases already queued to be generated.</summary>
+        public IEnumerable<ExternAliasDirectiveSyntax> CompilationUnitExterns { get; }
     }
 }
