@@ -53,8 +53,10 @@ namespace CodeGeneration.Roslyn.Generate
             {
                 generator.Generate(progress);
             }
-            catch
+            catch (Exception e)
             {
+                Logger.Log(LogLevel.High, $"{e.GetType().Name}: {e.Message}");
+                Logger.Log(LogLevel.High, e.ToString());
                 return 3;
             }
 
@@ -65,7 +67,7 @@ namespace CodeGeneration.Roslyn.Generate
 
             foreach (var file in generator.GeneratedFiles)
             {
-                Console.WriteLine(file);
+                Logger.Log(LogLevel.Normal, file);
             }
 
             return 0;
