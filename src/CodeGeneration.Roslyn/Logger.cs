@@ -19,8 +19,7 @@ namespace CodeGeneration.Roslyn
         /// <summary>
         /// Low importance, appears in more verbose logs
         /// </summary>
-        Low = 2
-
+        Low = 2,
     }
     public static class Logger
     {

@@ -103,16 +103,26 @@ namespace CodeGeneration.Roslyn.Tasks
         {
             MessageImportance newImportance;
             if (DidExtractPrefix("High"))
+            {
                 newImportance = MessageImportance.High;
+            }
             else if (DidExtractPrefix("Normal"))
+            {
                 newImportance = MessageImportance.Normal;
+            }
             else if (DidExtractPrefix("Low"))
+            {
                 newImportance = MessageImportance.Low;
+            }
             else
+            {
                 newImportance = messageImportance;
+            }
 
             if (newImportance < messageImportance)
+            {
                 messageImportance = newImportance; // Lower value => higher importance
+            }
 
             base.LogEventsFromTextOutput(singleLine, messageImportance);
 

@@ -55,7 +55,7 @@ namespace CodeGeneration.Roslyn.Generate
             }
             catch (Exception e)
             {
-                Logger.Log(LogLevel.High, $"{e.Message}: {e.Message}");
+                Logger.Log(LogLevel.High, $"{e.GetType().Name}: {e.Message}");
                 Logger.Log(LogLevel.High, e.ToString());
                 return 3;
             }
