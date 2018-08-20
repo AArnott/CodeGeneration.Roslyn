@@ -13,55 +13,23 @@ namespace CodeGeneration.Roslyn
     public struct RichGenerationResult
     {
         /// <summary>
-        /// Creates <see cref="RichGenerationResult"/> with provided arguments as property values.
+        /// Gets or sets the <see cref="MemberDeclarationSyntax"/> to add to generated <see cref="CompilationUnitSyntax"/>.
         /// </summary>
-        /// <param name="members">Assigned to <see cref="Members"/>.</param>
-        /// <param name="usings">Assigned to <see cref="Usings"/>.</param>
-        /// <param name="attributeLists">Assigned to <see cref="AttributeLists"/>.</param>
-        /// <param name="externs">Assigned to <see cref="Externs"/>.</param>
-        [DebuggerStepThrough]
-        public RichGenerationResult(
-            SyntaxList<MemberDeclarationSyntax> members,
-            SyntaxList<UsingDirectiveSyntax> usings = default,
-            SyntaxList<AttributeListSyntax> attributeLists = default,
-            SyntaxList<ExternAliasDirectiveSyntax> externs = default)
-        {
-            Members = members;
-            Usings = usings;
-            AttributeLists = attributeLists;
-            Externs = externs;
-        }
+        public SyntaxList<MemberDeclarationSyntax> Members { get; set; }
 
         /// <summary>
-        /// Gets <see cref="MemberDeclarationSyntax"/> to add to generated <see cref="CompilationUnitSyntax"/>.
+        /// Gets or sets the <see cref="UsingDirectiveSyntax"/> to add to generated <see cref="CompilationUnitSyntax"/>.
         /// </summary>
-        public SyntaxList<MemberDeclarationSyntax> Members { get; }
+        public SyntaxList<UsingDirectiveSyntax> Usings { get; set; }
 
         /// <summary>
-        /// Gets <see cref="UsingDirectiveSyntax"/> to add to generated <see cref="CompilationUnitSyntax"/>.
+        /// Gets or sets the <see cref="ExternAliasDirectiveSyntax"/> to add to generated <see cref="CompilationUnitSyntax"/>.
         /// </summary>
-        public SyntaxList<UsingDirectiveSyntax> Usings { get; }
+        public SyntaxList<ExternAliasDirectiveSyntax> Externs { get; set; }
 
         /// <summary>
-        /// Gets <see cref="ExternAliasDirectiveSyntax"/> to add to generated <see cref="CompilationUnitSyntax"/>.
+        /// Gets or sets the <see cref="AttributeListSyntax"/> to add to generated <see cref="CompilationUnitSyntax"/>.
         /// </summary>
-        public SyntaxList<ExternAliasDirectiveSyntax> Externs { get; }
-
-        /// <summary>
-        /// Gets <see cref="AttributeListSyntax"/> to add to generated <see cref="CompilationUnitSyntax"/>.
-        /// </summary>
-        public SyntaxList<AttributeListSyntax> AttributeLists { get; }
-        
-        [DebuggerHidden, DebuggerStepThrough]
-        public void Deconstruct(out SyntaxList<MemberDeclarationSyntax> members,
-            out SyntaxList<UsingDirectiveSyntax> usings,
-            out SyntaxList<AttributeListSyntax> attributeLists,
-            out SyntaxList<ExternAliasDirectiveSyntax> externs)
-        {
-            members = Members;
-            usings = Usings;
-            attributeLists = AttributeLists;
-            externs = Externs;
-        }
+        public SyntaxList<AttributeListSyntax> AttributeLists { get; set; }
     }
 }

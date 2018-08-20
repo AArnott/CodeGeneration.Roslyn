@@ -83,13 +83,12 @@ namespace CodeGeneration.Roslyn
 
                     var richGenerator = generator as IRichCodeGenerator ?? new EnrichingCodeGeneratorProxy(generator);
 
-                    var (members, usings, attributeLists, externs) =
-                        await richGenerator.GenerateRichAsync(context, progress, CancellationToken.None);
+                    var emitted = await richGenerator.GenerateRichAsync(context, progress, CancellationToken.None);
 
-                    emittedExterns = emittedExterns.AddRange(externs);
-                    emittedUsings = emittedUsings.AddRange(usings);
-                    emittedAttributeLists = emittedAttributeLists.AddRange(attributeLists);
-                    emittedMembers = emittedMembers.AddRange(members);
+                    emittedExterns = emittedExterns.AddRange(emitted.Externs);
+                    emittedUsings = emittedUsings.AddRange(emitted.Usings);
+                    emittedAttributeLists = emittedAttributeLists.AddRange(emitted.AttributeLists);
+                    emittedMembers = emittedMembers.AddRange(emitted.Members);
                 }
             }
 
@@ -211,6 +210,7 @@ namespace CodeGeneration.Roslyn
         {
             public EnrichingCodeGeneratorProxy(ICodeGenerator codeGenerator)
             {
+                Requires.NotNull(codeGenerator, nameof(codeGenerator));
                 CodeGenerator = codeGenerator;
             }
 
@@ -229,7 +229,7 @@ namespace CodeGeneration.Roslyn
                 var generatedMembers = await CodeGenerator.GenerateAsync(context, progress, CancellationToken.None);
                 // Figure out ancestry for the generated type, including nesting types and namespaces.
                 var wrappedMembers = context.ProcessingNode.Ancestors().Aggregate(generatedMembers, WrapInAncestor);
-                return new RichGenerationResult(wrappedMembers);
+                return new RichGenerationResult { Members = wrappedMembers };
             }
 
             private static SyntaxList<MemberDeclarationSyntax> WrapInAncestor(SyntaxList<MemberDeclarationSyntax> generatedMembers, SyntaxNode ancestor)

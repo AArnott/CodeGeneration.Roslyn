@@ -85,11 +85,13 @@ namespace CodeGeneration.Roslyn.Tests.Generators
 
             public RichGenerationResult CreateResult()
             {
-                return new RichGenerationResult(
-                    SyntaxFactory.List(Members),
-                    SyntaxFactory.List(Usings),
-                    SyntaxFactory.List(AttributeLists),
-                    SyntaxFactory.List(Externs));
+                return new RichGenerationResult
+                {
+                    Members = SyntaxFactory.List(Members),
+                    Usings = SyntaxFactory.List(Usings),
+                    AttributeLists = SyntaxFactory.List(AttributeLists),
+                    Externs = SyntaxFactory.List(Externs),
+                };
             }
         }
     }
