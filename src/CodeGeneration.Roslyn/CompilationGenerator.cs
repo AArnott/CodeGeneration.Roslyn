@@ -109,7 +109,7 @@ namespace CodeGeneration.Roslyn
                     cancellationToken.ThrowIfCancellationRequested();
 
                     string sourceHash = Convert.ToBase64String(hasher.ComputeHash(Encoding.UTF8.GetBytes(inputSyntaxTree.FilePath)), 0, 6).Replace('/', '-');
-                    Console.WriteLine($"File \"{inputSyntaxTree.FilePath}\" hashed to {sourceHash}");
+                    Logger.Info($"File \"{inputSyntaxTree.FilePath}\" hashed to {sourceHash}");
                     string outputFilePath = Path.Combine(this.IntermediateOutputDirectory, Path.GetFileNameWithoutExtension(inputSyntaxTree.FilePath) + $".{sourceHash}.generated.cs");
 
                     // Code generation is relatively fast, but it's not free.
@@ -141,7 +141,7 @@ namespace CodeGeneration.Roslyn
                                 }
 
                                 bool anyTypesGenerated = generatedSyntaxTree?.GetRoot(cancellationToken).DescendantNodes().OfType<TypeDeclarationSyntax>().Any() ?? false;
-                                if (anyTypesGenerated)
+                                if (!anyTypesGenerated)
                                 {
                                     this.emptyGeneratedFiles.Add(outputFilePath);
                                 }

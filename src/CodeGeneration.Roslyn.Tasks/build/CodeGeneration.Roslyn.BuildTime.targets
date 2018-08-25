@@ -4,10 +4,11 @@
   <Target Name="GenerateCodeFromAttributes" DependsOnTargets="ResolveReferences" BeforeTargets="CoreCompile;PrepareResources">
     <PropertyGroup>
       <GenerateCodeFromAttributesToolPathOverride Condition="'$(GenerateCodeFromAttributesToolPathOverride)' == ''">codegen</GenerateCodeFromAttributesToolPathOverride>
-      <_CodeGenResponseFileName>$(IntermediateOutputPath)$([System.IO.Path]::GetRandomFileName()).rsp</_CodeGenResponseFileName>
-      <_CodeGenerationRoslynGeneratedFilesFileName>$(IntermediateOutputPath)$([System.IO.Path]::GetRandomFileName()).txt</_CodeGenerationRoslynGeneratedFilesFileName>
+      <_CodeGenToolOutputBasePath>$(IntermediateOutputPath)$(MSBuildProjectFile).dotnet-codegen</_CodeGenToolOutputBasePath>
+      <_CodeGenToolResponseFileFullPath>$(_CodeGenToolOutputBasePath).rsp</_CodeGenToolResponseFileFullPath>
+      <_CodeGenToolGeneratedFileListFullPath>$(_CodeGenToolOutputBasePath).GeneratedFileList.txt</_CodeGenToolGeneratedFileListFullPath>
       <_CodeGenToolWarningText>dotnet-codegen: Failed to generate the list of generated files. The tool didn't run succesfully. Please check https://github.com/AArnott/CodeGeneration.Roslyn for usage instructions.</_CodeGenToolWarningText>
-      <_CodeGenResponseFileLines>
+      <_CodeGenToolResponseFileLines>
 @(ReferencePath->'-r%0d%0a%(Identity)', '%0d%0a')
 @(GeneratorAssemblySearchPaths->'--generatorSearchPath%0d%0a%(Identity)', '%0d%0a')
 --out
@@ -15,35 +16,36 @@ $(IntermediateOutputPath)
 --projectDir
 $(MSBuildProjectDirectory)
 --generatedFilesList
-$(_CodeGenerationRoslynGeneratedFilesFileName)
+$(_CodeGenToolGeneratedFileListFullPath)
 --
 @(Compile, '%0d%0a')
-      </_CodeGenResponseFileLines>
+      </_CodeGenToolResponseFileLines>
       <_GenerateCodeToolVersion>(n/a)</_GenerateCodeToolVersion>
     </PropertyGroup>
     <!--Write response file with arguments for dotnet codegen-->
-    <WriteLinesToFile File="$(_CodeGenResponseFileName)" Lines="$(_CodeGenResponseFileLines)" Overwrite="true" />
-    <Delete Condition="Exists('$(_CodeGenerationRoslynGeneratedFilesFileName)') == 'true'" Files="$(_CodeGenerationRoslynGeneratedFilesFileName)" ContinueOnError="true" />
+    <WriteLinesToFile File="$(_CodeGenToolResponseFileFullPath)" Lines="$(_CodeGenToolResponseFileLines)" Overwrite="true" />
+    <Delete Condition="Exists('$(_CodeGenToolGeneratedFileListFullPath)') == 'true'"
+            Files="$(_CodeGenToolGeneratedFileListFullPath)" ContinueOnError="true" />
+    
     <!--Check and print tool version used-->
-    <Exec Command="dotnet $(GenerateCodeFromAttributesToolPathOverride) --version" ConsoleToMsBuild="true" StandardOutputImportance="low" ContinueOnError="true">
+    <Exec Command="dotnet $(GenerateCodeFromAttributesToolPathOverride) --version" ConsoleToMsBuild="true"
+          StandardOutputImportance="normal" ContinueOnError="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="_GenerateCodeToolVersion"/>
     </Exec>
     <Message Text="Running CodeGeneration.Roslyn.Tool v$(_GenerateCodeToolVersion)" Importance="normal" />
     <!--Run the tool and process results-->
-    <Exec Command="dotnet $(GenerateCodeFromAttributesToolPathOverride) &quot;%40$(_CodeGenResponseFileName)&quot;" ContinueOnError="true" />
-    <Warning Condition="Exists('$(_CodeGenerationRoslynGeneratedFilesFileName)') != 'true'" Text="$(_CodeGenToolWarningText)" Code="CGR1000" />
-    <ReadLinesFromFile File="$(_CodeGenerationRoslynGeneratedFilesFileName)">
+    <Exec Command="dotnet $(GenerateCodeFromAttributesToolPathOverride) &quot;%40$(_CodeGenToolResponseFileFullPath)&quot;"
+          StandardOutputImportance="normal"  ContinueOnError="true" />
+    <Warning Condition="Exists('$(_CodeGenToolGeneratedFileListFullPath)') != 'true'"
+             Text="$(_CodeGenToolWarningText)" Code="CGR1000" />
+    <ReadLinesFromFile File="$(_CodeGenToolGeneratedFileListFullPath)">
       <Output TaskParameter="Lines" ItemName="CodeGenerationRoslynOutput_Compile"/>
       <Output TaskParameter="Lines" ItemName="FileWrites"/>
     </ReadLinesFromFile>
     <ItemGroup>
       <Compile Include="@(CodeGenerationRoslynOutput_Compile)" />
-      <FileWrites Include="$(_CodeGenResponseFileName);$(_CodeGenerationRoslynGeneratedFilesFileName)" />
+      <FileWrites Include="$(_CodeGenToolResponseFileFullPath);$(_CodeGenToolGeneratedFileListFullPath)" />
     </ItemGroup>
-  </Target>
-
-  <Target Name="CleanCodeGenResponseFile" AfterTargets="CoreClean">
-    <Delete Condition="Exists('$(_CodeGenerationRoslynGeneratedFilesFileName)') == 'true'" Files="$(_CodeGenerationRoslynGeneratedFilesFileName)" ContinueOnError="true" />
   </Target>
   
 </Project>
