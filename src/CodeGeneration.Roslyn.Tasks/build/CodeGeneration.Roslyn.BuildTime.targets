@@ -1,14 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   
-  <ItemDefinitionGroup>
-    <Compile>
-      <Generator>MSBuild:GenerateCodeFromAttributes</Generator>
-    </Compile>
-  </ItemDefinitionGroup>
-  
   <Target Name="GenerateCodeFromAttributes" DependsOnTargets="ResolveReferences" BeforeTargets="CoreCompile;PrepareResources">
-    
     <PropertyGroup>
       <GenerateCodeFromAttributesToolPathOverride Condition="'$(GenerateCodeFromAttributesToolPathOverride)' == ''">codegen</GenerateCodeFromAttributesToolPathOverride>
       <_CodeGenResponseFileName>$(IntermediateOutputPath)$([System.IO.Path]::GetRandomFileName()).rsp</_CodeGenResponseFileName>
@@ -16,7 +9,7 @@
       <_CodeGenToolWarningText>dotnet-codegen: Failed to generate the list of generated files. The tool didn't run succesfully. Please check https://github.com/AArnott/CodeGeneration.Roslyn for usage instructions.</_CodeGenToolWarningText>
       <_CodeGenResponseFileLines>
 @(ReferencePath->'-r%0d%0a%(Identity)', '%0d%0a')
-@(GeneratorAssemblySearchPaths->'-generatorSearchPath%0d%0a%(Identity)', '%0d%0a')
+@(GeneratorAssemblySearchPaths->'--generatorSearchPath%0d%0a%(Identity)', '%0d%0a')
 --out
 $(IntermediateOutputPath)
 --projectDir
@@ -26,18 +19,23 @@ $(_CodeGenerationRoslynGeneratedFilesFileName)
 --
 @(Compile, '%0d%0a')
       </_CodeGenResponseFileLines>
+      <_GenerateCodeToolVersion>(n/a)</_GenerateCodeToolVersion>
     </PropertyGroup>
-
+    <!--Write response file with arguments for dotnet codegen-->
     <WriteLinesToFile File="$(_CodeGenResponseFileName)" Lines="$(_CodeGenResponseFileLines)" Overwrite="true" />
     <Delete Condition="Exists('$(_CodeGenerationRoslynGeneratedFilesFileName)') == 'true'" Files="$(_CodeGenerationRoslynGeneratedFilesFileName)" ContinueOnError="true" />
-    <Message Text="Running CodeGeneration.Roslyn.Tool" Importance="normal" />
+    <!--Check and print tool version used-->
+    <Exec Command="dotnet $(GenerateCodeFromAttributesToolPathOverride) --version" ConsoleToMsBuild="true" StandardOutputImportance="low" ContinueOnError="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_GenerateCodeToolVersion"/>
+    </Exec>
+    <Message Text="Running CodeGeneration.Roslyn.Tool v$(_GenerateCodeToolVersion)" Importance="normal" />
+    <!--Run the tool and process results-->
     <Exec Command="dotnet $(GenerateCodeFromAttributesToolPathOverride) &quot;%40$(_CodeGenResponseFileName)&quot;" ContinueOnError="true" />
     <Warning Condition="Exists('$(_CodeGenerationRoslynGeneratedFilesFileName)') != 'true'" Text="$(_CodeGenToolWarningText)" Code="CGR1000" />
     <ReadLinesFromFile File="$(_CodeGenerationRoslynGeneratedFilesFileName)">
       <Output TaskParameter="Lines" ItemName="CodeGenerationRoslynOutput_Compile"/>
       <Output TaskParameter="Lines" ItemName="FileWrites"/>
     </ReadLinesFromFile>
-
     <ItemGroup>
       <Compile Include="@(CodeGenerationRoslynOutput_Compile)" />
       <FileWrites Include="$(_CodeGenResponseFileName);$(_CodeGenerationRoslynGeneratedFilesFileName)" />
@@ -47,4 +45,5 @@ $(_CodeGenerationRoslynGeneratedFilesFileName)
   <Target Name="CleanCodeGenResponseFile" AfterTargets="CoreClean">
     <Delete Condition="Exists('$(_CodeGenerationRoslynGeneratedFilesFileName)') == 'true'" Files="$(_CodeGenerationRoslynGeneratedFilesFileName)" ContinueOnError="true" />
   </Target>
+  
 </Project>

@@ -4,6 +4,12 @@
     <GenerateCodeFromAttributesToolPathOverride>$(OutputPath)..\..\CodeGeneration.Roslyn.Tool\$(Configuration)\netcoreapp1.0\dotnet-codegen.dll</GenerateCodeFromAttributesToolPathOverride>
   </PropertyGroup>
 
+  <ItemDefinitionGroup>
+    <Compile>
+      <Generator>MSBuild:GenerateCodeFromAttributes</Generator>
+    </Compile>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.2.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.4.1" />

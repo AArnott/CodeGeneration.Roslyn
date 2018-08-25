@@ -19,7 +19,7 @@ namespace CodeGeneration.Roslyn.Generate
             bool version = false;
             ArgumentSyntax.Parse(args, syntax =>
             {
-                syntax.DefineOption("version", ref version, "Show version of this tool.");
+                syntax.DefineOption("version", ref version, "Show version of this tool (and exits).");
                 syntax.DefineOptionList("r|reference", ref refs, "Paths to assemblies being referenced");
                 syntax.DefineOptionList("generatorSearchPath", ref generatorSearchPaths, "Paths to folders that may contain generator assemblies");
                 syntax.DefineOption("out", ref outputDirectory, true, "The directory to write generated source files to");

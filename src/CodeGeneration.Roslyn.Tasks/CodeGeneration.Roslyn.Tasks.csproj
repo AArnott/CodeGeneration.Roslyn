@@ -1,19 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.5;net45</TargetFrameworks>
-    <AssemblyOriginatorKeyFile>..\opensource.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
+    <TargetFrameworks>netstandard1.0;net20;net45</TargetFrameworks>
     <PackageId>CodeGeneration.Roslyn.BuildTime</PackageId>
     <Description>The build-time development dependency that generates code for a project that consumes code generation attributes.</Description>
     <BeforePack>SetPackageVersionInProps;$(BeforePack)</BeforePack>
     <PropsFileName>$(PackageId).props</PropsFileName>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <MinClientVersion>2.5</MinClientVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <AdditionalFiles Include="..\stylecop.json">
       <Visible>false</Visible>
     </AdditionalFiles>
+    <None Include="build\**">
+      <Pack>true</Pack>
+      <PackagePath>build\%(RecursiveDir)%(FileName)%(Extension)</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="build\$(PropsFileName)">
+      <Pack>false</Pack>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
   </ItemGroup>
 
   <ItemDefinitionGroup>
@@ -24,10 +37,6 @@
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
   </ItemDefinitionGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Nerdbank.MSBuildExtension" Version="0.1.17-beta" PrivateAssets="all" />
-  </ItemGroup>
 
   <Target Name="SetPackageVersionInProps" DependsOnTargets="GetBuildVersion">
     <PropertyGroup>
@@ -41,15 +50,10 @@
     <Copy SourceFiles="build\$(PropsFileName)" DestinationFiles="$(PropsFilePath)" />
     <XmlPoke XmlInputPath="$(PropsFilePath)" Value="$(PackageVersion)" Query="/dn:Project/dn:ItemGroup/dn:DotNetCliToolReference/@Version" Namespaces="$(_ProjectNamespaces)" />
     <ItemGroup>
-      <None Remove="build\$(PropsFileName)" />
-      <None Include="build\$(PropsFileName)">
-        <Pack>false</Pack>
-      </None>
       <None Include="$(PropsFilePath)">
         <Pack>true</Pack>
         <PackagePath>build\</PackagePath>
       </None>
     </ItemGroup>
-    <Message Text="None now includes: @(None->'%(Identity) Pack:%(Pack) PackagePath:%(PackagePath)')" Importance="high"/>
   </Target>
 </Project>
