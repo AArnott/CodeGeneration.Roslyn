@@ -8,6 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\.gitignore = ..\.gitignore
 		..\appveyor.yml = ..\appveyor.yml
 		Directory.Build.props = Directory.Build.props
+		global.json = global.json
 		..\LICENSE.txt = ..\LICENSE.txt
 		nuget.config = nuget.config
 		..\README.md = ..\README.md
@@ -29,7 +30,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGeneration.Roslyn.Tests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGeneration.Roslyn.Tool", "CodeGeneration.Roslyn.Tool\CodeGeneration.Roslyn.Tool.csproj", "{23424A10-0ED4-4906-9CF7-6D34E3F871E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGeneration.Roslyn.Tests.Generators.Dependency", "CodeGeneration.Roslyn.Tests.Generators.Dependency\CodeGeneration.Roslyn.Tests.Generators.Dependency.csproj", "{3F88FB1C-AAAE-4D3E-B816-220CDF096E1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGeneration.Roslyn.Tests.Generators.Dependency", "CodeGeneration.Roslyn.Tests.Generators.Dependency\CodeGeneration.Roslyn.Tests.Generators.Dependency.csproj", "{3F88FB1C-AAAE-4D3E-B816-220CDF096E1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

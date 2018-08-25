@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.0;net20;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard1.0;netstandard2.0;net40;net20;portable-net40+win8+wpa81;portable-net45+win8+wpa81+wp8</TargetFrameworks>
     <PackageId>CodeGeneration.Roslyn.BuildTime</PackageId>
     <Description>The build-time development dependency that generates code for a project that consumes code generation attributes.</Description>
     <BeforePack>SetPackageVersionInProps;$(BeforePack)</BeforePack>
@@ -24,9 +24,6 @@
       <Pack>false</Pack>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
   </ItemGroup>
 
   <ItemDefinitionGroup>
