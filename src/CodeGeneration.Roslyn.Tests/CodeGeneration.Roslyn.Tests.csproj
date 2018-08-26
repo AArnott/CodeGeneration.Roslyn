@@ -4,7 +4,7 @@
   <PropertyGroup>
     <TargetFramework>net462</TargetFramework>
     <CodeGenerationRoslynToolsRootPath>$(OutputPath)..\..\CodeGeneration.Roslyn.Tasks\$(Configuration)\</CodeGenerationRoslynToolsRootPath>
-    <GenerateCodeFromAttributesToolPathOverride>$(OutputPath)..\..\CodeGeneration.Roslyn.Tool\$(Configuration)\netcoreapp1.0\dotnet-codegen.dll</GenerateCodeFromAttributesToolPathOverride>
+    <GenerateCodeFromAttributesToolPathOverride>$(OutputPath)..\..\CodeGeneration.Roslyn.Tool\$(Configuration)\netcoreapp2.0\dotnet-codegen.dll</GenerateCodeFromAttributesToolPathOverride>
   </PropertyGroup>
 
   <ItemGroup>
