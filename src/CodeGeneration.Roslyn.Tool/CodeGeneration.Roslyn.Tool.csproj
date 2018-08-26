@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageType>DotnetCliTool</PackageType>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>dotnet-codegen</AssemblyName>
     <LangVersion>7.1</LangVersion>
   </PropertyGroup>
