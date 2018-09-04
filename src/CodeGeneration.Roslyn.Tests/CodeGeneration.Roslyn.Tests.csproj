@@ -1,9 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\CodeGeneration.Roslyn.Tasks\build\CodeGeneration.Roslyn.BuildTime.props" />
-
   <PropertyGroup>
     <TargetFramework>net462</TargetFramework>
-    <CodeGenerationRoslynToolsRootPath>$(OutputPath)..\..\CodeGeneration.Roslyn.Tasks\$(Configuration)\</CodeGenerationRoslynToolsRootPath>
     <GenerateCodeFromAttributesToolPathOverride>$(OutputPath)..\..\CodeGeneration.Roslyn.Tool\$(Configuration)\netcoreapp2.0\dotnet-codegen.dll</GenerateCodeFromAttributesToolPathOverride>
   </PropertyGroup>
 

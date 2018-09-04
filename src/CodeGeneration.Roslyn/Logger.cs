@@ -1,29 +1,43 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CodeGeneration.Roslyn
 {
+    /// <summary>
+    /// Defines level and behavior expected on given message.
+    /// </summary>
     public enum LogLevel
     {
         /// <summary>
-        /// High importance, appears in less verbose logs
+        /// Informational content, logged in verbose outputs.
         /// </summary>
-        High = 0,
+        Info = 0,
 
         /// <summary>
-        /// Normal importance
+        /// Warning, impacting build in non-fatal way. May stop build pipeline (when treating warnings as errors).
         /// </summary>
-        Normal = 1,
+        Warning = 1,
 
         /// <summary>
-        /// Low importance, appears in more verbose logs
+        /// Unrecoverable error, stops build pipeline.
         /// </summary>
-        Low = 2,
+        Error = 2,
     }
+
+    /// <summary>
+    /// Logs messages in MSBuild-recognized format to standard output.
+    /// </summary>
     public static class Logger
     {
-        public static void Log(LogLevel logLevel, string message)
+        public static void Error(string message, string diagnosticCode)
+            => Log(LogLevel.Error, message, diagnosticCode);
+
+        public static void Warning(string message, string diagnosticCode)
+            => Log(LogLevel.Warning, message, diagnosticCode);
+
+        public static void Info(string message)
+            => Log(LogLevel.Info, message);
+
+        public static void Log(LogLevel logLevel, string message, string diagnosticCode = null)
         {
             // Prefix every Line with loglevel
             var begin = 0;
@@ -42,7 +56,18 @@ namespace CodeGeneration.Roslyn
             }
             Print(message.Substring(begin, message.Length - begin));
 
-            void Print(string toPrint) => Console.WriteLine($"::{logLevel}::{toPrint}");
+            void Print(string toPrint)
+            {
+                if (logLevel == LogLevel.Info)
+                {
+                    Console.WriteLine(toPrint);
+                }
+                else
+                {
+                    // log using MSBuild convention of [Origin:] [Subcategory] Category Code: [Text]
+                    Console.WriteLine($"dotnet-codegen: {logLevel} {diagnosticCode}: {toPrint}");
+                }
+            }
         }
     }
 }

@@ -16,8 +16,10 @@ namespace CodeGeneration.Roslyn.Generate
             string generatedCompileItemFile = null;
             string outputDirectory = null;
             string projectDir = null;
+            bool version = false;
             ArgumentSyntax.Parse(args, syntax =>
             {
+                syntax.DefineOption("version", ref version, "Show version of this tool (and exits).");
                 syntax.DefineOptionList("r|reference", ref refs, "Paths to assemblies being referenced");
                 syntax.DefineOptionList("generatorSearchPath", ref generatorSearchPaths, "Paths to folders that may contain generator assemblies");
                 syntax.DefineOption("out", ref outputDirectory, true, "The directory to write generated source files to");
@@ -26,6 +28,11 @@ namespace CodeGeneration.Roslyn.Generate
                 syntax.DefineParameterList("compile", ref compile, "Source files included in compilation");
             });
 
+            if (version)
+            {
+                Console.WriteLine(ThisAssembly.AssemblyInformationalVersion);
+                return 0;
+            }
             if (!compile.Any())
             {
                 Console.Error.WriteLine("No source files are specified.");
@@ -41,9 +48,9 @@ namespace CodeGeneration.Roslyn.Generate
             var generator = new CompilationGenerator
             {
                 ProjectDirectory = projectDir,
-                Compile = compile,
-                ReferencePath = refs,
-                GeneratorAssemblySearchPaths = generatorSearchPaths,
+                Compile = Sanitize(compile),
+                ReferencePath = Sanitize(refs),
+                GeneratorAssemblySearchPaths = Sanitize(generatorSearchPaths),
                 IntermediateOutputDirectory = outputDirectory,
             };
 
@@ -55,8 +62,8 @@ namespace CodeGeneration.Roslyn.Generate
             }
             catch (Exception e)
             {
-                Logger.Log(LogLevel.High, $"{e.GetType().Name}: {e.Message}");
-                Logger.Log(LogLevel.High, e.ToString());
+                Console.Error.WriteLine($"{e.GetType().Name}: {e.Message}");
+                Console.Error.WriteLine(e.ToString());
                 return 3;
             }
 
@@ -67,7 +74,7 @@ namespace CodeGeneration.Roslyn.Generate
 
             foreach (var file in generator.GeneratedFiles)
             {
-                Logger.Log(LogLevel.Normal, file);
+                Logger.Info(file);
             }
 
             return 0;
@@ -76,6 +83,11 @@ namespace CodeGeneration.Roslyn.Generate
         private static void OnDiagnosticProgress(Diagnostic diagnostic)
         {
             Console.WriteLine(diagnostic.ToString());
+        }
+
+        private static IReadOnlyList<string> Sanitize(IReadOnlyList<string> inputs)
+        {
+            return inputs.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToArray();
         }
     }
 }
