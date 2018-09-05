@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  
+
   <Target Name="GenerateCodeFromAttributes" DependsOnTargets="ResolveReferences" BeforeTargets="CoreCompile;PrepareResources">
+    <ItemGroup>
+      <Compile_CodeGenInputs Include="@(Compile)" Condition=" '%(Compile.Generator)' == 'MSBuild:GenerateCodeFromAttributes' " />
+    </ItemGroup>
     <PropertyGroup>
       <GenerateCodeFromAttributesToolPathOverride Condition="'$(GenerateCodeFromAttributesToolPathOverride)' == ''">codegen</GenerateCodeFromAttributesToolPathOverride>
       <_CodeGenToolOutputBasePath>$(IntermediateOutputPath)$(MSBuildProjectFile).dotnet-codegen</_CodeGenToolOutputBasePath>
@@ -18,7 +21,7 @@ $(MSBuildProjectDirectory)
 --generatedFilesList
 $(_CodeGenToolGeneratedFileListFullPath)
 --
-@(Compile, '%0d%0a')
+@(Compile_CodeGenInputs, '%0d%0a')
       </_CodeGenToolResponseFileLines>
       <_GenerateCodeToolVersion>(n/a)</_GenerateCodeToolVersion>
     </PropertyGroup>
@@ -26,7 +29,7 @@ $(_CodeGenToolGeneratedFileListFullPath)
     <WriteLinesToFile File="$(_CodeGenToolResponseFileFullPath)" Lines="$(_CodeGenToolResponseFileLines)" Overwrite="true" />
     <Delete Condition="Exists('$(_CodeGenToolGeneratedFileListFullPath)') == 'true'"
             Files="$(_CodeGenToolGeneratedFileListFullPath)" ContinueOnError="true" />
-    
+
     <!--Check and print tool version used-->
     <Exec Command="dotnet $(GenerateCodeFromAttributesToolPathOverride) --version" ConsoleToMsBuild="true"
           StandardOutputImportance="normal" ContinueOnError="true">
@@ -47,5 +50,5 @@ $(_CodeGenToolGeneratedFileListFullPath)
       <FileWrites Include="$(_CodeGenToolResponseFileFullPath);$(_CodeGenToolGeneratedFileListFullPath)" />
     </ItemGroup>
   </Target>
-  
+
 </Project>
