@@ -12,6 +12,7 @@
     <RepositoryType>git</RepositoryType>
     <IsPackable Condition=" $(MSBuildProjectName.Contains('Test')) ">false</IsPackable>
     <NerdbankGitVersioningVersion>2.2.13</NerdbankGitVersioningVersion>
+    <RoslynNugetVersion>2.9.0</RoslynNugetVersion>
   </PropertyGroup>
 
   <ItemGroup>
