@@ -32,7 +32,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGeneration.Roslyn.Tool"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGeneration.Roslyn.Tests.Generators.Dependency", "CodeGeneration.Roslyn.Tests.Generators.Dependency\CodeGeneration.Roslyn.Tests.Generators.Dependency.csproj", "{3F88FB1C-AAAE-4D3E-B816-220CDF096E1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGeneration.Roslyn.Engine", "CodeGeneration.Roslyn.Engine\CodeGeneration.Roslyn.Engine.csproj", "{AF80F00E-6367-4D8D-937D-BF61ED9E7205}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGeneration.Roslyn.Engine", "CodeGeneration.Roslyn.Engine\CodeGeneration.Roslyn.Engine.csproj", "{AF80F00E-6367-4D8D-937D-BF61ED9E7205}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{654F1532-27EE-4854-B0EC-45F9075FF968}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D753E49D-90A8-40AF-918F-21BCDB296D1D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,6 +83,16 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0E3F218E-0B47-4925-8FDB-8A8BC4C01DCD} = {654F1532-27EE-4854-B0EC-45F9075FF968}
+		{09465031-08F8-4632-9C26-AC561B6E3538} = {654F1532-27EE-4854-B0EC-45F9075FF968}
+		{D5240C82-6F90-48F8-9192-DA53EE1B0355} = {654F1532-27EE-4854-B0EC-45F9075FF968}
+		{D8E7323F-6721-42A5-BADA-496A63DB0A88} = {D753E49D-90A8-40AF-918F-21BCDB296D1D}
+		{8B57E557-EF79-47E4-9396-135850304990} = {D753E49D-90A8-40AF-918F-21BCDB296D1D}
+		{3162A2B3-5FEF-454C-AB50-A103883CC2F4} = {D753E49D-90A8-40AF-918F-21BCDB296D1D}
+		{3F88FB1C-AAAE-4D3E-B816-220CDF096E1A} = {D753E49D-90A8-40AF-918F-21BCDB296D1D}
+		{AF80F00E-6367-4D8D-937D-BF61ED9E7205} = {654F1532-27EE-4854-B0EC-45F9075FF968}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4F15606A-A60D-4F68-828C-56A6D217B04C}
