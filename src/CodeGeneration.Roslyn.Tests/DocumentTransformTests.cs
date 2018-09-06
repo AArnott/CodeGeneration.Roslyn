@@ -117,10 +117,12 @@ using System.Linq;";
         const string source = @"
 using System;
 using CodeGeneration.Roslyn.Tests.Generators;
-#if SOMETHING
+#if SOMETHING_ACTIVE
 using System.Linq;
-#else
+#elif SOMETHING_INACTIVE
 using System.Diagnostics;
+#else
+using System.Never;
 #endif
 
 [EmptyPartial]
@@ -128,7 +130,7 @@ partial class Empty {}";
         const string generated = @"
 using System;
 using CodeGeneration.Roslyn.Tests.Generators;
-using System.Diagnostics;
+using System.Linq;
 
 partial class Empty
 {

@@ -85,6 +85,9 @@ public abstract class CompilationTestsBase
             .WithProjectCompilationOptions(
                 projectId,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
+            .WithProjectParseOptions(
+                projectId,
+                new CSharpParseOptions(preprocessorSymbols: new[] { "SOMETHING_ACTIVE" }))
             .AddMetadataReferences(projectId, MetadataReferences);
 
         int count = 0;
