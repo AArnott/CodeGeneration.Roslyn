@@ -47,6 +47,11 @@ namespace CodeGeneration.Roslyn
         public IReadOnlyList<string> ReferencePath { get; set; }
 
         /// <summary>
+        /// Gets or sets a set of preprocessor symbols to define.
+        /// </summary>
+        public IEnumerable<string> PreprocessorSymbols { get; set; }
+
+        /// <summary>
         /// Gets or sets the paths to directories to search for generator assemblies.
         /// </summary>
         public IReadOnlyList<string> GeneratorAssemblySearchPaths { get; set; }
@@ -309,6 +314,8 @@ namespace CodeGeneration.Roslyn
             var compilation = CSharpCompilation.Create("codegen")
                 .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
                 .WithReferences(this.ReferencePath.Select(p => MetadataReference.CreateFromFile(p)));
+            var parseOptions = new CSharpParseOptions(preprocessorSymbols: this.PreprocessorSymbols);
+
             foreach (var sourceFile in this.Compile)
             {
                 using (var stream = File.OpenRead(sourceFile))
@@ -318,8 +325,9 @@ namespace CodeGeneration.Roslyn
                     compilation = compilation.AddSyntaxTrees(
                         CSharpSyntaxTree.ParseText(
                             text,
-                            path: sourceFile,
-                            cancellationToken: cancellationToken));
+                            parseOptions,
+                            sourceFile,
+                            cancellationToken));
                 }
             }
 
