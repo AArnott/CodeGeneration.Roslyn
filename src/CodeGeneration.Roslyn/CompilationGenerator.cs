@@ -216,10 +216,10 @@ namespace CodeGeneration.Roslyn
                 library.Dependencies,
                 library.Serviceable);
 
-            var assemblyPathes = new List<string>();
-            this.assemblyResolver.TryResolveAssemblyPaths(wrapper, assemblyPathes);
+            var assemblyPaths = new List<string>();
+            this.assemblyResolver.TryResolveAssemblyPaths(wrapper, assemblyPaths);
 
-            return assemblyPathes.Select(context.LoadFromAssemblyPath).FirstOrDefault();
+            return assemblyPaths.Select(context.LoadFromAssemblyPath).FirstOrDefault();
         }
 
         private static DateTime GetLastModifiedAssemblyTime(string assemblyListPath)

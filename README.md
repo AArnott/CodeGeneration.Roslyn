@@ -91,7 +91,6 @@ convenient `typeof` syntax when declaring the code generator type.
 If the attributes and code generator classes were in separate assemblies, you must
 specify the assembly-qualified name of the generator type as a string instead.
 
-
 ```csharp
 using CodeGeneration.Roslyn;
 using System;
