@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using CodeGeneration.Roslyn.Engine;
-using CodeGeneration.Roslyn.Tool.CommandLine;
-using Microsoft.CodeAnalysis;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace CodeGeneration.Roslyn.Generate
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using CodeGeneration.Roslyn.Engine;
+    using CodeGeneration.Roslyn.Tool.CommandLine;
+    using Microsoft.CodeAnalysis;
+
     class Program
     {
         static int Main(string[] args)
