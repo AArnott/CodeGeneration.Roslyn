@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using CodeGeneration.Roslyn;
+using CodeGeneration.Roslyn.Engine;
 using CodeGeneration.Roslyn.Tests.Generators;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

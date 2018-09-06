@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using CodeGeneration.Roslyn.Engine;
 using CodeGeneration.Roslyn.Tool.CommandLine;
 using Microsoft.CodeAnalysis;
 
