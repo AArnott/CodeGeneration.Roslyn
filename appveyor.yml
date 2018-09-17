@@ -8,8 +8,8 @@ before_build:
 # Restore TWICE. See https://github.com/AArnott/Nerdbank.GitVersioning/issues/113#issuecomment-285903085
 -  cmd: msbuild src\CodeGeneration.Roslyn.sln /nologo /m /v:quiet /t:restore > nul
 -  cmd: msbuild src\CodeGeneration.Roslyn.sln /nologo /m /v:quiet /t:restore
--  sh: dotnet restore src\CodeGeneration.Roslyn.sln > nul
--  sh: dotnet restore src\CodeGeneration.Roslyn.sln
+-  sh: dotnet restore src/CodeGeneration.Roslyn.sln > /dev/null 2>&1
+-  sh: dotnet restore src/CodeGeneration.Roslyn.sln
 build_script:
 - cmd: msbuild src\CodeGeneration.Roslyn.sln /nologo /m /v:minimal /t:build,pack
 - sh: dotnet build src\CodeGeneration.Roslyn.sln
