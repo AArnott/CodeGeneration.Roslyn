@@ -1,18 +1,12 @@
 version: '{build}'
 skip_tags: true
-image: 
+image:
 - Visual Studio 2017
 - Ubuntu
 configuration: Release
-before_build:
-# Restore TWICE. See https://github.com/AArnott/Nerdbank.GitVersioning/issues/113#issuecomment-285903085
--  cmd: msbuild src/CodeGeneration.Roslyn.sln /nologo /m /v:quiet /t:restore > nul
--  cmd: msbuild src/CodeGeneration.Roslyn.sln /nologo /m /v:quiet /t:restore
--  sh: dotnet restore src/CodeGeneration.Roslyn.sln > /dev/null 2>&1
--  sh: dotnet restore src/CodeGeneration.Roslyn.sln
 build_script:
-- cmd: msbuild src/CodeGeneration.Roslyn.sln /nologo /m /v:minimal /t:build,pack
-- sh: dotnet build src/CodeGeneration.Roslyn.sln
+- cmd: msbuild src/CodeGeneration.Roslyn.sln /nologo /m /v:minimal /restore /t:build,pack
+- sh: dotnet build src/CodeGeneration.Roslyn.Tests/CodeGeneration.Roslyn.Tests.csproj -f netcoreapp2.1
 artifacts:
 - path: bin/**/*.nupkg
   name: NuGet Package
