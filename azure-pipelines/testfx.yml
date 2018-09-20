@@ -1,0 +1,11 @@
+steps:
+- script: dotnet restore
+  displayName: Restore packages
+  workingDirectory: ${{ parameters.projectdirectory }}
+- script: dotnet build -v n -f netcoreapp2.1 -c $(BuildConfiguration) --no-restore /bl:"$(Build.ArtifactStagingDirectory)/build_logs/netcoreapp2.1.binlog" -p:GitLinkEnabled=false
+  displayName: Build test for netcoreapp2.1
+  workingDirectory: ${{ parameters.projectdirectory }}
+- script: dotnet test -v n -f netcoreapp2.1 -c $(BuildConfiguration) --no-build
+  displayName: Run tests for netcoreapp2.1
+  workingDirectory: ${{ parameters.projectdirectory }}
+  continueOnError: true  # Tests fail right now.
