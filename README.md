@@ -1,6 +1,6 @@
 # Roslyn-based Code Generation
 
-[![Build status](https://ci.appveyor.com/api/projects/status/y81yha5rm3wvlycv/branch/master?svg=true)](https://ci.appveyor.com/project/AArnott/codegeneration-roslyn/branch/master)
+[![Build Status](https://andrewarnott.visualstudio.com/OSS/_apis/build/status/CodeGeneration.Roslyn)](https://andrewarnott.visualstudio.com/OSS/_build/latest?definitionId=15)
 [![NuGet package](https://img.shields.io/nuget/v/CodeGeneration.Roslyn.svg)][NuPkg]
 
 Assists in performing Roslyn-based code generation during a build.

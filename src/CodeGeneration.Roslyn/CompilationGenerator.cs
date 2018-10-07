@@ -278,7 +278,7 @@ namespace CodeGeneration.Roslyn
                                         where Path.GetFileNameWithoutExtension(refPath).Equals(assemblyName.Name, StringComparison.OrdinalIgnoreCase)
                                         select refPath;
             var matchingAssemblies = from path in this.GeneratorAssemblySearchPaths
-                                     from file in Directory.EnumerateFiles(path, $"{assemblyName.Name}.*", SearchOption.TopDirectoryOnly)
+                                     from file in Directory.EnumerateFiles(path, $"{assemblyName.Name}.dll", SearchOption.TopDirectoryOnly)
                                      where AllowedAssemblyExtensions.Contains(Path.GetExtension(file))
                                      select file;
 
