@@ -1,7 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <Target Name="GenerateCodeFromAttributes" DependsOnTargets="ResolveReferences" BeforeTargets="CoreCompile;PrepareResources">
+  <PropertyGroup>
+    <GenerateCodeFromAttributesDependsOn>
+      $(GenerateCodeFromAttributesDependsOn);
+      ResolveReferences;
+      PrepareGenerateCodeFromAttributes;
+      GenerateCodeFromAttributesCore
+    </GenerateCodeFromAttributesDependsOn>
+  </PropertyGroup>
+
+  <Target Name="GenerateCodeFromAttributes" DependsOnTargets="$(GenerateCodeFromAttributesDependsOn)" BeforeTargets="CoreCompile;PrepareResources">
+  </Target>
+
+  <Target Name="PrepareGenerateCodeFromAttributes">
     <ItemGroup>
       <Compile_CodeGenInputs Include="@(Compile)" Condition=" '%(Compile.Generator)' == 'MSBuild:GenerateCodeFromAttributes' " />
       <DefineConstantsItems Include="$(DefineConstants)" />
@@ -31,13 +43,18 @@ $(_CodeGenToolGeneratedFileListFullPath)
     <WriteLinesToFile File="$(_CodeGenToolResponseFileFullPath)" Lines="$(_CodeGenToolResponseFileLines)" Overwrite="true" />
     <Delete Condition="Exists('$(_CodeGenToolGeneratedFileListFullPath)') == 'true'"
             Files="$(_CodeGenToolGeneratedFileListFullPath)" ContinueOnError="true" />
-
     <!--Check and print tool version used-->
     <Exec Command="dotnet $(GenerateCodeFromAttributesToolPathOverride) --version" ConsoleToMsBuild="true"
           StandardOutputImportance="normal" ContinueOnError="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="_GenerateCodeToolVersion"/>
     </Exec>
     <Message Text="Running CodeGeneration.Roslyn.Tool v$(_GenerateCodeToolVersion)" Importance="normal" />
+    <ItemGroup>
+      <FileWrites Include="$(_CodeGenToolResponseFileFullPath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateCodeFromAttributesCore" Condition="'@(Compile_CodeGenInputs)' != ''">
     <!--Run the tool and process results-->
     <Exec Command="dotnet $(GenerateCodeFromAttributesToolPathOverride) &quot;%40$(_CodeGenToolResponseFileFullPath)&quot;"
           StandardOutputImportance="normal"  ContinueOnError="true" />
@@ -49,8 +66,7 @@ $(_CodeGenToolGeneratedFileListFullPath)
     </ReadLinesFromFile>
     <ItemGroup>
       <Compile Include="@(CodeGenerationRoslynOutput_Compile)" />
-      <FileWrites Include="$(_CodeGenToolResponseFileFullPath);$(_CodeGenToolGeneratedFileListFullPath)" />
+      <FileWrites Include="$(_CodeGenToolGeneratedFileListFullPath)" />
     </ItemGroup>
   </Target>
-
 </Project>
