@@ -224,6 +224,14 @@ namespace CodeGeneration.Roslyn
             var assemblyPaths = new List<string>();
             this.assemblyResolver.TryResolveAssemblyPaths(wrapper, assemblyPaths);
 
+            if (assemblyPaths.Count == 0)
+            {
+                var matches = from refAssemblyPath in this.ReferencePath
+                              where Path.GetFileNameWithoutExtension(refAssemblyPath).Equals(name.Name, StringComparison.OrdinalIgnoreCase)
+                              select context.LoadFromAssemblyPath(refAssemblyPath);
+                return matches.FirstOrDefault();
+            }
+
             return assemblyPaths.Select(context.LoadFromAssemblyPath).FirstOrDefault();
         }
 
