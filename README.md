@@ -59,7 +59,7 @@ public class DuplicateWithSuffixGenerator : ICodeGenerator
         var results = SyntaxFactory.List<MemberDeclarationSyntax>();
 
         // Our generator is applied to any class that our attribute is applied to.
-        var applyToClass = (ClassDeclarationSyntax)context.ProcessingMember;
+        var applyToClass = (ClassDeclarationSyntax)context.ProcessingNode;
 
         // Apply a suffix to the name of a copy of the class.
         var copy = applyToClass
