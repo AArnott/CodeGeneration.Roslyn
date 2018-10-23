@@ -209,7 +209,7 @@ namespace CodeGeneration.Roslyn
 
         private Assembly ResolveAssembly(AssemblyLoadContext context, AssemblyName name)
         {
-            var library = this.dependencyContext.RuntimeLibraries.FirstOrDefault(runtime => string.Equals(runtime.Name, name.Name, StringComparison.OrdinalIgnoreCase));
+            var library = FindMatchingLibrary(this.dependencyContext.RuntimeLibraries, name);
             if (library == null)
                 return null;
             var wrapper = new CompilationLibrary(
@@ -233,6 +233,27 @@ namespace CodeGeneration.Roslyn
             }
 
             return assemblyPaths.Select(context.LoadFromAssemblyPath).FirstOrDefault();
+        }
+
+        private static RuntimeLibrary FindMatchingLibrary(IEnumerable<RuntimeLibrary> libraries, AssemblyName name)
+        {
+            foreach (var runtime in libraries)
+            {
+                if (string.Equals(runtime.Name, name.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return runtime;
+                }
+
+                // If the NuGet package name does not exactly match the AssemblyName,
+                // we check whether the assembly file name is matching
+                if (runtime.RuntimeAssemblyGroups.Any(
+                        g => g.AssetPaths.Any(
+                            p => string.Equals(Path.GetFileNameWithoutExtension(p), name.Name, StringComparison.OrdinalIgnoreCase))))
+                {
+                    return runtime;
+                }
+            }
+            return null;
         }
 
         private static DateTime GetLastModifiedAssemblyTime(string assemblyListPath)
