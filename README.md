@@ -21,6 +21,15 @@ up to Intellisense as soon as the file is saved to disk.
 In this walkthrough, we will define a code generator that replicates any class
 your code generation attribute is applied to, but with a suffix appended to its name.
 
+### Prerequisites
+
+* .NET Core SDK v2.0 (specifically 2.0 must be available, doesn't have to be the only one)
+  
+  The `dotnet-codegen` CLI tool which is a part of this project requires v2.0 to run.
+  Project may be built with any other version, but the 2.0 has to be available in order
+  to execute this tool. If you don't have SDKv2.0 there will be cryptic error messages
+  (see [#111](https://github.com/AArnott/CodeGeneration.Roslyn/issues/111)).
+
 ### Define code generator
 [Define code generator]: #define-code-generator
 
