@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Validation" Version="2.4.18" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CodeGeneration.Roslyn.Attributes\CodeGeneration.Roslyn.Attributes.csproj" />
     <ProjectReference Include="..\CodeGeneration.Roslyn.Tests.Generators.Dependency\CodeGeneration.Roslyn.Tests.Generators.Dependency.csproj" />
     <ProjectReference Include="..\CodeGeneration.Roslyn\CodeGeneration.Roslyn.csproj" />
