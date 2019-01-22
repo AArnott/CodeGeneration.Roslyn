@@ -23,12 +23,14 @@ your code generation attribute is applied to, but with a suffix appended to its 
 
 ### Prerequisites
 
-* .NET Core SDK v2.0 (specifically 2.0 must be available, doesn't have to be the only one)
+* .NET Core runtime v2.0 (specifically 2.0 must be available, doesn't have to be the only one, available in .NET Core SDK v2.1.200)
   
   The `dotnet-codegen` CLI tool which is a part of this project requires v2.0 to run.
   Project may be built with any other version, but the 2.0 has to be available in order
   to execute this tool. If you don't have SDKv2.0 there will be cryptic error messages
   (see [#111](https://github.com/AArnott/CodeGeneration.Roslyn/issues/111)).
+
+* .NET Core SDK v2.1.500 specifically for building this project
 
 ### Define code generator
 [Define code generator]: #define-code-generator

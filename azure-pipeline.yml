@@ -19,6 +19,10 @@ jobs:
 - job: Windows
   pool: Hosted VS2017
   steps:
+  - task: DotNetCoreInstaller@0
+    inputs:
+      version: '2.1.500'
+
   - script: |
       dotnet tool install --tool-path . nbgv
       .\nbgv cloud -p src
