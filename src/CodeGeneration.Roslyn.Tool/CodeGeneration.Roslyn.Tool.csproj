@@ -13,6 +13,7 @@
     <AdditionalFiles Include="..\stylecop.json">
       <Visible>false</Visible>
     </AdditionalFiles>
+    <Content Include="prefercliruntime" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>
