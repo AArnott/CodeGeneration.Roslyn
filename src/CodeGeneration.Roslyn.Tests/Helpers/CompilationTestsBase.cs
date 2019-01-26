@@ -25,6 +25,9 @@ public abstract class CompilationTestsBase
             "mscorlib.dll",
             "System.dll",
             "System.Core.dll",
+#if NETCOREAPP
+            "System.Private.CoreLib.dll",
+#endif
             "System.Runtime.dll",
         };
         var coreMetaReferences =

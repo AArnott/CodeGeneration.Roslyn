@@ -2,6 +2,7 @@
 // Licensed under the MS-PL license. See LICENSE.txt file in the project root for full license information.
 
 using System;
+using System.IO;
 using CodeGeneration.Roslyn.Tests.Generators;
 using Xunit;
 
@@ -20,7 +21,7 @@ public partial class CodeGenerationTests
         var fooB = new CodeGenerationTests.FooB();
         var multiplied = new MultipliedBar();
         multiplied.ValueSuff1020();
-        Assert.EndsWith(@"src\CodeGeneration.Roslyn.Tests", DirectoryPathTest.Path, StringComparison.OrdinalIgnoreCase);
+        Assert.EndsWith(Path.Combine("src", "CodeGeneration.Roslyn.Tests"), DirectoryPathTest.Path, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
