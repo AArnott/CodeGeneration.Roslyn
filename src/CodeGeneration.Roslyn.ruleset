@@ -1,9 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<RuleSet Name="Microsoft Managed Recommended Rules" Description="These rules focus on the most critical problems in your code, including potential security holes, application crashes, and other important logic and design errors. It is recommended to include this rule set in any custom rule set you create for your projects." ToolsVersion="10.0">
-  <Localization ResourceAssembly="Microsoft.VisualStudio.CodeAnalysis.RuleSets.Strings.dll" ResourceBaseName="Microsoft.VisualStudio.CodeAnalysis.RuleSets.Strings.Localized">
-    <Name Resource="MinimumRecommendedRules_Name" />
-    <Description Resource="MinimumRecommendedRules_Description" />
-  </Localization>
+<RuleSet Name="CodeGeneration.Roslyn Rules" Description="These rules are for all CodeGeneration.Roslyn projects." ToolsVersion="10.0">
   <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
     <Rule Id="CA1001" Action="Warning" />
     <Rule Id="CA1009" Action="Warning" />
@@ -69,6 +65,12 @@
     <Rule Id="CA2242" Action="Warning" />
   </Rules>
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
-    <Rule Id="SA1652" Action="None" />
+    <Rule Id="SA1101" Action="Hidden" />
+    <Rule Id="SA1122" Action="Hidden" />
+    <Rule Id="SA1201" Action="Info" />
+    <Rule Id="SA1204" Action="Info" />
+    <Rule Id="SA1503" Action="Info" />
+    <Rule Id="SA1513" Action="Hidden" />
+    <Rule Id="SA1515" Action="Info" />
   </Rules>
 </RuleSet>

@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Andrew Arnott. All rights reserved.
-// Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
+// Licensed under the MS-PL license. See LICENSE.txt file in the project root for full license information.
 
 using System;
 using System.Collections.Immutable;
@@ -25,7 +25,7 @@ public abstract class CompilationTestsBase
             "mscorlib.dll",
             "System.dll",
             "System.Core.dll",
-            "System.Runtime.dll"
+            "System.Runtime.dll",
         };
         var coreMetaReferences =
             coreAssemblyNames.Select(x => MetadataReference.CreateFromFile(Path.Combine(coreAssemblyPath, x)));
@@ -33,7 +33,7 @@ public abstract class CompilationTestsBase
         {
             typeof(CSharpCompilation).Assembly,
             typeof(CodeGenerationAttributeAttribute).Assembly,
-            typeof(TestAttribute).Assembly
+            typeof(TestAttribute).Assembly,
         };
         MetadataReferences = coreMetaReferences
             .Concat<MetadataReference>(otherAssemblies.Select(x => MetadataReference.CreateFromFile(x.Location)))

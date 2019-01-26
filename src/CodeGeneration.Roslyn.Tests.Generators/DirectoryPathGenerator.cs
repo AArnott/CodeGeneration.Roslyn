@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Andrew Arnott. All rights reserved.
-// Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
+// Licensed under the MS-PL license. See LICENSE.txt file in the project root for full license information.
 
 namespace CodeGeneration.Roslyn.Tests.Generators
 {
@@ -35,7 +35,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
                                         Literal(context.ProjectDirectory))))))
                     .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.ConstKeyword))));
 
-            return Task.FromResult(List<MemberDeclarationSyntax>(new []{member}));
+            return Task.FromResult(List<MemberDeclarationSyntax>(new[] { member }));
         }
     }
 }

@@ -1,29 +1,48 @@
 <Project>
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)..\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
-    <OutputPath>$(MSBuildThisFileDirectory)..\bin\$(MSBuildProjectName)\$(Configuration)\</OutputPath>
-    <PackageOutputPath>$(MSBuildThisFileDirectory)..\bin\Packages\$(Configuration)\</PackageOutputPath>
-    <PackageProjectUrl>https://github.com/aarnott/CodeGeneration.Roslyn</PackageProjectUrl>
+
+  <PropertyGroup Label="Metadata">
+    <Authors>Andrew Arnott</Authors>
     <Company>Andrew Arnott</Company>
     <Copyright>Copyright © Andrew Arnott</Copyright>
-    <Authors>Andrew Arnott</Authors>
+    <LicenseExpression>MS-PL</LicenseExpression>
+    <PackageProjectUrl>https://github.com/aarnott/CodeGeneration.Roslyn</PackageProjectUrl>
     <RepositoryUrl>https://github.com/aarnott/CodeGeneration.Roslyn</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <IsPackable Condition=" $(MSBuildProjectName.Contains('Test')) ">false</IsPackable>
-    <NerdbankGitVersioningVersion>2.2.13</NerdbankGitVersioningVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <LangVersion>7.3</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <WarningsAsErrors Condition=" '$(Configuration)' == Release ">true</WarningsAsErrors>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)/../obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+    <OutputPath>$(MSBuildThisFileDirectory)/../bin/$(MSBuildProjectName)/$(Configuration)/</OutputPath>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)/../bin/Packages/$(Configuration)/</PackageOutputPath>
+    <IsTestProject>$(MSBuildProjectName.Contains('Test'))</IsTestProject>
     <RoslynNugetVersion>2.9.0</RoslynNugetVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" !$(IsTestProject) ">
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)/opensource.snk</AssemblyOriginatorKeyFile>
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)/CodeGeneration.Roslyn.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(IsTestProject) ">
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <IsPackable>false</IsPackable>
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)/CodeGeneration.Roslyn.Tests.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Nerdbank.GitVersioning" Version="$(NerdbankGitVersioningVersion)" PrivateAssets="all" />
+    <PackageReference Include="Nerdbank.GitVersioning" Version="2.3.38" PrivateAssets="all" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.1-beta.61" IncludeAssets="analyzers" PrivateAssets="all" />
   </ItemGroup>
 
-  <Target Name="SetNuSpecProperties" BeforeTargets="GenerateNuspec" DependsOnTargets="GetBuildVersion">
-    <PropertyGroup>
-      <!-- https://github.com/NuGet/Home/issues/4649 -->
-      <!--<NuSpecProperties>$(NuSpecProperties);GitCommitIdShort=$(GitCommitIdShort)</NuSpecProperties>-->
-      <PackageLicenseUrl>https://raw.githubusercontent.com/AArnott/CodeGeneration.Roslyn/$(GitCommitIdShort)/LICENSE.txt</PackageLicenseUrl>
-    </PropertyGroup>
-  </Target>
+  <ItemGroup>
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)/stylecop.json">
+      <Visible>false</Visible>
+    </AdditionalFiles>
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="Tests Rules" Description="Additional rules (exceptions) for test projects." ToolsVersion="15.0">
+  <Include Path="codegeneration.roslyn.ruleset" Action="Default" />
+  <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <Rule Id="SA0001" Action="Hidden" />
+    <Rule Id="SA1402" Action="Hidden" />
+    <Rule Id="SA1600" Action="Hidden" />
+    <Rule Id="SA1601" Action="Hidden" />
+    <Rule Id="SA1649" Action="Hidden" />
+    <Rule Id="SA1652" Action="None" />
+  </Rules>
+</RuleSet>

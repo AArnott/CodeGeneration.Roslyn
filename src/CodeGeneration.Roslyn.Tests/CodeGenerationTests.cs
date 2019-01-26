@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Andrew Arnott. All rights reserved.
-// Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
+// Licensed under the MS-PL license. See LICENSE.txt file in the project root for full license information.
 
 using System;
 using CodeGeneration.Roslyn.Tests.Generators;
@@ -33,9 +33,10 @@ public partial class CodeGenerationTests
     public partial class Wrapper
     {
         [ExternalDuplicateWithSuffixByName("Suffix")]
-        public void TestMethod() { }
+        public void TestMethod()
+        {
+        }
     }
-
 
     [DuplicateWithSuffixByName("A")]
     [DuplicateWithSuffixByType("B")]
@@ -50,4 +51,3 @@ public partial class CodeGenerationTests
         public string Value { get; set; }
     }
 }
-

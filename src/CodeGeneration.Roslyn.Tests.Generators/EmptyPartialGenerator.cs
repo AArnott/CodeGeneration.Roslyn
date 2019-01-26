@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Andrew Arnott. All rights reserved.
-// Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
+// Licensed under the MS-PL license. See LICENSE.txt file in the project root for full license information.
 
 namespace CodeGeneration.Roslyn.Tests.Generators
 {
@@ -12,7 +12,6 @@ namespace CodeGeneration.Roslyn.Tests.Generators
 
     public class EmptyPartialGenerator : ICodeGenerator
     {
-
         public EmptyPartialGenerator(AttributeData attributeData)
         {
         }
@@ -26,7 +25,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
 
             var partial = typeDeclaration is StructDeclarationSyntax structDeclaration
                 ? StructPartial(structDeclaration)
-                : ClassPartial((ClassDeclarationSyntax) typeDeclaration);
+                : ClassPartial((ClassDeclarationSyntax)typeDeclaration);
             var results = SyntaxFactory.SingletonList(partial);
             return Task.FromResult(results);
         }

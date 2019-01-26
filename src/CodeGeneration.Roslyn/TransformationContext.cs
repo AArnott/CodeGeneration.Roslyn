@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Andrew Arnott. All rights reserved.
-// Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
+// Licensed under the MS-PL license. See LICENSE.txt file in the project root for full license information.
 
 namespace CodeGeneration.Roslyn
 {
@@ -8,6 +8,9 @@ namespace CodeGeneration.Roslyn
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
 
+    /// <summary>
+    /// Provides all the inputs and context necessary to perform the code generation.
+    /// </summary>
     public class TransformationContext
     {
         /// <summary>
@@ -16,13 +19,16 @@ namespace CodeGeneration.Roslyn
         /// <param name="processingNode">The syntax node the generator attribute is found on.</param>
         /// <param name="semanticModel">The semantic model.</param>
         /// <param name="compilation">The overall compilation being generated for.</param>
-        /// <param name="projectDirectory">The absolute path of the directory where the project file is located</param>
+        /// <param name="projectDirectory">The absolute path of the directory where the project file is located.</param>
         /// <param name="compilationUnitUsings">The using directives already queued to be generated.</param>
         /// <param name="compilationUnitExterns">The extern aliases already queued to be generated.</param>
-        public TransformationContext(CSharpSyntaxNode processingNode, SemanticModel semanticModel, CSharpCompilation compilation,
-                                     string projectDirectory,
-                                     IEnumerable<UsingDirectiveSyntax> compilationUnitUsings,
-                                     IEnumerable<ExternAliasDirectiveSyntax> compilationUnitExterns)
+        public TransformationContext(
+            CSharpSyntaxNode processingNode,
+            SemanticModel semanticModel,
+            CSharpCompilation compilation,
+            string projectDirectory,
+            IEnumerable<UsingDirectiveSyntax> compilationUnitUsings,
+            IEnumerable<ExternAliasDirectiveSyntax> compilationUnitExterns)
         {
             ProcessingNode = processingNode;
             SemanticModel = semanticModel;

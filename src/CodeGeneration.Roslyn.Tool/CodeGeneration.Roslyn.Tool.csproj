@@ -5,35 +5,30 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>dotnet-codegen</AssemblyName>
-    <LangVersion>7.1</LangVersion>
     <Description>The dotnet code generation tool that works with the CodeGeneration.Roslyn nuget package.</Description>
+    <CodeAnalysisRuleSet>CodeGeneration.Roslyn.Tool.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="..\stylecop.json">
-      <Visible>false</Visible>
-    </AdditionalFiles>
     <Content Include="prefercliruntime" Pack="true" PackagePath="" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\CodeGeneration.Roslyn.Engine\CodeGeneration.Roslyn.Engine.csproj" />
-    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Update="CommandLine\Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Update="CommandLine\Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CodeGeneration.Roslyn.Engine\CodeGeneration.Roslyn.Engine.csproj" />
   </ItemGroup>
 
 </Project>

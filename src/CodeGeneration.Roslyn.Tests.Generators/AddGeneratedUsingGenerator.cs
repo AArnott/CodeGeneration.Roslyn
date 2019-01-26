@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Andrew Arnott. All rights reserved.
-// Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
-
-using System.Diagnostics;
+// Licensed under the MS-PL license. See LICENSE.txt file in the project root for full license information.
 
 namespace CodeGeneration.Roslyn.Tests.Generators
 {
     using System;
+    using System.Diagnostics;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
 
@@ -24,8 +23,8 @@ namespace CodeGeneration.Roslyn.Tests.Generators
 
     public class AddGeneratedUsingGenerator : RichBaseGenerator
     {
-
-        public AddGeneratedUsingGenerator(AttributeData attributeData) : base(attributeData)
+        public AddGeneratedUsingGenerator(AttributeData attributeData)
+            : base(attributeData)
         {
             Using = (string)AttributeData.ConstructorArguments[0].Value;
         }

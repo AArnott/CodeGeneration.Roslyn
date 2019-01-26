@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="Tests Rules" Description="Additional rules (exceptions) for test projects." ToolsVersion="15.0">
+  <Include Path="../codegeneration.roslyn.tests.ruleset" Action="Default" />
+  <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <!--for the CommandLine files-->
+    <Rule Id="SA1028" Action="Hidden" />
+    <Rule Id="SA1119" Action="Hidden" />
+    <Rule Id="SA1200" Action="Hidden" />
+    <Rule Id="SA1202" Action="Hidden" />
+    <Rule Id="SA1308" Action="Hidden" />
+    <Rule Id="SA1309" Action="Hidden" />
+    <Rule Id="SA1311" Action="Hidden" />
+    <Rule Id="SA1314" Action="Hidden" />
+    <Rule Id="SA1405" Action="Hidden" />
+    <Rule Id="SA1407" Action="Hidden" />
+    <Rule Id="SA1413" Action="Hidden" />
+    <Rule Id="SA1507" Action="Hidden" />
+    <Rule Id="SA1512" Action="Hidden" />
+    <Rule Id="SA1591" Action="Hidden" />
+    <Rule Id="SA1636" Action="Hidden" />
+  </Rules>
+</RuleSet>

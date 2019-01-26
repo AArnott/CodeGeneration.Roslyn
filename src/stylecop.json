@@ -6,7 +6,7 @@
       "xmlHeader": false,
       "copyrightText": "Copyright (c) Andrew Arnott. All rights reserved.\nLicensed under the {licenseName} license. See {licenseFile} file in the project root for full license information.",
       "variables": {
-        "licenseName": "MIT",
+        "licenseName": "MS-PL",
         "licenseFile": "LICENSE.txt"
       }
     }

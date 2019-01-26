@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Andrew Arnott. All rights reserved.
-// Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
+// Licensed under the MS-PL license. See LICENSE.txt file in the project root for full license information.
 
 namespace CodeGeneration.Roslyn.Tests.Generators
 {
@@ -45,12 +45,17 @@ namespace CodeGeneration.Roslyn.Tests.Generators
             }
 
             public TransformationContext TransformationContext { get; }
+
             public IProgress<Diagnostic> Progress { get; }
+
             public CancellationToken CancellationToken { get; }
 
             public List<UsingDirectiveSyntax> Usings { get; } = new List<UsingDirectiveSyntax>();
+
             public List<ExternAliasDirectiveSyntax> Externs { get; } = new List<ExternAliasDirectiveSyntax>();
+
             public List<AttributeListSyntax> AttributeLists { get; } = new List<AttributeListSyntax>();
+
             public List<MemberDeclarationSyntax> Members { get; } = new List<MemberDeclarationSyntax>();
 
             public RichGenerationContext AddUsing(UsingDirectiveSyntax usingDirective)

@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Andrew Arnott. All rights reserved.
-// Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
+// Licensed under the MS-PL license. See LICENSE.txt file in the project root for full license information.
 
 namespace CodeGeneration.Roslyn.Engine
 {
@@ -20,6 +20,10 @@ namespace CodeGeneration.Roslyn.Engine
     using Microsoft.Extensions.DependencyModel.Resolution;
     using Validation;
 
+    /// <summary>
+    /// Runs code generation for every applicable document and handles resulting syntax trees,
+    /// saving them to <see cref="IntermediateOutputDirectory"/>.
+    /// </summary>
     public class CompilationGenerator
     {
         private const string InputAssembliesIntermediateOutputFileName = "CodeGeneration.Roslyn.InputAssemblies.txt";
@@ -75,14 +79,21 @@ namespace CodeGeneration.Roslyn.Engine
         /// </summary>
         public IEnumerable<string> EmptyGeneratedFiles => this.emptyGeneratedFiles;
 
+        /// <summary>
+        /// Gets or sets the directory with the project file.
+        /// </summary>
         public string ProjectDirectory { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CompilationGenerator"/> class
+        /// with default dependency resolution and loading.
+        /// </summary>
         public CompilationGenerator()
         {
             this.assemblyResolver = new CompositeCompilationAssemblyResolver(new ICompilationAssemblyResolver[]
             {
                 new ReferenceAssemblyPathResolver(),
-                new PackageCompilationAssemblyResolver()
+                new PackageCompilationAssemblyResolver(),
             });
             this.dependencyContext = DependencyContext.Default;
 
@@ -90,7 +101,12 @@ namespace CodeGeneration.Roslyn.Engine
             loadContext.Resolving += this.ResolveAssembly;
         }
 
-        public void Generate(IProgress<Diagnostic> progress = null, CancellationToken cancellationToken = default(CancellationToken))
+        /// <summary>
+        /// Runs the code generation as configured using this instance's properties.
+        /// </summary>
+        /// <param name="progress">Optional handler of diagnostics provided by code generator.</param>
+        /// <param name="cancellationToken">Cancellation token to interrupt async operations.</param>
+        public void Generate(IProgress<Diagnostic> progress = null, CancellationToken cancellationToken = default)
         {
             Verify.Operation(this.Compile != null, $"{nameof(Compile)} must be set first.");
             Verify.Operation(this.ReferencePath != null, $"{nameof(ReferencePath)} must be set first.");
@@ -167,7 +183,6 @@ namespace CodeGeneration.Roslyn.Engine
                         while (true);
                     }
 
-
                     this.generatedFiles.Add(outputFilePath);
                 }
             }
@@ -180,7 +195,7 @@ namespace CodeGeneration.Roslyn.Engine
             }
         }
 
-        protected virtual Assembly LoadAssembly(string path)
+        private Assembly LoadAssembly(string path)
         {
             if (this.assembliesByPath.ContainsKey(path))
                 return this.assembliesByPath[path];
@@ -197,7 +212,7 @@ namespace CodeGeneration.Roslyn.Engine
                 this.assemblyResolver = new CompositeCompilationAssemblyResolver(new ICompilationAssemblyResolver[]
                 {
                     new AppBaseCompilationAssemblyResolver(basePath),
-                    this.assemblyResolver
+                    this.assemblyResolver,
                 });
                 this.directoriesWithResolver.Add(basePath);
             }
@@ -292,7 +307,7 @@ namespace CodeGeneration.Roslyn.Engine
 
             var messageArgs = new object[]
             {
-                ex
+                ex,
             };
 
             var reportDiagnostic = Diagnostic.Create(descriptor, location, messageArgs);

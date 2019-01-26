@@ -2,17 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
-    <LangVersion>7.3</LangVersion>
-    <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\opensource.snk</AssemblyOriginatorKeyFile>
     <Description>The engine of source code generation used by `dotnet-codegen` tool.</Description>
   </PropertyGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Include="..\stylecop.json">
-      <Visible>false</Visible>
-    </AdditionalFiles>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.0.4" />
