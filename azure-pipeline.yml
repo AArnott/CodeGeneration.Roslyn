@@ -57,7 +57,7 @@ jobs:
     inputs:
       command: test
       workingDirectory: src
-      nobuild: true
+      arguments: -v n --no-build -c $(BuildConfiguration)
 
   - task: CopyFiles@1
     displayName: Collecting project.assets.json artifacts
