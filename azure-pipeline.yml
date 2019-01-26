@@ -20,6 +20,7 @@ jobs:
   pool: Hosted VS2017
   steps:
   - task: DotNetCoreInstaller@0
+    displayName: Install/select .NET Core SDK
     inputs:
       version: '2.1.500'
 
@@ -42,52 +43,52 @@ jobs:
       nugetConfigPath: src/nuget.config
 
   # Use VSBuild on Windows so GitLink will work (it fails on dotnet build)
+  # Also targeting net20, net40, PCLs etc requires full MSBuild
   - task: VSBuild@1
+    displayName: Build Visual Studio solution
     inputs:
       vsVersion: 15.0
       msbuildArgs: /t:build,pack /m /v:m /bl:"$(Build.ArtifactStagingDirectory)/build_logs/msbuild.binlog"
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
-    displayName: Build Visual Studio solution
 
   - task: DotNetCoreCLI@2
+    displayName: Run tests
     inputs:
       command: test
-      projects: src/CodeGeneration.Roslyn.Tests
-      configuration: $(BuildConfiguration)
+      workingDirectory: src
       nobuild: true
-    continueOnError: true  # Tests fail right now.
 
   - task: CopyFiles@1
+    displayName: Collecting project.assets.json artifacts
     inputs:
       Contents: |
         obj/**/project.assets.json
       TargetFolder: $(Build.ArtifactStagingDirectory)/projectAssetsJson
-    displayName: Collecting project.assets.json artifacts
     condition: succeededOrFailed()
 
   - task: CopyFiles@1
+    displayName: Collecting deployables
     inputs:
       Contents: |
         bin/**/$(BuildConfiguration)/**/*.nupkg
       TargetFolder: $(Build.ArtifactStagingDirectory)/deployables
       flattenFolders: true
-    displayName: Collecting deployables
 
   - task: PublishBuildArtifacts@1
+    displayName: Publish projectAssetsJson artifacts
     inputs:
       PathtoPublish: $(Build.ArtifactStagingDirectory)/projectAssetsJson
       ArtifactName: projectAssetsJson
       ArtifactType: Container
-    displayName: Publish projectAssetsJson artifacts
     condition: and(succeededOrFailed(), ne(variables['system.pullrequest.isfork'], true))
 
   - task: PublishBuildArtifacts@1
+    displayName: Publish build_logs artifacts
     inputs:
       PathtoPublish: $(Build.ArtifactStagingDirectory)/build_logs
       ArtifactName: build_logs
       ArtifactType: Container
-    displayName: Publish build_logs artifacts
     condition: and(succeededOrFailed(), ne(variables['system.pullrequest.isfork'], true))
 
   ## The rest of these steps are for deployment and skipped for PR builds
@@ -100,11 +101,11 @@ jobs:
   #  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['system.pullrequest.isfork'], true))
 
   - task: PublishBuildArtifacts@1
+    displayName: Publish deployables artifacts
     inputs:
       PathtoPublish: $(Build.ArtifactStagingDirectory)/deployables
       ArtifactName: deployables
       ArtifactType: Container
-    displayName: Publish deployables artifacts
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['system.pullrequest.isfork'], true))
 
 - job: Linux
