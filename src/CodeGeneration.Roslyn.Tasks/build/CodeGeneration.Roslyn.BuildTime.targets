@@ -23,7 +23,7 @@
       <_CodeGenToolOutputBasePath>$(IntermediateOutputPath)$(MSBuildProjectFile).dotnet-codegen</_CodeGenToolOutputBasePath>
       <_CodeGenToolResponseFileFullPath>$(_CodeGenToolOutputBasePath).rsp</_CodeGenToolResponseFileFullPath>
       <_CodeGenToolGeneratedFileListFullPath>$(_CodeGenToolOutputBasePath).GeneratedFileList.txt</_CodeGenToolGeneratedFileListFullPath>
-      <_CodeGenToolWarningText>dotnet-codegen: Failed to generate the list of generated files. The tool didn't run succesfully. Please check https://github.com/AArnott/CodeGeneration.Roslyn for usage instructions.</_CodeGenToolWarningText>
+      <_CodeGenToolWarningText>dotnet-codegen: Failed to generate the list of generated files. The tool didn't run successfully. Please check https://github.com/AArnott/CodeGeneration.Roslyn for usage instructions.</_CodeGenToolWarningText>
       <_CodeGenToolResponseFileLines>
 @(ReferencePath->'-r%0d%0a%(Identity)', '%0d%0a')
 @(DefineConstantsItems->'-d%0d%0a%(Identity)', '%0d%0a')
