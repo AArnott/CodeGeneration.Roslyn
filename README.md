@@ -23,24 +23,27 @@ your code generation attribute is applied to, but with a suffix appended to its 
 
 ### Prerequisites
 
-* .NET Core SDK v2.x
+* [.NET Core SDK v2.1+][dotnet-sdk-2.1]
   
-  If you don't have v2.x there will be cryptic error messages
+  If you don't have v2.1+ there will be cryptic error messages
   (see [#111](https://github.com/AArnott/CodeGeneration.Roslyn/issues/111)).
 
 * .NET Core SDK v2.1.500 specifically for building this project
 
+[dotnet-sdk-2.1]: https://dotnet.microsoft.com/download/dotnet-core/2.1
+
 ### Define code generator
 [Define code generator]: #define-code-generator
 
-This must be done in a library that targets netstandard1.6 or net461 (or later;
-net461 is supported if you have .NET Core SDK v2.0+ installed, [see docs for details][netstandard-table]).
+This must be done in a library that targets `netstandard2.0` or `net461`
+(or any `netcoreapp2.1`-compatible target).
 Your generator cannot be defined in the same project that will have code generated
 for it because code generation runs *before* the receiving project is itself compiled.
 
 Install the [CodeGeneration.Roslyn][NuPkg] NuGet Package.
 
-Define the generator class (*note: constructor accepting `AttributeData` parameter is required*):
+Define the generator class in a class library targeting `netstandard2.0`
+(*note: constructor accepting `AttributeData` parameter is required*):
 
 ```csharp
 using CodeGeneration.Roslyn;
@@ -86,7 +89,7 @@ public class DuplicateWithSuffixGenerator : ICodeGenerator
 To activate your code generator, you need to define an attribute that can be
 applied to the class to be copied. This attribute may be defined in the same
 assembly as defines your code generator, but since your code generator must
-be defined in a netstandard1.6+ or net461+ library, this may limit which projects
+be defined in a `netcoreapp2.1`-compatible library, this may limit which projects
 can apply your attribute. So define your attribute in another assembly if
 it must be applied to projects that target older platforms.
 
@@ -95,7 +98,7 @@ If your attributes are in their own project, you must install the
 
 Define your attribute class.
 For this walkthrough, we will assume that the attributes are defined in the same
-netstandard1.6 project that defines the generator which allows us to use the more
+netstandard2.0 project that defines the generator which allows us to use the more
 convenient `typeof` syntax when declaring the code generator type.
 If the attributes and code generator classes were in separate assemblies, you must
 specify the assembly-qualified name of the generator type as a string instead.

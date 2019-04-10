@@ -23,6 +23,7 @@ public abstract class CompilationTestsBase
         var coreAssemblyNames = new[]
         {
             "mscorlib.dll",
+            "netstandard.dll",
             "System.dll",
             "System.Core.dll",
 #if NETCOREAPP
