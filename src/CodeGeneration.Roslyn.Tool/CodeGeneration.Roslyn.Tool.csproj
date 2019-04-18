@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageType>DotnetCliTool</PackageType>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <AssemblyName>dotnet-codegen</AssemblyName>
     <Description>The dotnet code generation tool that works with the CodeGeneration.Roslyn nuget package.</Description>
     <CodeAnalysisRuleSet>CodeGeneration.Roslyn.Tool.ruleset</CodeAnalysisRuleSet>

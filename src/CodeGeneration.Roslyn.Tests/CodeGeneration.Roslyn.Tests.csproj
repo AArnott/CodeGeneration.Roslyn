@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net462;netcoreapp2.1</TargetFrameworks>
-    <GenerateCodeFromAttributesToolPathOverride>$(OutputPath)..\..\CodeGeneration.Roslyn.Tool\$(Configuration)\netcoreapp2.0\dotnet-codegen.dll</GenerateCodeFromAttributesToolPathOverride>
+    <GenerateCodeFromAttributesToolPathOverride>$(OutputPath)..\..\CodeGeneration.Roslyn.Tool\$(Configuration)\netcoreapp2.1\dotnet-codegen.dll</GenerateCodeFromAttributesToolPathOverride>
   </PropertyGroup>
 
   <ItemGroup>
