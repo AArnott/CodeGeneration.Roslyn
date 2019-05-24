@@ -29,9 +29,8 @@
       <_CodeGenToolOutputBasePath>$(IntermediateOutputPath)$(MSBuildProjectFile).dotnet-codegen</_CodeGenToolOutputBasePath>
       <_CodeGenToolResponseFileFullPath>$(_CodeGenToolOutputBasePath).rsp</_CodeGenToolResponseFileFullPath>
       <_CodeGenToolGeneratedFileListFullPath>$(_CodeGenToolOutputBasePath).GeneratedFileList.txt</_CodeGenToolGeneratedFileListFullPath>
-      <_CodeGenToolWarningText>dotnet-codegen: Failed to generate the list of generated files. The tool didn't run successfully. Please check https://github.com/AArnott/CodeGeneration.Roslyn for usage instructions.</_CodeGenToolWarningText>
       <_CodeGenToolResponseFileLines>
-@(ReferencePath->'-r%0d%0a%(Identity)', '%0d%0a')
+        <![CDATA[@(ReferencePath->'-r%0d%0a%(Identity)', '%0d%0a')
 @(DefineConstantsItems->'-d%0d%0a%(Identity)', '%0d%0a')
 @(GeneratorAssemblySearchPaths->'--generatorSearchPath%0d%0a%(Identity)', '%0d%0a')
 --out
@@ -41,9 +40,10 @@ $(MSBuildProjectDirectory)
 --generatedFilesList
 $(_CodeGenToolGeneratedFileListFullPath)
 --
-@(Compile_CodeGenInputs, '%0d%0a')
+@(Compile_CodeGenInputs, '%0d%0a')]]>
       </_CodeGenToolResponseFileLines>
       <_GenerateCodeToolVersion>(n/a)</_GenerateCodeToolVersion>
+      <_GenerateCodeToolVersionExitCode></_GenerateCodeToolVersionExitCode>
     </PropertyGroup>
     <!--Write response file with arguments for dotnet codegen-->
     <WriteLinesToFile
@@ -61,10 +61,16 @@ $(_CodeGenToolGeneratedFileListFullPath)
       StandardOutputImportance="normal"
       ContinueOnError="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="_GenerateCodeToolVersion"/>
+      <Output TaskParameter="ExitCode" PropertyName="_GenerateCodeToolVersionExitCode"/>
     </Exec>
     <Message
-      Text="Running CodeGeneration.Roslyn.Tool v$(_GenerateCodeToolVersion)"
-      Importance="normal" />
+      Text="CodeGeneration.Roslyn.Tool (dotnet-codegen) version: $(_GenerateCodeToolVersion)"
+      Importance="normal"
+      Condition="'$(_GenerateCodeToolVersionExitCode)' == '0'" />
+    <Error
+      Code="CGR1001"
+      Text="CodeGeneration.Roslyn.Tool (dotnet-codegen) is not available, code generation won't run. Please check https://github.com/AArnott/CodeGeneration.Roslyn for usage instructions."
+      Condition="'$(_GenerateCodeToolVersionExitCode)' != '0'" />
     <ItemGroup>
       <FileWrites Include="$(_CodeGenToolResponseFileFullPath)" />
     </ItemGroup>
@@ -76,9 +82,9 @@ $(_CodeGenToolGeneratedFileListFullPath)
       Command="dotnet $(GenerateCodeFromAttributesToolPathOverride) &quot;%40$(_CodeGenToolResponseFileFullPath)&quot;"
       StandardOutputImportance="normal" />
     <Error
-      Condition="Exists('$(_CodeGenToolGeneratedFileListFullPath)') != 'true'"
       Code="CGR1000"
-      Text="$(_CodeGenToolWarningText)" />
+      Text="CodeGeneration.Roslyn.Tool (dotnet-codegen) failed to generate the list of generated files. The tool didn't run successfully. Please check https://github.com/AArnott/CodeGeneration.Roslyn for usage instructions."
+      Condition="Exists('$(_CodeGenToolGeneratedFileListFullPath)') != 'true'" />
     <ReadLinesFromFile File="$(_CodeGenToolGeneratedFileListFullPath)">
       <Output TaskParameter="Lines" ItemName="CodeGenerationRoslynOutput_Compile"/>
       <Output TaskParameter="Lines" ItemName="FileWrites"/>
@@ -88,5 +94,5 @@ $(_CodeGenToolGeneratedFileListFullPath)
       <FileWrites Include="$(_CodeGenToolGeneratedFileListFullPath)" />
     </ItemGroup>
   </Target>
-  
+
 </Project>
