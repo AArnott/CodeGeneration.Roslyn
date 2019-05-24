@@ -30,25 +30,28 @@
       <_CodeGenToolResponseFileFullPath>$(_CodeGenToolOutputBasePath).rsp</_CodeGenToolResponseFileFullPath>
       <_CodeGenToolGeneratedFileListFullPath>$(_CodeGenToolOutputBasePath).GeneratedFileList.txt</_CodeGenToolGeneratedFileListFullPath>
       <_CodeGenToolResponseFileLines>
-        <![CDATA[@(ReferencePath->'-r%0d%0a%(Identity)', '%0d%0a')
-@(DefineConstantsItems->'-d%0d%0a%(Identity)', '%0d%0a')
-@(GeneratorAssemblySearchPaths->'--generatorSearchPath%0d%0a%(Identity)', '%0d%0a')
---out
-$(IntermediateOutputPath)
---projectDir
-$(MSBuildProjectDirectory)
---generatedFilesList
-$(_CodeGenToolGeneratedFileListFullPath)
---
-@(Compile_CodeGenInputs, '%0d%0a')]]>
+        @(ReferencePath->'-r;%(Identity)');
+        @(DefineConstantsItems->'-d;%(Identity)');
+        @(GeneratorAssemblySearchPaths->'--generatorSearchPath;%(Identity)');
+        --out;
+        $(IntermediateOutputPath);
+        --projectDir;
+        $(MSBuildProjectDirectory);
+        --generatedFilesList;
+        $(_CodeGenToolGeneratedFileListFullPath);
+        --;
+        @(Compile_CodeGenInputs)
       </_CodeGenToolResponseFileLines>
       <_GenerateCodeToolVersion>(n/a)</_GenerateCodeToolVersion>
       <_GenerateCodeToolVersionExitCode></_GenerateCodeToolVersionExitCode>
     </PropertyGroup>
+    <ItemGroup>
+      <_CodeGenToolResponseFileContent Include="$(_CodeGenToolResponseFileLines)" />
+    </ItemGroup>
     <!--Write response file with arguments for dotnet codegen-->
     <WriteLinesToFile
       File="$(_CodeGenToolResponseFileFullPath)"
-      Lines="$(_CodeGenToolResponseFileLines)"
+      Lines="@(_CodeGenToolResponseFileContent)"
       Overwrite="true" />
     <Delete
       Condition="Exists('$(_CodeGenToolGeneratedFileListFullPath)') == 'true'"
