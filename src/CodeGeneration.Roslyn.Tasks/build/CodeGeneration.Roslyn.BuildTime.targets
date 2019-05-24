@@ -74,9 +74,8 @@ $(_CodeGenToolGeneratedFileListFullPath)
     <!--Run the tool and process results-->
     <Exec
       Command="dotnet $(GenerateCodeFromAttributesToolPathOverride) &quot;%40$(_CodeGenToolResponseFileFullPath)&quot;"
-      StandardOutputImportance="normal"
-      ContinueOnError="true" />
-    <Warning
+      StandardOutputImportance="normal" />
+    <Error
       Condition="Exists('$(_CodeGenToolGeneratedFileListFullPath)') != 'true'"
       Code="CGR1000"
       Text="$(_CodeGenToolWarningText)" />
