@@ -11,7 +11,6 @@
     </TargetFrameworks>
     <PackageId>CodeGeneration.Roslyn.BuildTime</PackageId>
     <Description>The build-time development dependency that generates code for a project that consumes code generation attributes.</Description>
-    <BeforePack>SetPackageVersionInProps;$(BeforePack)</BeforePack>
     <PropsFileName>$(PackageId).props</PropsFileName>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <DevelopmentDependency>true</DevelopmentDependency>
