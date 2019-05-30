@@ -11,7 +11,6 @@
     </TargetFrameworks>
     <PackageId>CodeGeneration.Roslyn.BuildTime</PackageId>
     <Description>The build-time development dependency that generates code for a project that consumes code generation attributes.</Description>
-    <BeforePack>SetPackageVersionInProps;$(BeforePack)</BeforePack>
     <PropsFileName>$(PackageId).props</PropsFileName>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <DevelopmentDependency>true</DevelopmentDependency>
@@ -38,23 +37,4 @@
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
   </ItemDefinitionGroup>
-
-  <Target Name="SetPackageVersionInProps" DependsOnTargets="GetBuildVersion">
-    <PropertyGroup>
-      <PropsFileDestinationDirectory>$(IntermediateOutputPath)build\</PropsFileDestinationDirectory>
-      <PropsFilePath>$(PropsFileDestinationDirectory)\$(PropsFileName)</PropsFilePath>
-      <_ProjectNamespaces>
-        <Namespace Prefix="dn" Uri="http://schemas.microsoft.com/developer/msbuild/2003" />
-      </_ProjectNamespaces>
-    </PropertyGroup>
-    <MakeDir Directories="$(PropsFileDestinationDirectory)" />
-    <Copy SourceFiles="build\$(PropsFileName)" DestinationFiles="$(PropsFilePath)" />
-    <XmlPoke XmlInputPath="$(PropsFilePath)" Value="$(PackageVersion)" Query="/dn:Project/dn:ItemGroup/dn:DotNetCliToolReference/@Version" Namespaces="$(_ProjectNamespaces)" />
-    <ItemGroup>
-      <None Include="$(PropsFilePath)">
-        <Pack>true</Pack>
-        <PackagePath>build\</PackagePath>
-      </None>
-    </ItemGroup>
-  </Target>
 </Project>
