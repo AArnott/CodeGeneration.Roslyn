@@ -19,7 +19,7 @@
     <OutputPath>$(MSBuildThisFileDirectory)../bin/$(MSBuildProjectName)/$(Configuration)/</OutputPath>
     <PackageOutputPath>$(MSBuildThisFileDirectory)../bin/Packages/$(Configuration)/</PackageOutputPath>
     <IsTestingOnlyProject>$(MSBuildProjectName.Contains('Test'))</IsTestingOnlyProject>
-    <RoslynNugetVersion>3.0.0</RoslynNugetVersion>
+    <RoslynNugetVersion>3.1.0</RoslynNugetVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" !$(IsTestingOnlyProject) ">
@@ -36,7 +36,7 @@
 
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning" Version="2.3.38" PrivateAssets="all" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.1-beta.61" IncludeAssets="analyzers" PrivateAssets="all" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" IncludeAssets="analyzers" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
