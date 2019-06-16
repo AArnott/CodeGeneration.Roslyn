@@ -135,7 +135,17 @@ namespace CodeGeneration.Roslyn.Engine
                 Type generatorType = GetCodeGeneratorTypeForAttribute(attributeData.AttributeClass, assemblyLoader);
                 if (generatorType != null)
                 {
-                    ICodeGenerator generator = (ICodeGenerator)Activator.CreateInstance(generatorType, attributeData);
+                    ICodeGenerator generator;
+                    try
+                    {
+                        generator = (ICodeGenerator)Activator.CreateInstance(generatorType, attributeData);
+                    }
+                    catch (MissingMethodException)
+                    {
+                        throw new InvalidOperationException(
+                            $"Failed to instantiate {generatorType}. ICodeGenerator implementations must have" +
+                            $" a constructor accepting Microsoft.CodeAnalysis.AttributeData argument.");
+                    }
                     yield return generator;
                 }
             }
