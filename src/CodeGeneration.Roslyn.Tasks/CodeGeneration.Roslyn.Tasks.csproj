@@ -11,21 +11,16 @@
     </TargetFrameworks>
     <PackageId>CodeGeneration.Roslyn.BuildTime</PackageId>
     <Description>The build-time development dependency that generates code for a project that consumes code generation attributes.</Description>
-    <PropsFileName>$(PackageId).props</PropsFileName>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <DevelopmentDependency>true</DevelopmentDependency>
     <MinClientVersion>2.5</MinClientVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="build\**">
+    <None Include="build/**">
       <Pack>true</Pack>
-      <PackagePath>build\%(RecursiveDir)%(FileName)%(Extension)</PackagePath>
+      <PackagePath>build/</PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="build\$(PropsFileName)">
-      <Pack>false</Pack>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
