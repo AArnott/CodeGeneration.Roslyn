@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CodeGeneration.Roslyn.BuildTime" Version="$(LocalNuGetVersion)" PrivateAssets="all" />
+    <DotNetCliToolReference Include="dotnet-codegen" Version="$(LocalNuGetVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+    See this issue for information on those additional metadata:
+    https://github.com/AArnott/CodeGeneration.Roslyn/issues/148
+    -->
+    <!--<ProjectReference Include="..\Sample.Generator\Sample.Generator.csproj"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="ResolvedGeneratorReferencePaths"
+                      SkipGetTargetFrameworkProperties="true"
+                      UndefineProperties=";TargetFramework;RuntimeIdentifier"
+                      PrivateAssets="all" />-->
+    <ProjectReference Include="..\Sample.Generator\Sample.Generator.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

@@ -47,7 +47,8 @@ jobs:
   - task: VSBuild@1
     displayName: Build Visual Studio solution
     inputs:
-      vsVersion: 15.0
+      vsVersion: '15.0'
+      solution: src/**/*.sln
       msbuildArgs: /t:build,pack /m /v:m /bl:"$(Build.ArtifactStagingDirectory)/build_logs/msbuild.binlog"
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
