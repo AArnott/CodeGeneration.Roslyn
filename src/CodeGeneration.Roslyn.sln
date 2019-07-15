@@ -9,7 +9,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\azure-pipeline.yml = ..\azure-pipeline.yml
 		CodeGeneration.Roslyn.ruleset = CodeGeneration.Roslyn.ruleset
 		CodeGeneration.Roslyn.Tests.ruleset = CodeGeneration.Roslyn.Tests.ruleset
-		..\CONTRIBUTION.md = ..\CONTRIBUTION.md
 		Directory.Build.props = Directory.Build.props
 		global.json = global.json
 		..\LICENSE.txt = ..\LICENSE.txt
@@ -23,7 +22,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGeneration.Roslyn.Attri
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGeneration.Roslyn", "CodeGeneration.Roslyn\CodeGeneration.Roslyn.csproj", "{09465031-08F8-4632-9C26-AC561B6E3538}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGeneration.Roslyn.Tasks", "CodeGeneration.Roslyn.Tasks\CodeGeneration.Roslyn.Tasks.csproj", "{D5240C82-6F90-48F8-9192-DA53EE1B0355}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGeneration.Roslyn.BuildTime", "CodeGeneration.Roslyn.BuildTime\CodeGeneration.Roslyn.BuildTime.csproj", "{D5240C82-6F90-48F8-9192-DA53EE1B0355}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGeneration.Roslyn.Tests", "CodeGeneration.Roslyn.Tests\CodeGeneration.Roslyn.Tests.csproj", "{D8E7323F-6721-42A5-BADA-496A63DB0A88}"
 EndProject

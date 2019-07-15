@@ -1,14 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <Import Project="..\CodeGeneration.Roslyn.BuildTime\build\CodeGeneration.Roslyn.BuildTime.props" />
+
   <PropertyGroup>
     <TargetFrameworks>net462;netcoreapp2.1</TargetFrameworks>
     <GenerateCodeFromAttributesToolPathOverride>$(OutputPath)..\..\CodeGeneration.Roslyn.Tool\$(Configuration)\netcoreapp2.1\dotnet-codegen.dll</GenerateCodeFromAttributesToolPathOverride>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Update="**\*.cs">
-      <Generator>MSBuild:GenerateCodeFromAttributes</Generator>
-    </Compile>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynNugetVersion)" />
@@ -23,7 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CodeGeneration.Roslyn.Engine\CodeGeneration.Roslyn.Engine.csproj" />
-    <ProjectReference Include="..\CodeGeneration.Roslyn.Tasks\CodeGeneration.Roslyn.Tasks.csproj" />
     <ProjectReference Include="..\CodeGeneration.Roslyn.Tests.Generators\CodeGeneration.Roslyn.Tests.Generators.csproj" />
     <ProjectReference Include="..\CodeGeneration.Roslyn.Tool\CodeGeneration.Roslyn.Tool.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
@@ -32,5 +28,6 @@
     </ProjectReference>
   </ItemGroup>
 
-  <Import Project="..\CodeGeneration.Roslyn.Tasks\build\CodeGeneration.Roslyn.BuildTime.targets" />
+  <Import Project="..\CodeGeneration.Roslyn.BuildTime\build\CodeGeneration.Roslyn.BuildTime.targets" />
+  
 </Project>
