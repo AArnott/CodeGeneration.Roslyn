@@ -8,6 +8,8 @@ This includes design-time support, such that code generation can respond to
 changes made in hand-authored code files by generating new code that shows
 up to Intellisense as soon as the file is saved to disk.
 
+See [who's generating code or consuming it using CodeGeneration.Roslyn](https://github.com/AArnott/CodeGeneration.Roslyn/wiki/Users).
+
 ## Table of Contents
 
 * [How to write your own code generator][]
