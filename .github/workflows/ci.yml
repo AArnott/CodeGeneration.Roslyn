@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  dotnet_sdk_version: '2.1.500'
+  build_configuration: Release
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.dotnet_sdk_version }}
+    - run: dotnet --info
+    - name: Install and run nbgv
+      run: |
+        dotnet tool install --tool-path . nbgv
+        ./nbgv get-version -p src
+    - name: Restore
+      run: dotnet restore src -v normal
+    - name: Build
+      run: dotnet build src -t:build,pack --no-restore -m -c ${{ env.build_configuration }}
+    - name: Test
+      run: dotnet test src --no-build -c ${{ env.build_configuration }}
+    - name: Upload nugets
+      if: github.event_name == 'push'
+      uses: actions/upload-artifact@v1
+      with:
+        name: nugets
+        path: bin/Packages/${{ env.build_configuration }}
+
+  build-other:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    env:
+      project_path: 'src/CodeGeneration.Roslyn.Tests'
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.dotnet_sdk_version }}
+    - run: dotnet --info
+    - name: Install and run nbgv
+      run: |
+        dotnet tool install --tool-path . nbgv
+        ./nbgv get-version -p src
+    - name: Restore
+      run: dotnet restore ${{ env.project_path }} -v normal
+    - name: Build
+      run: dotnet build ${{ env.project_path }} --no-restore -m -c ${{ env.build_configuration }} -f netcoreapp2.1
+    - name: Test
+      run: dotnet test ${{ env.project_path }} --no-build -c ${{ env.build_configuration }} -f netcoreapp2.1
