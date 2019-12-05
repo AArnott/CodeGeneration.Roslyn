@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <RuleSet Name="Tests Rules" Description="Additional rules (exceptions) for test projects." ToolsVersion="15.0">
-  <Include Path="../codegeneration.roslyn.tests.ruleset" Action="Default" />
+  <Include Path="../CodeGeneration.Roslyn.Tests.ruleset" Action="Default" />
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
     <!--for the CommandLine files-->
     <Rule Id="SA1028" Action="Hidden" />

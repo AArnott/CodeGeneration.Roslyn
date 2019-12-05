@@ -1,6 +1,7 @@
 # Roslyn-based Code Generation
 
 [![Build Status](https://andrewarnott.visualstudio.com/OSS/_apis/build/status/CodeGeneration.Roslyn)](https://andrewarnott.visualstudio.com/OSS/_build/latest?definitionId=15)
+[![GitHub Actions CI status](https://github.com/AArnott/CodeGeneration.Roslyn/workflows/CI/badge.svg?branch=master)](https://github.com/AArnott/CodeGeneration.Roslyn/actions?query=workflow%3ACI+branch%3Amaster)
 [![NuGet package](https://img.shields.io/nuget/v/CodeGeneration.Roslyn.svg)][NuPkg]
 
 Assists in performing Roslyn-based code generation during a build.
@@ -9,6 +10,8 @@ changes made in hand-authored code files by generating new code that shows
 up to Intellisense as soon as the file is saved to disk.
 
 See [who's generating code or consuming it using CodeGeneration.Roslyn](https://github.com/AArnott/CodeGeneration.Roslyn/wiki/Users).
+
+Instructions on development and using this project's source code are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Table of Contents
 
@@ -29,8 +32,6 @@ your code generation attribute is applied to, but with a suffix appended to its 
   
   If you don't have v2.1+ there will be cryptic error messages
   (see [#111](https://github.com/AArnott/CodeGeneration.Roslyn/issues/111)).
-
-* .NET Core SDK v2.1.500 specifically for building this project
 
 [dotnet-sdk-2.1]: https://dotnet.microsoft.com/download/dotnet-core/2.1
 

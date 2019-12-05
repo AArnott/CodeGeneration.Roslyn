@@ -17,15 +17,23 @@ resources:
 
 jobs:
 - job: Windows
-  pool: Hosted VS2017
+  pool:
+    vmImage: 'windows-2019'
   steps:
-  - task: DotNetCoreInstaller@0
+  - task: UseDotNet@2
+    displayName: Install .NET Core runtime v2.1
+    inputs:
+      packageType: runtime
+      version: '2.1.x'
+
+  - task: UseDotNet@2
     displayName: Install/select .NET Core SDK
     inputs:
-      version: '2.1.500'
+      useGlobalJson: true
+      workingDirectory: src
 
   - script: |
-      dotnet tool install --tool-path . nbgv
+      dotnet tool install --tool-path . nbgv --version 3.0.28
       .\nbgv cloud -p src
     displayName: Set build number
     condition: ne(variables['system.pullrequest.isfork'], true)
@@ -36,22 +44,17 @@ jobs:
   - task: DotNetCoreCLI@2
     displayName: Restore NuGet packages
     inputs:
-      command: restore
-      verbosityRestore: normal # detailed, normal, minimal
+      command: custom
+      custom: restore
       projects: src/**/*.sln
-      feedsToUse: config
-      nugetConfigPath: src/nuget.config
 
-  # Use VSBuild on Windows so GitLink will work (it fails on dotnet build)
-  # Also targeting net20, net40, PCLs etc requires full MSBuild
-  - task: VSBuild@1
-    displayName: Build Visual Studio solution
+  - task: DotNetCoreCLI@2
+    displayName: Build solutions
     inputs:
-      vsVersion: '15.0'
-      solution: src/**/*.sln
-      msbuildArgs: /t:build,pack /m /v:m /bl:"$(Build.ArtifactStagingDirectory)/build_logs/msbuild.binlog"
-      platform: $(BuildPlatform)
-      configuration: $(BuildConfiguration)
+      command: custom
+      custom: build
+      projects: src/**/*.sln
+      arguments: -t:build,pack --no-restore -m -c $(BuildConfiguration) -bl:"$(Build.ArtifactStagingDirectory)/build_logs/msbuild.binlog"
 
   - task: DotNetCoreCLI@2
     displayName: Run tests

@@ -8,18 +8,19 @@
     <PackageProjectUrl>https://github.com/aarnott/CodeGeneration.Roslyn</PackageProjectUrl>
     <RepositoryUrl>https://github.com/aarnott/CodeGeneration.Roslyn</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <ReleaseNotes>https://github.com/AArnott/CodeGeneration.Roslyn/blob/master/CHANGELOG.md</ReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup>
     <LangVersion>7.3</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <WarningsAsErrors Condition=" '$(Configuration)' == Release ">true</WarningsAsErrors>
+    <TreatWarningsAsErrors Condition=" '$(Configuration)' == Release ">true</TreatWarningsAsErrors>
     <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)../obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
     <OutputPath>$(MSBuildThisFileDirectory)../bin/$(MSBuildProjectName)/$(Configuration)/</OutputPath>
     <PackageOutputPath>$(MSBuildThisFileDirectory)../bin/Packages/$(Configuration)/</PackageOutputPath>
     <IsTestingOnlyProject>$(MSBuildProjectName.Contains('Test'))</IsTestingOnlyProject>
-    <RoslynNugetVersion>3.1.0</RoslynNugetVersion>
+    <RoslynNugetVersion>3.4.0</RoslynNugetVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" !$(IsTestingOnlyProject) ">
@@ -35,8 +36,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nerdbank.GitVersioning" Version="2.3.38" PrivateAssets="all" />
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.0.28" PrivateAssets="all" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" IncludeAssets="analyzers" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="all"/>
   </ItemGroup>
 
   <ItemGroup>

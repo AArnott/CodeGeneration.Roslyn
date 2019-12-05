@@ -8,6 +8,7 @@
     <Description>The dotnet code generation tool that works with the CodeGeneration.Roslyn nuget package.</Description>
     <CodeAnalysisRuleSet>CodeGeneration.Roslyn.Tool.ruleset</CodeAnalysisRuleSet>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <RollForward>Major</RollForward>
   </PropertyGroup>
 
   <ItemGroup>
