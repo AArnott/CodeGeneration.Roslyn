@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 * .NET Core SDK version bumped to `3.1.100` ([#178]).
 * `Attributes` package now targets `net20;net40` in addition to `netstandard1.0` ([#178]).
+* `dotnet-codegen` now has `RollForward=Major` policy to allow it to run on newer runtimes than 2.x,
+  e.g. .NET Core SDK v3.x *only* should suffice for most usage scenarios ([#178]).
 
 [#178]: https://github.com/AArnott/CodeGeneration.Roslyn/pull/178
 
