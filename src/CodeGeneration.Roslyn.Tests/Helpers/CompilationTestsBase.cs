@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using CodeGeneration.Roslyn;
 using CodeGeneration.Roslyn.Engine;
 using CodeGeneration.Roslyn.Tests.Generators;
@@ -54,9 +55,9 @@ public abstract class CompilationTestsBase
 
     internal static readonly ImmutableArray<MetadataReference> MetadataReferences;
 
-    protected static void AssertGeneratedAsExpected(string source, string expected)
+    protected static async Task AssertGeneratedAsExpected(string source, string expected)
     {
-        var generatedTree = Generate(source);
+        var generatedTree = await GenerateAsync(source);
         // normalize line endings to just LF
         var generatedText = NormalizeToLf(generatedTree.GetText().ToString());
         // and append preamble to the expected
@@ -69,15 +70,15 @@ public abstract class CompilationTestsBase
         return input?.Replace(CrLf, Lf);
     }
 
-    protected static SyntaxTree Generate(string source)
+    protected static async Task<SyntaxTree> GenerateAsync(string source)
     {
         var document = CreateProject(source).Documents.Single();
-        var tree = document.GetSyntaxTreeAsync().GetAwaiter().GetResult();
-        var compilation = (CSharpCompilation)document.Project.GetCompilationAsync().GetAwaiter().GetResult();
+        var tree = await document.GetSyntaxTreeAsync();
+        var compilation = (CSharpCompilation)(await document.Project.GetCompilationAsync());
         var diagnostics = compilation.GetDiagnostics();
         Assert.Empty(diagnostics.Where(x => x.Severity >= DiagnosticSeverity.Warning));
         var progress = new Progress<Diagnostic>();
-        var result = DocumentTransform.TransformAsync(compilation, tree, null, Assembly.Load, progress).GetAwaiter().GetResult();
+        var result = await DocumentTransform.TransformAsync(compilation, tree, null, Assembly.Load, progress);
         return result;
     }
 

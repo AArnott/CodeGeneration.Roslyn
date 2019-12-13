@@ -70,8 +70,8 @@ namespace CodeGeneration.Roslyn.Engine
             var emittedAttributeLists = ImmutableArray<AttributeListSyntax>.Empty;
             var emittedMembers = ImmutableArray<MemberDeclarationSyntax>.Empty;
 
-            var memberNodes = inputDocument
-                .GetRoot()
+            var root = await inputDocument.GetRootAsync();
+            var memberNodes = root
                 .DescendantNodesAndSelf(n => n is CompilationUnitSyntax || n is NamespaceDeclarationSyntax || n is TypeDeclarationSyntax)
                 .OfType<CSharpSyntaxNode>();
 

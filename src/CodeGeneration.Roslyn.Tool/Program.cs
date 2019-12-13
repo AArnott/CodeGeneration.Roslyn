@@ -6,13 +6,14 @@ namespace CodeGeneration.Roslyn.Generate
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Threading.Tasks;
     using CodeGeneration.Roslyn.Engine;
     using CodeGeneration.Roslyn.Tool.CommandLine;
     using Microsoft.CodeAnalysis;
 
     internal static class Program
     {
-        private static int Main(string[] args)
+        private static async Task<int> Main(string[] args)
         {
             IReadOnlyList<string> compile = Array.Empty<string>();
             IReadOnlyList<string> refs = Array.Empty<string>();
@@ -65,7 +66,7 @@ namespace CodeGeneration.Roslyn.Generate
 
             try
             {
-                generator.Generate(progress);
+                await generator.GenerateAsync(progress);
             }
             catch (Exception e)
             {

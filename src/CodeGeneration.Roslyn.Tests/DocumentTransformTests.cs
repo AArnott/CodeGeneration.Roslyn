@@ -1,25 +1,26 @@
 ﻿// Copyright (c) Andrew Arnott. All rights reserved.
 // Licensed under the MS-PL license. See LICENSE.txt file in the project root for full license information.
 
+using System.Threading.Tasks;
 using Xunit;
 
 public class DocumentTransformTests : CompilationTestsBase
 {
     [Fact]
-    public void EmptyFile_NoGenerators()
+    public async Task EmptyFile_NoGenerators()
     {
-        AssertGeneratedAsExpected("", "");
+        await AssertGeneratedAsExpected("", "");
     }
 
     [Fact]
-    public void Usings_WhenNoCode_CopiedToOutput()
+    public async Task Usings_WhenNoCode_CopiedToOutput()
     {
         const string usings = "using System;";
-        AssertGeneratedAsExpected(usings, usings);
+        await AssertGeneratedAsExpected(usings, usings);
     }
 
     [Fact]
-    public void AncestorTree_IsBuiltProperly()
+    public async Task AncestorTree_IsBuiltProperly()
     {
         const string source = @"
 using System;
@@ -66,11 +67,11 @@ namespace Testing.Middle
         }
     }
 }";
-        AssertGeneratedAsExpected(source, generated);
+        await AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void DefineDirective_Dropped()
+    public async Task DefineDirective_Dropped()
     {
         // define directives must be leading any other tokens to be valid in C#
         const string source = @"
@@ -80,11 +81,11 @@ using System.Linq;";
         const string generated = @"
 using System;
 using System.Linq;";
-        AssertGeneratedAsExpected(source, generated);
+        await AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void Comment_BetweenUsings_Dropped()
+    public async Task Comment_BetweenUsings_Dropped()
     {
         const string source = @"
 using System;
@@ -93,11 +94,11 @@ using System.Linq;";
         const string generated = @"
 using System;
 using System.Linq;";
-        AssertGeneratedAsExpected(source, generated);
+        await AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void Region_TrailingUsings_Dropped()
+    public async Task Region_TrailingUsings_Dropped()
     {
         const string source = @"
 using System;
@@ -107,11 +108,11 @@ using System.Linq;
         const string generated = @"
 using System;
 using System.Linq;";
-        AssertGeneratedAsExpected(source, generated);
+        await AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void IfElseDirective_OnUsings_InactiveUsingAndDirectives_Dropped()
+    public async Task IfElseDirective_OnUsings_InactiveUsingAndDirectives_Dropped()
     {
         const string source = @"
 using System;
@@ -134,11 +135,11 @@ using System.Linq;
 partial class Empty
 {
 }";
-        AssertGeneratedAsExpected(source, generated);
+        await AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void RegionDirective_InsideClass_Dropped()
+    public async Task RegionDirective_InsideClass_Dropped()
     {
         const string source = @"
 using System;
@@ -158,11 +159,11 @@ using CodeGeneration.Roslyn.Tests.Generators;
 partial class Empty
 {
 }";
-        AssertGeneratedAsExpected(source, generated);
+        await AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void RegionDirective_InsideStruct_Dropped()
+    public async Task RegionDirective_InsideStruct_Dropped()
     {
         const string source = @"
 using System;
@@ -182,11 +183,11 @@ using CodeGeneration.Roslyn.Tests.Generators;
 partial struct Empty
 {
 }";
-        AssertGeneratedAsExpected(source, generated);
+        await AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void RegionDirective_InsideNamespace_Dropped()
+    public async Task RegionDirective_InsideNamespace_Dropped()
     {
         const string source = @"
 using System;
@@ -209,11 +210,11 @@ namespace Testing
     {
     }
 }";
-        AssertGeneratedAsExpected(source, generated);
+        await AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void Class_Modifiers_ArePreserved_WithoutTrivia()
+    public async Task Class_Modifiers_ArePreserved_WithoutTrivia()
     {
         const string source = @"
 using System;
@@ -238,11 +239,11 @@ namespace Testing
     {
     }
 }";
-        AssertGeneratedAsExpected(source, generated);
+        await AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void Struct_Modifiers_ArePreserved_WithoutTrivia()
+    public async Task Struct_Modifiers_ArePreserved_WithoutTrivia()
     {
         const string source = @"
 using System;
@@ -267,11 +268,11 @@ namespace Testing
     {
     }
 }";
-        AssertGeneratedAsExpected(source, generated);
+        await AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void Class_TypeParameters_ArePreserved()
+    public async Task Class_TypeParameters_ArePreserved()
     {
         const string source = @"
 using System;
@@ -295,11 +296,11 @@ namespace Testing
     {
     }
 }";
-        AssertGeneratedAsExpected(source, generated);
+        await AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void Struct_TypeParameters_ArePreserved()
+    public async Task Struct_TypeParameters_ArePreserved()
     {
         const string source = @"
 using System;
@@ -323,11 +324,11 @@ namespace Testing
     {
     }
 }";
-        AssertGeneratedAsExpected(source, generated);
+        await AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void RichGenerator_Wraps_InOtherNamespace()
+    public async Task RichGenerator_Wraps_InOtherNamespace()
     {
         const string source = @"
 using System;
@@ -350,11 +351,11 @@ namespace Other.Namespace
     {
     }
 }";
-        AssertGeneratedAsExpected(source, generated);
+        await AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void RichGenerator_Adds_Using()
+    public async Task RichGenerator_Adds_Using()
     {
         const string source = @"
 using System;
@@ -373,11 +374,11 @@ using CodeGeneration.Roslyn.Tests.Generators;
 using System.Collections.Generic;
 
 ";
-        AssertGeneratedAsExpected(source, generated);
+        await AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void RichGenerator_Adds_ExternAlias()
+    public async Task RichGenerator_Adds_ExternAlias()
     {
         const string source = @"
 using System;
@@ -397,11 +398,11 @@ using System;
 using CodeGeneration.Roslyn.Tests.Generators;
 
 ";
-        AssertGeneratedAsExpected(source, generated);
+        await AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void RichGenerator_Adds_Attribute()
+    public async Task RichGenerator_Adds_Attribute()
     {
         const string source = @"
 using System;
@@ -420,11 +421,11 @@ using CodeGeneration.Roslyn.Tests.Generators;
 
 [GeneratedAttribute]
 ";
-        AssertGeneratedAsExpected(source, generated);
+        await AssertGeneratedAsExpected(source, generated);
     }
 
     [Fact]
-    public void RichGenerator_Appends_MultipleResults()
+    public async Task RichGenerator_Appends_MultipleResults()
     {
         const string source = @"
 using System;
@@ -469,6 +470,6 @@ namespace Other.Namespace2
     }
 }
 ";
-        AssertGeneratedAsExpected(source, generated);
+        await AssertGeneratedAsExpected(source, generated);
     }
 }
