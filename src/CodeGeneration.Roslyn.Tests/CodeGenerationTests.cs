@@ -31,12 +31,27 @@ public partial class CodeGenerationTests
         d.TestMethodSuffix();
     }
 
+    [Fact]
+    public void NuGetRecordGeneratorWorks()
+    {
+        var record = new MyRecord(1, "id");
+        record.ToBuilder();
+    }
+
     public partial class Wrapper
     {
         [ExternalDuplicateWithSuffixByName("Suffix")]
         public void TestMethod()
         {
         }
+    }
+
+    [Record]
+    public partial class MyRecord
+    {
+        public int Id { get; }
+
+        public string Name { get; }
     }
 
     [DuplicateWithSuffixByName("A")]

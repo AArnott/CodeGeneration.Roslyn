@@ -18,17 +18,17 @@ namespace CodeGeneration.Roslyn.Generate
             IReadOnlyList<string> compile = Array.Empty<string>();
             IReadOnlyList<string> refs = Array.Empty<string>();
             IReadOnlyList<string> preprocessorSymbols = Array.Empty<string>();
-            IReadOnlyList<string> generatorSearchPaths = Array.Empty<string>();
+            IReadOnlyList<string> plugins = Array.Empty<string>();
             string generatedCompileItemFile = null;
             string outputDirectory = null;
             string projectDir = null;
             bool version = false;
             ArgumentSyntax.Parse(args, syntax =>
             {
-                syntax.DefineOption("version", ref version, "Show version of this tool (and exits).");
+                syntax.DefineOption("version", ref version, "Show version of this tool (and exit).");
                 syntax.DefineOptionList("r|reference", ref refs, "Paths to assemblies being referenced");
                 syntax.DefineOptionList("d|define", ref preprocessorSymbols, "Preprocessor symbols");
-                syntax.DefineOptionList("generatorSearchPath", ref generatorSearchPaths, "Paths to folders that may contain generator assemblies");
+                syntax.DefineOptionList("plugin", ref plugins, "Paths to generator plugin assemblies");
                 syntax.DefineOption("out", ref outputDirectory, true, "The directory to write generated source files to");
                 syntax.DefineOption("projectDir", ref projectDir, true, "The absolute path of the directory where the project file is located");
                 syntax.DefineOption("generatedFilesList", ref generatedCompileItemFile, "The path to the file to create with a list of generated source files");
@@ -58,7 +58,7 @@ namespace CodeGeneration.Roslyn.Generate
                 Compile = Sanitize(compile),
                 ReferencePath = Sanitize(refs),
                 PreprocessorSymbols = preprocessorSymbols,
-                GeneratorAssemblySearchPaths = Sanitize(generatorSearchPaths),
+                PluginPaths = Sanitize(plugins),
                 IntermediateOutputDirectory = outputDirectory,
             };
 

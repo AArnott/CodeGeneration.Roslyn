@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == 'true' ">
+    <!--
+        The following is a documented extension point that causes CreatePluginPackageBuildProps
+        to be always executed in a specific TargetFramework context, whether multitargeting or not.
+        Warning about multitargeting is executed after Pack target separately.
+        Extension point documentation:
+        https://docs.microsoft.com/en-us/nuget/reference/msbuild-targets#targetsfortfmspecificcontentinpackage
+    -->
+    <TargetsForTfmSpecificContentInPackage>
+        $(TargetsForTfmSpecificContentInPackage);
+        CreatePluginPackageBuildProps
+    </TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+
+  <!--
+    This target writes a PackageId.props file that will get packed into build/ folder in NuGet.
+    That props file adds the path to the Plugin dll to the CodeGenerationRoslynPlugin ItemGroup,
+    so that CodeGeneration.Roslyn tooling can read and load generator plugins.
+  -->
+  <Target Name="CreatePluginPackageBuildProps">
+    <PropertyGroup>
+      <PackagePropsContent>
+<![CDATA[
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CodeGenerationRoslynPlugin Include="%24(MSBuildThisFileDirectory)../tools/$(TargetFramework)/any/$(TargetFileName)" />
+  </ItemGroup>
+</Project>
+]]>
+      </PackagePropsContent>
+      <PackagePropsPath>$(IntermediateOutputPath)$(PackageId).props</PackagePropsPath>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(PackagePropsPath)" Lines="$(PackagePropsContent)" Overwrite="true" />
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(PackagePropsPath)" Pack="true" PackagePath="build" BuildAction="None"/>
+      <FileWrites Include="$(PackagePropsPath)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    This target raises a warning if the Pack is called with multiple
+    TargetFrameworks - this scenario is not supported by CodeGeneration.Roslyn tooling.
+
+    TODO: validate the contents of the nupkg? (props points at the output assembly)
+  -->
+  <Target Name="ValidatePluginPackageBuildProps"
+          BeforeTargets="Pack"
+          Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == 'true' ">
+    <Warning
+      Condition=" $(TargetFrameworks.Contains(';')) "
+      Text="CreatePluginPackageBuildProps target requires a single TargetFramework to be used for packing. You can override this by calling e.g. 'dotnet pack -p:TargetFrameworks=netcoreapp2.1' to pack the tool for that TFM."/>
+  </Target>
+
+</Project>

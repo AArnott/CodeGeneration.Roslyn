@@ -3,11 +3,15 @@
   <Import Project="..\CodeGeneration.Roslyn.BuildTime\build\CodeGeneration.Roslyn.BuildTime.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net462;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
     <GenerateCodeFromAttributesToolPathOverride>$(OutputPath)..\..\CodeGeneration.Roslyn.Tool\$(Configuration)\netcoreapp2.1\dotnet-codegen.dll</GenerateCodeFromAttributesToolPathOverride>
+    <!-- Ignore CGR1002 because it's expected to be raised by legacy Amadevus.RecordGenerator -->
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);CGR1002</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Amadevus.RecordGenerator.Attributes" Version="0.4.1" PrivateAssets="all" />
+    <PackageReference Include="Amadevus.RecordGenerator.Generators" Version="0.4.1" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynNugetVersion)" />
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
     <PackageReference Include="Xunit" Version="2.4.1" />
@@ -20,12 +24,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CodeGeneration.Roslyn.Engine\CodeGeneration.Roslyn.Engine.csproj" />
-    <ProjectReference Include="..\CodeGeneration.Roslyn.Tests.Generators\CodeGeneration.Roslyn.Tests.Generators.csproj" />
-    <ProjectReference Include="..\CodeGeneration.Roslyn.Tool\CodeGeneration.Roslyn.Tool.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-      <UndefineProperties>TargetFramework</UndefineProperties>
-    </ProjectReference>
+    <ProjectReference Include="..\CodeGeneration.Roslyn.Tests.Generators\CodeGeneration.Roslyn.Tests.Generators.csproj"
+                      OutputItemType="CodeGenerationRoslynPlugin" />
+    <ProjectReference Include="..\CodeGeneration.Roslyn.Tool\CodeGeneration.Roslyn.Tool.csproj"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      UndefineProperties="TargetFramework" />
   </ItemGroup>
 
   <Import Project="..\CodeGeneration.Roslyn.BuildTime\build\CodeGeneration.Roslyn.BuildTime.targets" />

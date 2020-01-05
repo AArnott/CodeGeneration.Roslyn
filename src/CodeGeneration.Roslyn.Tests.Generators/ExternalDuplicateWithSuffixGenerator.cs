@@ -40,7 +40,8 @@ namespace CodeGeneration.Roslyn.Tests.Generators
             if (applyToClass != null)
             {
                 copy = applyToClass
-                    .WithIdentifier(SyntaxFactory.Identifier(NameGenerator.Combine(applyToClass.Identifier.ValueText, this.suffix)));
+                    .WithIdentifier(SyntaxFactory.Identifier(NameGenerator.Combine(applyToClass.Identifier.ValueText, this.suffix)))
+                    .WithLeadingTrivia(SyntaxFactory.Comment($"// Bogus content: {new Bogus.Faker().Hacker.Phrase()}"));
             }
 
             if (copy != null)

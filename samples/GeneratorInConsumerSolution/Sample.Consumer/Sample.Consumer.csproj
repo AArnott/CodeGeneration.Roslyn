@@ -20,7 +20,9 @@
                       SkipGetTargetFrameworkProperties="true"
                       UndefineProperties=";TargetFramework;RuntimeIdentifier"
                       PrivateAssets="all" />-->
-    <ProjectReference Include="..\Sample.Generator\Sample.Generator.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Sample.Generator\Sample.Generator.csproj"
+                      OutputItemType="CodeGenerationRoslynPlugin"
+                      PrivateAssets="all" />
   </ItemGroup>
 
 </Project>
