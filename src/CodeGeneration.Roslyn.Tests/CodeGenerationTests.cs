@@ -16,9 +16,9 @@ public partial class CodeGenerationTests
     [Fact]
     public void SimpleGenerationWorks()
     {
-        var foo = new CodeGenerationTests.Foo();
-        var fooA = new CodeGenerationTests.FooA();
-        var fooB = new CodeGenerationTests.FooB();
+        _ = new CodeGenerationTests.Foo();
+        _ = new CodeGenerationTests.FooA();
+        _ = new CodeGenerationTests.FooB();
         var multiplied = new MultipliedBar();
         multiplied.ValueSuff1020();
         Assert.EndsWith(Path.Combine("src", "CodeGeneration.Roslyn.Tests"), DirectoryPathTest.Path, StringComparison.OrdinalIgnoreCase);

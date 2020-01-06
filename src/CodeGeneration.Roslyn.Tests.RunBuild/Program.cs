@@ -5,7 +5,7 @@ namespace CodeGeneration.Roslyn.Tests.RunBuild
 {
     internal static class Program
     {
-        private static void Main(string[] args)
+        private static void Main()
         {
             // This app is a dummy. But when it is debugged within VS, it builds the Tests
             // allowing VS to debug into the build/code generation process.

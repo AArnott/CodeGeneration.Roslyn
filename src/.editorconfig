@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# CS0028: 'Program.Main(string[], CancellationToken)' has the wrong signature to be an entry point
+dotnet_diagnostic.CS0028.severity = none

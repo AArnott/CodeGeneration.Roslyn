@@ -42,13 +42,15 @@ namespace CodeGeneration.Roslyn.Engine
         /// <param name="projectDirectory">The path of the <c>.csproj</c> project file.</param>
         /// <param name="assemblyLoader">A function that can load an assembly with the given name.</param>
         /// <param name="progress">Reports warnings and errors in code generation.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>A task whose result is the generated document.</returns>
         public static async Task<SyntaxTree> TransformAsync(
             CSharpCompilation compilation,
             SyntaxTree inputDocument,
             string projectDirectory,
             Func<AssemblyName, Assembly> assemblyLoader,
-            IProgress<Diagnostic> progress)
+            IProgress<Diagnostic> progress,
+            CancellationToken cancellationToken)
         {
             Requires.NotNull(compilation, nameof(compilation));
             Requires.NotNull(inputDocument, nameof(inputDocument));
@@ -70,17 +72,19 @@ namespace CodeGeneration.Roslyn.Engine
             var emittedAttributeLists = ImmutableArray<AttributeListSyntax>.Empty;
             var emittedMembers = ImmutableArray<MemberDeclarationSyntax>.Empty;
 
-            var root = await inputDocument.GetRootAsync();
+            var root = await inputDocument.GetRootAsync(cancellationToken);
             var memberNodes = root
                 .DescendantNodesAndSelf(n => n is CompilationUnitSyntax || n is NamespaceDeclarationSyntax || n is TypeDeclarationSyntax)
                 .OfType<CSharpSyntaxNode>();
 
             foreach (var memberNode in memberNodes)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var attributeData = GetAttributeData(compilation, inputSemanticModel, memberNode);
                 var generators = FindCodeGenerators(attributeData, assemblyLoader);
                 foreach (var generator in generators)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     var context = new TransformationContext(
                         memberNode,
                         inputSemanticModel,
@@ -91,7 +95,7 @@ namespace CodeGeneration.Roslyn.Engine
 
                     var richGenerator = generator as IRichCodeGenerator ?? new EnrichingCodeGeneratorProxy(generator);
 
-                    var emitted = await richGenerator.GenerateRichAsync(context, progress, CancellationToken.None);
+                    var emitted = await richGenerator.GenerateRichAsync(context, progress, cancellationToken);
 
                     emittedExterns = emittedExterns.AddRange(emitted.Externs);
                     emittedUsings = emittedUsings.AddRange(emitted.Usings);
@@ -244,7 +248,7 @@ namespace CodeGeneration.Roslyn.Engine
 
             public async Task<RichGenerationResult> GenerateRichAsync(TransformationContext context, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
             {
-                var generatedMembers = await CodeGenerator.GenerateAsync(context, progress, CancellationToken.None);
+                var generatedMembers = await CodeGenerator.GenerateAsync(context, progress, cancellationToken);
 
                 // Figure out ancestry for the generated type, including nesting types and namespaces.
                 var wrappedMembers = context.ProcessingNode.Ancestors().Aggregate(generatedMembers, WrapInAncestor);

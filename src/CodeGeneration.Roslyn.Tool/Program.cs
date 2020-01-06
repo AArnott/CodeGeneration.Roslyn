@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Andrew Arnott. All rights reserved.
 // Licensed under the MS-PL license. See LICENSE.txt file in the project root for full license information.
 
+using System.Threading;
+
 namespace CodeGeneration.Roslyn.Generate
 {
     using System;
@@ -14,6 +16,24 @@ namespace CodeGeneration.Roslyn.Generate
     internal static class Program
     {
         private static async Task<int> Main(string[] args)
+        {
+            using (var cancellationTokenSource = new CancellationTokenSource())
+            {
+                var cancellationToken = cancellationTokenSource.Token;
+                Console.CancelKeyPress += ConsoleOnCancelKeyPress;
+
+                void ConsoleOnCancelKeyPress(object sender, ConsoleCancelEventArgs e)
+                {
+                    Console.CancelKeyPress -= ConsoleOnCancelKeyPress;
+                    cancellationTokenSource.Cancel();
+                    e.Cancel = true;
+                }
+
+                return await Core(args, cancellationToken);
+            }
+        }
+
+        private static async Task<int> Core(string[] args, CancellationToken cancellationToken)
         {
             IReadOnlyList<string> compile = Array.Empty<string>();
             IReadOnlyList<string> refs = Array.Empty<string>();
@@ -66,7 +86,7 @@ namespace CodeGeneration.Roslyn.Generate
 
             try
             {
-                await generator.GenerateAsync(progress);
+                await generator.GenerateAsync(progress, cancellationToken);
             }
             catch (Exception e)
             {
@@ -77,7 +97,7 @@ namespace CodeGeneration.Roslyn.Generate
 
             if (generatedCompileItemFile != null)
             {
-                File.WriteAllLines(generatedCompileItemFile, generator.GeneratedFiles);
+                await File.WriteAllLinesAsync(generatedCompileItemFile, generator.GeneratedFiles, cancellationToken);
             }
 
             foreach (var file in generator.GeneratedFiles)
@@ -87,6 +107,7 @@ namespace CodeGeneration.Roslyn.Generate
 
             return 0;
         }
+
 
         private static void OnDiagnosticProgress(Diagnostic diagnostic)
         {

@@ -4,10 +4,7 @@
 namespace CodeGeneration.Roslyn.Tests.Generators
 {
     using System;
-    using System.Collections.Generic;
-    using System.Collections.Immutable;
     using System.Linq;
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.CodeAnalysis;
@@ -28,8 +25,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
             var results = SyntaxFactory.List<MemberDeclarationSyntax>();
 
             MemberDeclarationSyntax copy = null;
-            var applyToClass = context.ProcessingNode as ClassDeclarationSyntax;
-            if (applyToClass != null)
+            if (context.ProcessingNode is ClassDeclarationSyntax applyToClass)
             {
                 var properties = applyToClass.Members.OfType<PropertyDeclarationSyntax>()
                     .Select(x =>

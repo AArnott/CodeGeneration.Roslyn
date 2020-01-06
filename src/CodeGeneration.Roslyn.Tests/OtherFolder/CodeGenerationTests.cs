@@ -16,7 +16,7 @@ public partial class CodeGenerationTests
     [Fact]
     public void GenerationFromSecondFile()
     {
-        var bar = new BarC();
+        _ = new BarC();
     }
 
     [DuplicateWithSuffixByType("C")]

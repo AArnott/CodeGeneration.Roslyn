@@ -84,7 +84,7 @@ namespace CodeGeneration.Roslyn.Engine
         /// <param name="progress">Optional handler of diagnostics provided by code generator.</param>
         /// <param name="cancellationToken">Cancellation token to interrupt async operations.</param>
         /// <returns>A <see cref="Task.CompletedTask"/>.</returns>
-        public async Task GenerateAsync(IProgress<Diagnostic> progress = null, CancellationToken cancellationToken = default)
+        public async Task GenerateAsync(IProgress<Diagnostic> progress, CancellationToken cancellationToken)
         {
             Verify.Operation(this.Compile != null, $"{nameof(Compile)} must be set first.");
             Verify.Operation(this.ReferencePath != null, $"{nameof(ReferencePath)} must be set first.");
@@ -104,13 +104,14 @@ namespace CodeGeneration.Roslyn.Engine
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    string sourceHash = Convert.ToBase64String(hasher.ComputeHash(Encoding.UTF8.GetBytes(inputSyntaxTree.FilePath)), 0, 6).Replace('/', '-');
+                    string sourceHash = Convert.ToBase64String(hasher.ComputeHash(Encoding.UTF8.GetBytes(inputSyntaxTree.FilePath)), 0, 6).Replace(Path.AltDirectorySeparatorChar, '-').Replace(Path.DirectorySeparatorChar, '-');
                     Logger.Info($"File \"{inputSyntaxTree.FilePath}\" hashed to {sourceHash}");
-                    string outputFilePath = Path.Combine(this.IntermediateOutputDirectory, Path.GetFileNameWithoutExtension(inputSyntaxTree.FilePath) + $".{sourceHash}.generated.cs");
+                    string outputFilePath = Path.Combine(this.IntermediateOutputDirectory, Path.GetFileNameWithoutExtension(inputSyntaxTree.FilePath) + FormattableString.Invariant($".{sourceHash}.generated.cs"));
+                    var outputFile = new FileInfo(outputFilePath);
 
                     // Code generation is relatively fast, but it's not free.
                     // So skip files that haven't changed since we last generated them.
-                    DateTime outputLastModified = File.Exists(outputFilePath) ? File.GetLastWriteTime(outputFilePath) : DateTime.MinValue;
+                    DateTime outputLastModified = outputFile.Exists ? outputFile.LastWriteTime : DateTime.MinValue;
                     if (File.GetLastWriteTime(inputSyntaxTree.FilePath) > outputLastModified || assembliesLastModified > outputLastModified)
                     {
                         int retriesLeft = 3;
@@ -123,13 +124,13 @@ namespace CodeGeneration.Roslyn.Engine
                                     inputSyntaxTree,
                                     this.ProjectDirectory,
                                     this.LoadPlugin,
-                                    progress);
-
-                                var outputText = generatedSyntaxTree.GetText(cancellationToken);
-                                using (var outputFileStream = File.OpenWrite(outputFilePath))
+                                    progress,
+                                    cancellationToken);
+                                var outputText = await generatedSyntaxTree.GetTextAsync(cancellationToken);
+                                using (var outputFileStream = outputFile.OpenWrite())
                                 using (var outputWriter = new StreamWriter(outputFileStream))
                                 {
-                                    outputText.Write(outputWriter);
+                                    outputText.Write(outputWriter, cancellationToken);
 
                                     // Truncate any data that may be beyond this point if the file existed previously.
                                     outputWriter.Flush();
@@ -142,7 +143,7 @@ namespace CodeGeneration.Roslyn.Engine
                                     bool anyTypesGenerated = root.DescendantNodes().OfType<TypeDeclarationSyntax>().Any();
                                     if (!anyTypesGenerated)
                                     {
-                                        this.emptyGeneratedFiles.Add(outputFilePath);
+                                        this.emptyGeneratedFiles.Add(outputFile.FullName);
                                     }
                                 }
                                 break;
@@ -150,7 +151,7 @@ namespace CodeGeneration.Roslyn.Engine
                             catch (IOException ex) when (ex.HResult == ProcessCannotAccessFileHR && retriesLeft > 0)
                             {
                                 retriesLeft--;
-                                Task.Delay(200).Wait();
+                                await Task.Delay(200, cancellationToken);
                             }
                             catch (Exception ex)
                             {
@@ -162,7 +163,7 @@ namespace CodeGeneration.Roslyn.Engine
                         while (true);
                     }
 
-                    this.generatedFiles.Add(outputFilePath);
+                    this.generatedFiles.Add(outputFile.FullName);
                 }
             }
 
@@ -232,10 +233,7 @@ namespace CodeGeneration.Roslyn.Engine
 
             var location = inputSyntaxTree != null ? Location.Create(inputSyntaxTree, TextSpan.FromBounds(0, 0)) : Location.None;
 
-            var messageArgs = new object[]
-            {
-                ex,
-            };
+            var messageArgs = new object[] { ex };
 
             var reportDiagnostic = Diagnostic.Create(descriptor, location, messageArgs);
 
