@@ -49,13 +49,14 @@ namespace CodeGeneration.Roslyn.Tool.CommandLine
 
         public override bool Equals(object obj)
         {
-            if (obj is null)
+            if (ReferenceEquals(obj, null))
                 return false;
 
             if (ReferenceEquals(obj, this))
                 return true;
 
-            return (obj is ArgumentToken other) && Equals(other);
+            var other = obj as ArgumentToken;
+            return !ReferenceEquals(other, null) && Equals(other);
         }
 
         public override int GetHashCode()

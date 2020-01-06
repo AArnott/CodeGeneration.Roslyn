@@ -108,7 +108,6 @@ namespace CodeGeneration.Roslyn.Generate
             return 0;
         }
 
-
         private static void OnDiagnosticProgress(Diagnostic diagnostic)
         {
             Console.WriteLine(diagnostic.ToString());

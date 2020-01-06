@@ -4,7 +4,10 @@
 namespace CodeGeneration.Roslyn.Tests.Generators
 {
     using System;
+    using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Linq;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using CodeGeneration.Roslyn.Tests.Generators.Dependency;
@@ -33,7 +36,8 @@ namespace CodeGeneration.Roslyn.Tests.Generators
             var results = SyntaxFactory.List<MemberDeclarationSyntax>();
 
             MemberDeclarationSyntax copy = null;
-            if (context.ProcessingNode is MethodDeclarationSyntax applyToClass)
+            var applyToClass = context.ProcessingNode as MethodDeclarationSyntax;
+            if (applyToClass != null)
             {
                 copy = applyToClass
                     .WithIdentifier(SyntaxFactory.Identifier(NameGenerator.Combine(applyToClass.Identifier.ValueText, this.suffix)))

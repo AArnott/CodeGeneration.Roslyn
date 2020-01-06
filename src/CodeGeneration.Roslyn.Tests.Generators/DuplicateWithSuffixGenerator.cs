@@ -35,7 +35,8 @@ namespace CodeGeneration.Roslyn.Tests.Generators
             var results = SyntaxFactory.List<MemberDeclarationSyntax>();
 
             MemberDeclarationSyntax copy = null;
-            if (context.ProcessingNode is ClassDeclarationSyntax applyToClass)
+            var applyToClass = context.ProcessingNode as ClassDeclarationSyntax;
+            if (applyToClass != null)
             {
                 copy = applyToClass
                     .WithIdentifier(SyntaxFactory.Identifier(applyToClass.Identifier.ValueText + this.suffix));

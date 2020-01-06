@@ -13,7 +13,7 @@ public class NestedNamespacesAndTypesTests
     [Fact]
     public void NestedNamespaceTest()
     {
-        _ = new A.B.OuterType.MiddleType.NestedNSTypeA();
+        var nested = new A.B.OuterType.MiddleType.NestedNSTypeA();
     }
 }
 
