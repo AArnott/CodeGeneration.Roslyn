@@ -4,7 +4,7 @@
     <Authors>Andrew Arnott</Authors>
     <Company>Andrew Arnott</Company>
     <Copyright>Copyright © Andrew Arnott</Copyright>
-    <LicenseExpression>MS-PL</LicenseExpression>
+    <PackageLicenseExpression>MS-PL</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/aarnott/CodeGeneration.Roslyn</PackageProjectUrl>
     <RepositoryUrl>https://github.com/aarnott/CodeGeneration.Roslyn</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
