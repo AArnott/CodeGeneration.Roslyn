@@ -5,7 +5,6 @@ VisualStudioVersion = 16.0.29519.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0BA25C7A-1A7A-43DA-BF47-202B54C75C9B}"
 	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
 		..\.gitignore = ..\.gitignore
 		..\azure-pipeline.yml = ..\azure-pipeline.yml
 		CodeGeneration.Roslyn.ruleset = CodeGeneration.Roslyn.ruleset
