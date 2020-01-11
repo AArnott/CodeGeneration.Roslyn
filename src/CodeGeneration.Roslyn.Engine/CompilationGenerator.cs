@@ -84,7 +84,7 @@ namespace CodeGeneration.Roslyn.Engine
         /// <param name="progress">Optional handler of diagnostics provided by code generator.</param>
         /// <param name="cancellationToken">Cancellation token to interrupt async operations.</param>
         /// <returns>A <see cref="Task.CompletedTask"/>.</returns>
-        public async Task GenerateAsync(IProgress<Diagnostic> progress, CancellationToken cancellationToken)
+        public async Task GenerateAsync(IProgress<Diagnostic> progress = null, CancellationToken cancellationToken = default)
         {
             Verify.Operation(this.Compile != null, $"{nameof(Compile)} must be set first.");
             Verify.Operation(this.ReferencePath != null, $"{nameof(ReferencePath)} must be set first.");
@@ -104,14 +104,13 @@ namespace CodeGeneration.Roslyn.Engine
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    string sourceHash = Convert.ToBase64String(hasher.ComputeHash(Encoding.UTF8.GetBytes(inputSyntaxTree.FilePath)), 0, 6).Replace(Path.AltDirectorySeparatorChar, '-').Replace(Path.DirectorySeparatorChar, '-');
+                    string sourceHash = Convert.ToBase64String(hasher.ComputeHash(Encoding.UTF8.GetBytes(inputSyntaxTree.FilePath)), 0, 6).Replace('/', '-');
                     Logger.Info($"File \"{inputSyntaxTree.FilePath}\" hashed to {sourceHash}");
-                    string outputFilePath = Path.Combine(this.IntermediateOutputDirectory, Path.GetFileNameWithoutExtension(inputSyntaxTree.FilePath) + FormattableString.Invariant($".{sourceHash}.generated.cs"));
-                    var outputFile = new FileInfo(outputFilePath);
+                    string outputFilePath = Path.Combine(this.IntermediateOutputDirectory, Path.GetFileNameWithoutExtension(inputSyntaxTree.FilePath) + $".{sourceHash}.generated.cs");
 
                     // Code generation is relatively fast, but it's not free.
                     // So skip files that haven't changed since we last generated them.
-                    DateTime outputLastModified = outputFile.Exists ? outputFile.LastWriteTime : DateTime.MinValue;
+                    DateTime outputLastModified = File.Exists(outputFilePath) ? File.GetLastWriteTime(outputFilePath) : DateTime.MinValue;
                     if (File.GetLastWriteTime(inputSyntaxTree.FilePath) > outputLastModified || assembliesLastModified > outputLastModified)
                     {
                         int retriesLeft = 3;
@@ -127,7 +126,7 @@ namespace CodeGeneration.Roslyn.Engine
                                     progress,
                                     cancellationToken);
                                 var outputText = await generatedSyntaxTree.GetTextAsync(cancellationToken);
-                                using (var outputFileStream = outputFile.OpenWrite())
+                                using (var outputFileStream = File.OpenWrite(outputFilePath))
                                 using (var outputWriter = new StreamWriter(outputFileStream))
                                 {
                                     outputText.Write(outputWriter, cancellationToken);
@@ -143,7 +142,7 @@ namespace CodeGeneration.Roslyn.Engine
                                     bool anyTypesGenerated = root.DescendantNodes().OfType<TypeDeclarationSyntax>().Any();
                                     if (!anyTypesGenerated)
                                     {
-                                        this.emptyGeneratedFiles.Add(outputFile.FullName);
+                                        this.emptyGeneratedFiles.Add(outputFilePath);
                                     }
                                 }
                                 break;
@@ -163,7 +162,7 @@ namespace CodeGeneration.Roslyn.Engine
                         while (true);
                     }
 
-                    this.generatedFiles.Add(outputFile.FullName);
+                    this.generatedFiles.Add(outputFilePath);
                 }
             }
 
@@ -233,7 +232,10 @@ namespace CodeGeneration.Roslyn.Engine
 
             var location = inputSyntaxTree != null ? Location.Create(inputSyntaxTree, TextSpan.FromBounds(0, 0)) : Location.None;
 
-            var messageArgs = new object[] { ex };
+            var messageArgs = new object[]
+            {
+                ex,
+            };
 
             var reportDiagnostic = Diagnostic.Create(descriptor, location, messageArgs);
 
