@@ -152,7 +152,7 @@ namespace CodeGeneration.Roslyn.Engine
                                 retriesLeft--;
                                 await Task.Delay(200, cancellationToken);
                             }
-                            catch (Exception ex)
+                            catch (Exception ex) when (!(ex is OperationCanceledException))
                             {
                                 ReportError(progress, "CGR001", inputSyntaxTree, ex);
                                 fileFailures.Add(ex);
