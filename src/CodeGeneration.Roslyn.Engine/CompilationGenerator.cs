@@ -123,13 +123,13 @@ namespace CodeGeneration.Roslyn.Engine
                                     inputSyntaxTree,
                                     this.ProjectDirectory,
                                     this.LoadPlugin,
-                                    progress);
-
-                                var outputText = generatedSyntaxTree.GetText(cancellationToken);
+                                    progress,
+                                    cancellationToken);
+                                var outputText = await generatedSyntaxTree.GetTextAsync(cancellationToken);
                                 using (var outputFileStream = File.OpenWrite(outputFilePath))
                                 using (var outputWriter = new StreamWriter(outputFileStream))
                                 {
-                                    outputText.Write(outputWriter);
+                                    outputText.Write(outputWriter, cancellationToken);
 
                                     // Truncate any data that may be beyond this point if the file existed previously.
                                     outputWriter.Flush();
@@ -150,9 +150,9 @@ namespace CodeGeneration.Roslyn.Engine
                             catch (IOException ex) when (ex.HResult == ProcessCannotAccessFileHR && retriesLeft > 0)
                             {
                                 retriesLeft--;
-                                Task.Delay(200).Wait();
+                                await Task.Delay(200, cancellationToken);
                             }
-                            catch (Exception ex)
+                            catch (Exception ex) when (!(ex is OperationCanceledException))
                             {
                                 ReportError(progress, "CGR001", inputSyntaxTree, ex);
                                 fileFailures.Add(ex);
