@@ -50,7 +50,7 @@ namespace CodeGeneration.Roslyn.Engine
             string projectDirectory,
             Func<AssemblyName, Assembly> assemblyLoader,
             IProgress<Diagnostic> progress,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken)
         {
             Requires.NotNull(compilation, nameof(compilation));
             Requires.NotNull(inputDocument, nameof(inputDocument));
