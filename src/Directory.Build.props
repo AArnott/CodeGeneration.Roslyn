@@ -8,7 +8,7 @@
     <PackageProjectUrl>https://github.com/aarnott/CodeGeneration.Roslyn</PackageProjectUrl>
     <RepositoryUrl>https://github.com/aarnott/CodeGeneration.Roslyn</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <ReleaseNotes>https://github.com/AArnott/CodeGeneration.Roslyn/blob/master/CHANGELOG.md</ReleaseNotes>
+    <PackageReleaseNotes>https://github.com/AArnott/CodeGeneration.Roslyn/blob/master/CHANGELOG.md</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup>
