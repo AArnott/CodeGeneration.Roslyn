@@ -60,6 +60,7 @@
   -->
   <Target Name="PackCustomTool" DependsOnTargets="Publish;CreatePluginPackageBuildProps">
     <ItemGroup>
+      <TfmSpecificPackageFile Include="$(PublishDepsFilePath)" PackagePath="$(PackPublishedContentPath)/$(ProjectDepsFileName)" />
       <TfmSpecificPackageFile Include="@(ResolvedFileToPublish)" PackagePath="$(PackPublishedContentPath)/%(ResolvedFileToPublish.RelativePath)" />
     </ItemGroup>
   </Target>
