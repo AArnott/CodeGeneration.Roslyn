@@ -1,0 +1,8 @@
+<Project>
+  
+  <PropertyGroup>
+    <LocalNuGetVersion Condition=" '$(LocalNuGetVersion)' == '' ">*</LocalNuGetVersion>
+    <RestorePackagesPath>$(MSBuildThisFileDirectory)/.nuget/</RestorePackagesPath>
+  </PropertyGroup>
+  
+</Project>
