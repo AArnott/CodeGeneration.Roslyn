@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
 
-    
     <!-- Ignore 'Missing XML comments', it's a tool. -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <!--
@@ -51,7 +50,7 @@
       <TfmSpecificPackageFile Include="@(ResolvedFileToPublish)" PackagePath="$(PackPublishedContentPath)/%(ResolvedFileToPublish.RelativePath)" />
     </ItemGroup>
   </Target>
-  
+
   <!--
     This target writes a PackageId.props file that will get packed into build/ folder in NuGet.
     That props file adds the path to the Plugin dll to the CodeGenerationRoslynPlugin ItemGroup,
@@ -60,7 +59,7 @@
   <Target Name="CreatePluginPackageBuildProps">
     <PropertyGroup>
       <PackagePropsContent>
-<![CDATA[
+        <![CDATA[
 <?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>

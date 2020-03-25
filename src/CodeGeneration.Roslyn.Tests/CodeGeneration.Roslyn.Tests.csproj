@@ -1,10 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   
-  <Import Project="..\CodeGeneration.Roslyn.BuildTime\build\CodeGeneration.Roslyn.BuildTime.props" />
+  <Import Project="..\CodeGeneration.Roslyn.Tool\build\CodeGeneration.Roslyn.Tool.props" />
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
-    <!--<GenerateCodeFromAttributesToolPathOverride>$(OutputPath)..\..\CodeGeneration.Roslyn.Tool\$(Configuration)\netcoreapp2.1\dotnet-codegen.dll</GenerateCodeFromAttributesToolPathOverride>-->
     <!-- Ignore CGR1002 because it's expected to be raised by legacy Amadevus.RecordGenerator -->
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);CGR1002</MSBuildWarningsAsMessages>
     <GenerateCodeFromAttributesDependsOn>OverrideCodeGenToolPath;$(GenerateCodeFromAttributesDependsOn)</GenerateCodeFromAttributesDependsOn>
@@ -40,6 +39,6 @@
     </PropertyGroup>
   </Target>
 
-  <Import Project="..\CodeGeneration.Roslyn.BuildTime\build\CodeGeneration.Roslyn.BuildTime.targets" />
+  <Import Project="..\CodeGeneration.Roslyn.Tool\build\CodeGeneration.Roslyn.Tool.targets" />
   
 </Project>

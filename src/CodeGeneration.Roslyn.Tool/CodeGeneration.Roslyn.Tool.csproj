@@ -33,6 +33,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="build/**">
+      <Pack>true</Pack>
+      <PackagePath>build/</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Compile Update="CommandLine\Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -57,7 +62,7 @@
     so the tool is packaged with all dependencies bundled.
     As of this writing there's no better alternatives.
   -->
-  <Target Name="PackCustomTool" DependsOnTargets="Publish;CreatePluginPackageBuildProps">
+  <Target Name="PackCustomTool" DependsOnTargets="Publish;CreateToolPathProps">
     <ItemGroup>
       <!--
         deps.json file is specifically added as a workaround for it not being in ResolvedFileToPublish
@@ -75,9 +80,9 @@
     That props file sets the path to the tool dll in,
     so that CodeGeneration.Roslyn tooling can read and load generator plugins.
   -->
-  <Target Name="CreatePluginPackageBuildProps">
+  <Target Name="CreateToolPathProps">
     <PropertyGroup>
-      <PackagePropsContent>
+      <ToolPathPropsContent>
         <![CDATA[
 <?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -88,13 +93,13 @@
   </PropertyGroup>
 </Project>
 ]]>
-      </PackagePropsContent>
-      <PackagePropsPath>$(IntermediateOutputPath)$(PackageId).props</PackagePropsPath>
+      </ToolPathPropsContent>
+      <ToolPathPropsPath>$(IntermediateOutputPath)ToolPath.props</ToolPathPropsPath>
     </PropertyGroup>
-    <WriteLinesToFile File="$(PackagePropsPath)" Lines="$(PackagePropsContent)" Overwrite="true" />
+    <WriteLinesToFile File="$(ToolPathPropsPath)" Lines="$(ToolPathPropsContent)" Overwrite="true" />
     <ItemGroup>
-      <TfmSpecificPackageFile Include="$(PackagePropsPath)" Pack="true" PackagePath="build" BuildAction="None"/>
-      <FileWrites Include="$(PackagePropsPath)" />
+      <TfmSpecificPackageFile Include="$(ToolPathPropsPath)" Pack="true" PackagePath="build/" BuildAction="None"/>
+      <FileWrites Include="$(ToolPathPropsPath)" />
     </ItemGroup>
   </Target>
 

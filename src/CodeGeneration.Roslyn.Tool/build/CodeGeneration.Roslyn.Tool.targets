@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <GenerateCodeFromAttributesDependsOn>
+      $(GenerateCodeFromAttributesDependsOn);
+      ResolveReferences;
+      PrepareGenerateCodeFromAttributes;
+      GenerateCodeFromAttributesCore;
+      ReadGenerateCodeFromAttributesResults
+    </GenerateCodeFromAttributesDependsOn>
+    <CgrUrl>https://github.com/AArnott/CodeGeneration.Roslyn</CgrUrl>
+  </PropertyGroup>
+
+  <Target
+    Name="GenerateCodeFromAttributes"
+    DependsOnTargets="$(GenerateCodeFromAttributesDependsOn)"
+    BeforeTargets="CoreCompile;PrepareResources">
+  </Target>
+
+  <Target Name="PrepareGenerateCodeFromAttributes">
+    <ItemGroup>
+      <_CodeGenToolInputs_Compile
+        Include="@(Compile)"
+        Condition=" '%(Compile.Generator)' == 'MSBuild:GenerateCodeFromAttributes' " />
+      <_CodeGenToolInputs_DefineConstants Include="$(DefineConstants)" />
+      <!-- Map GeneratorAssemblySearchPaths to actual DLLs until support is removed -->
+      <GeneratorAssemblySearchPaths
+        Update="@(GeneratorAssemblySearchPaths)"
+        PathWithTrailingSlash="$([MSBuild]::EnsureTrailingSlash(%(Identity)))" />
+      <_GeneratorAssemblySearchPathsResolved
+        Include="%(GeneratorAssemblySearchPaths.PathWithTrailingSlash)*.dll" />
+      <!-- Include resolved DLLs into CodeGenerationRoslynPlugin -->
+      <CodeGenerationRoslynPlugin
+        Include="@(_GeneratorAssemblySearchPathsResolved)"
+        Condition="Exists('%(Identity)')" />
+    </ItemGroup>
+    <!-- Warning for the time GeneratorAssemblySearchPaths are deprecated but supported -->
+    <Warning
+      Code="CGR1002"
+      Text="Using GeneratorAssemblySearchPaths is deprecated, please use CodeGenerationRoslynPlugin ItemGroup. See $(CgrUrl) for more info. Suppress this warning by adding CGR1002 to MSBuildWarningsAsMessages PropertyGroup."
+      Condition=" '@(GeneratorAssemblySearchPaths)' != '' " />
+    <PropertyGroup>
+      <CodeGenerationRoslynToolPath
+        Condition="'$(GenerateCodeFromAttributesToolPathOverride)' != ''">$(GenerateCodeFromAttributesToolPathOverride)</CodeGenerationRoslynToolPath>
+      <CodeGenerationRoslynToolPath>$(CodeGenerationRoslynToolPath.Trim())</CodeGenerationRoslynToolPath>
+      <_CodeGenToolOutputBasePath>$(IntermediateOutputPath)$(MSBuildProjectFile).dotnet-codegen</_CodeGenToolOutputBasePath>
+      <_CodeGenToolResponseFileFullPath>$(_CodeGenToolOutputBasePath).rsp</_CodeGenToolResponseFileFullPath>
+      <_CodeGenToolGeneratedFileListFullPath>$(_CodeGenToolOutputBasePath).GeneratedFileList.txt</_CodeGenToolGeneratedFileListFullPath>
+      <_CodeGenToolResponseFileLines>
+        @(ReferencePath->'-r;%(Identity)');
+        @(_CodeGenToolInputs_DefineConstants->'-d;%(Identity)');
+        @(CodeGenerationRoslynPlugin->'--plugin;%(Identity)');
+        --out;
+        $(IntermediateOutputPath);
+        --projectDir;
+        $(MSBuildProjectDirectory);
+        --generatedFilesList;
+        $(_CodeGenToolGeneratedFileListFullPath);
+        --;
+        @(_CodeGenToolInputs_Compile)
+      </_CodeGenToolResponseFileLines>
+      <_CodeGenToolVersionOutput>(n/a)</_CodeGenToolVersionOutput>
+      <_CodeGenToolVersionExitCode></_CodeGenToolVersionExitCode>
+    </PropertyGroup>
+    <ItemGroup>
+      <_CodeGenToolResponseFileContent Include="$(_CodeGenToolResponseFileLines)" />
+    </ItemGroup>
+    <!--Write response file with arguments for dotnet codegen-->
+    <WriteLinesToFile
+      File="$(_CodeGenToolResponseFileFullPath)"
+      Lines="@(_CodeGenToolResponseFileContent)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    <!--Check and print tool version used-->
+    <Exec
+      Command="dotnet &quot;$(CodeGenerationRoslynToolPath)&quot; --version"
+      ConsoleToMsBuild="true"
+      StandardOutputImportance="normal"
+      ContinueOnError="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_CodeGenToolVersionOutput"/>
+      <Output TaskParameter="ExitCode" PropertyName="_CodeGenToolVersionExitCode"/>
+    </Exec>
+    <Message
+      Text="CodeGeneration.Roslyn.Tool version: $(_CodeGenToolVersionOutput)"
+      Importance="normal"
+      Condition="'$(_CodeGenToolVersionExitCode)' == '0'" />
+    <Error
+      Code="CGR1001"
+      Text="CodeGeneration.Roslyn.Tool is not available, code generation won't run. Please check $(CgrUrl) for usage instructions."
+      Condition="'$(_CodeGenToolVersionExitCode)' != '0'" />
+    <ItemGroup>
+      <FileWrites Include="$(_CodeGenToolResponseFileFullPath)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Inputs consist of all plugin assemblies, all compiled sources and the response file.
+    Outputs is the result file that the tool writes.
+    If the result file is newer than any of the inputs, we can safely skip calling the tool at all,
+    and just read the existing file in ReadGenerateCodeFromAttributesResults target.
+  -->
+  <Target Name="GenerateCodeFromAttributesCore"
+    Condition=" '@(_CodeGenToolInputs_Compile)' != '' AND '$(_CodeGenToolVersionExitCode)' == '0' "
+    Inputs="$(_CodeGenToolResponseFileFullPath);@(CodeGenerationRoslynPlugin);@(_CodeGenToolInputs_Compile)"
+    Outputs="$(_CodeGenToolGeneratedFileListFullPath)">
+    <!--Run the tool and raise an error when failed-->
+    <Exec
+      Command="dotnet &quot;$(CodeGenerationRoslynToolPath)&quot; &quot;%40$(_CodeGenToolResponseFileFullPath)&quot;"
+      StandardOutputImportance="normal" />
+    <Error
+      Code="CGR1000"
+      Text="CodeGeneration.Roslyn.Tool failed to generate the list of generated files. The tool didn't run successfully. Please check $(CgrUrl) for usage instructions."
+      Condition="Exists('$(_CodeGenToolGeneratedFileListFullPath)') != 'true'" />
+  </Target>
+
+  <Target Name="ReadGenerateCodeFromAttributesResults"
+    Condition=" Exists('$(_CodeGenToolGeneratedFileListFullPath)') ">
+    <!-- Process tool results: read generated files list and add them to Compile -->
+    <ReadLinesFromFile File="$(_CodeGenToolGeneratedFileListFullPath)">
+      <Output TaskParameter="Lines" ItemName="CodeGenerationRoslynOutput_Compile"/>
+      <Output TaskParameter="Lines" ItemName="FileWrites"/>
+    </ReadLinesFromFile>
+    <ItemGroup>
+      <Compile Include="@(CodeGenerationRoslynOutput_Compile)" />
+      <FileWrites Include="$(_CodeGenToolGeneratedFileListFullPath)" />
+    </ItemGroup>
+  </Target>
+
+</Project>
