@@ -41,8 +41,9 @@
       Text="Using GeneratorAssemblySearchPaths is deprecated, please use CodeGenerationRoslynPlugin ItemGroup. See $(CgrUrl) for more info. Suppress this warning by adding CGR1002 to MSBuildWarningsAsMessages PropertyGroup."
       Condition=" '@(GeneratorAssemblySearchPaths)' != '' " />
     <PropertyGroup>
-      <GenerateCodeFromAttributesToolPathOverride
-        Condition="'$(GenerateCodeFromAttributesToolPathOverride)' == ''">codegen</GenerateCodeFromAttributesToolPathOverride>
+      <CodeGenerationRoslynToolPath
+        Condition="'$(GenerateCodeFromAttributesToolPathOverride)' != ''">$(GenerateCodeFromAttributesToolPathOverride)</CodeGenerationRoslynToolPath>
+      <CodeGenerationRoslynToolPath>$(CodeGenerationRoslynToolPath.Trim())</CodeGenerationRoslynToolPath>
       <_CodeGenToolOutputBasePath>$(IntermediateOutputPath)$(MSBuildProjectFile).dotnet-codegen</_CodeGenToolOutputBasePath>
       <_CodeGenToolResponseFileFullPath>$(_CodeGenToolOutputBasePath).rsp</_CodeGenToolResponseFileFullPath>
       <_CodeGenToolGeneratedFileListFullPath>$(_CodeGenToolOutputBasePath).GeneratedFileList.txt</_CodeGenToolGeneratedFileListFullPath>
@@ -73,7 +74,7 @@
       WriteOnlyWhenDifferent="true" />
     <!--Check and print tool version used-->
     <Exec
-      Command="dotnet $(GenerateCodeFromAttributesToolPathOverride) --version"
+      Command="dotnet &quot;$(CodeGenerationRoslynToolPath)&quot; --version"
       ConsoleToMsBuild="true"
       StandardOutputImportance="normal"
       ContinueOnError="true">
@@ -105,7 +106,7 @@
     Outputs="$(_CodeGenToolGeneratedFileListFullPath)">
     <!--Run the tool and raise an error when failed-->
     <Exec
-      Command="dotnet $(GenerateCodeFromAttributesToolPathOverride) &quot;%40$(_CodeGenToolResponseFileFullPath)&quot;"
+      Command="dotnet &quot;$(CodeGenerationRoslynToolPath)&quot; &quot;%40$(_CodeGenToolResponseFileFullPath)&quot;"
       StandardOutputImportance="normal" />
     <Error
       Code="CGR1000"

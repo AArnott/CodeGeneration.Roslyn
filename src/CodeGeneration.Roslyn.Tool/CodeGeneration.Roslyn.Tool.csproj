@@ -1,18 +1,39 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageType>DotnetCliTool</PackageType>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <AssemblyName>dotnet-codegen</AssemblyName>
     <Description>The dotnet code generation tool that works with the CodeGeneration.Roslyn nuget package.</Description>
     <CodeAnalysisRuleSet>CodeGeneration.Roslyn.Tool.ruleset</CodeAnalysisRuleSet>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- Run on future runtimes - as a build tool, let's be user friendly. -->
     <RollForward>Major</RollForward>
+    <!-- Ignore 'Missing XML comments', it's a tool. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!--
+      NU5129 false positive - similar to https://github.com/NuGet/Home/issues/8627
+      Possible cause: generating the .props file dynamically during build.
+    -->
+    <NoWarn>$(NoWarn);NU5129</NoWarn>
+    <!-- Packing -->
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <!--
+      Min Version is 2.5 because that's when build/ folder support was introduced:
+      https://docs.microsoft.com/en-us/nuget/release-notes/nuget-2.5#automatic-import-of-msbuild-targets-and-props-files
+    -->
+    <MinClientVersion>2.5</MinClientVersion>
+    <!-- Don't create lib/ in package. -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <!-- Below is needed to make NuGet package TFM-oblivious -->
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <!-- This target adds 'publish' content to package -->
+    <TargetsForTfmSpecificContentInPackage>
+      PackCustomTool;$(TargetsForTfmSpecificContentInPackage)
+    </TargetsForTfmSpecificContentInPackage>
+    <PackPublishedContentPath>tools/any</PackPublishedContentPath>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="prefercliruntime" Pack="true" PackagePath="" />
     <Compile Update="CommandLine\Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -31,5 +52,44 @@
   <ItemGroup>
     <ProjectReference Include="..\CodeGeneration.Roslyn.Engine\CodeGeneration.Roslyn.Engine.csproj" />
   </ItemGroup>
+
+  <!--
+    This target adds 'Publish' target output to nuget package,
+    so the tool is packaged with all dependencies bundled.
+    As of this writing there's no better alternatives.
+  -->
+  <Target Name="PackCustomTool" DependsOnTargets="Publish;CreatePluginPackageBuildProps">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="@(ResolvedFileToPublish)" PackagePath="$(PackPublishedContentPath)/%(ResolvedFileToPublish.RelativePath)" />
+    </ItemGroup>
+  </Target>
+  
+  <!--
+    This target writes a PackageId.props file that will get packed into build/ folder in NuGet.
+    That props file sets the path to the tool dll in,
+    so that CodeGeneration.Roslyn tooling can read and load generator plugins.
+  -->
+  <Target Name="CreatePluginPackageBuildProps">
+    <PropertyGroup>
+      <PackagePropsContent>
+        <![CDATA[
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <CodeGenerationRoslynToolPath>
+      %24(MSBuildThisFileDirectory)../$(PackPublishedContentPath)/$(TargetFileName)
+    </CodeGenerationRoslynToolPath>
+  </PropertyGroup>
+</Project>
+]]>
+      </PackagePropsContent>
+      <PackagePropsPath>$(IntermediateOutputPath)$(PackageId).props</PackagePropsPath>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(PackagePropsPath)" Lines="$(PackagePropsContent)" Overwrite="true" />
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(PackagePropsPath)" Pack="true" PackagePath="build" BuildAction="None"/>
+      <FileWrites Include="$(PackagePropsPath)" />
+    </ItemGroup>
+  </Target>
 
 </Project>
