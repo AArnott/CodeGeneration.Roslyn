@@ -33,8 +33,8 @@ jobs:
       workingDirectory: src
 
   - script: |
-      dotnet tool install --tool-path . nbgv --version 3.0.28
-      .\nbgv cloud -p src
+      dotnet tool restore
+      dotnet nbgv cloud -p src
     displayName: Set build number
     condition: ne(variables['system.pullrequest.isfork'], true)
 

@@ -35,10 +35,9 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
     - run: dotnet --info
-    - name: Install and run nbgv
-      run: |
-        dotnet tool install --tool-path . nbgv
-        ./nbgv get-version -p src
+    - run: dotnet tool restore
+    - name: Run nbgv
+      run: dotnet nbgv get-version -p src
     - name: Restore
       run: dotnet restore src -v normal
     - name: Build
@@ -56,6 +55,9 @@ jobs:
       with:
         name: logs-windows
         path: obj/logs/
+    - name: Build samples
+      shell: pwsh
+      run: samples/build.ps1
 
   build-other:
     strategy:
@@ -81,10 +83,9 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
     - run: dotnet --info
-    - name: Install and run nbgv
-      run: |
-        dotnet tool install --tool-path . nbgv --version 3.0.28
-        ./nbgv get-version -p src
+    - run: dotnet tool restore
+    - name: Run nbgv
+      run: dotnet nbgv get-version -p src
     - name: Restore
       run: dotnet restore src -v normal
     - name: Build
@@ -96,3 +97,6 @@ jobs:
       with:
         name: logs-${{ matrix.os }}
         path: obj/logs/
+    - name: Build samples
+      shell: pwsh
+      run: samples/build.ps1

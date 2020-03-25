@@ -6,7 +6,7 @@ try {
     Remove-Item .nuget, bin, obj -Recurse -Force
     
     # set env variable to use local CG.R packages
-    $env:LocalNuGetVersion = nbgv get-version --variable NuGetPackageVersion --project ../src
+    $env:LocalNuGetVersion = dotnet nbgv get-version --variable NuGetPackageVersion --project ../src
     
     # get generator project folders
     $generators = Get-ChildItem -Directory -Name | Where-Object { $_ -match 'Generator$' }
