@@ -12,7 +12,7 @@ on:
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  build_configuration: Release
+  Configuration: Release
 
 jobs:
   build-windows:
@@ -41,15 +41,15 @@ jobs:
     - name: Restore
       run: dotnet restore src -v normal
     - name: Build
-      run: dotnet build src -t:build,pack --no-restore -m -c ${{ env.build_configuration }} -bl:obj/logs/build-windows.binlog
+      run: dotnet build src -t:build,pack --no-restore -m -bl:obj/logs/build-windows.binlog
     - name: Test
-      run: dotnet test src --no-build -c ${{ env.build_configuration }}
+      run: dotnet test src --no-build
     - name: Upload nugets
       if: github.event_name == 'push'
       uses: actions/upload-artifact@v1
       with:
         name: nugets
-        path: bin/Packages/${{ env.build_configuration }}
+        path: bin/Packages/${{ env.Configuration }}
     - name: Upload logs
       uses: actions/upload-artifact@v1
       with:
@@ -89,9 +89,9 @@ jobs:
     - name: Restore
       run: dotnet restore src -v normal
     - name: Build
-      run: dotnet build src --no-restore -m -c ${{ env.build_configuration }}  -bl:obj/logs/build-${{ matrix.os }}.binlog
+      run: dotnet build src --no-restore -m  -bl:obj/logs/build-${{ matrix.os }}.binlog
     - name: Test
-      run: dotnet test src --no-build -c ${{ env.build_configuration }} -f netcoreapp2.1
+      run: dotnet test src --no-build -f netcoreapp2.1
     - name: Upload logs
       uses: actions/upload-artifact@v1
       with:
