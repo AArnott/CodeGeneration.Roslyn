@@ -11,7 +11,7 @@ way is to save the result of `CodeGeneration.Roslyn> nbgv get-version -p src` in
 
 From PowerShell, for example:
 ```powershell
-pwsh> $env:LocalNuGetVersion = nbgv get-version -p src
+pwsh> $env:LocalNuGetVersion = nbgv get-version -v NuGetPackageVersion -p src
 pwsh> dotnet pack samples/PackagedGenerator
 pwsh> dotnet run samples/PackageConsumer
 ```
