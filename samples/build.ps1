@@ -3,7 +3,7 @@
 Push-Location $PSScriptRoot
 try {
     # clean up all restore and build artifacts:
-    Remove-Item .nuget, bin, obj -Recurse -Force
+    Remove-Item .nuget, bin, obj -Recurse -Force -ErrorAction Ignore
     
     # set env variable to use local CG.R packages
     $env:LocalNuGetVersion = dotnet nbgv get-version --variable NuGetPackageVersion --project ../src
