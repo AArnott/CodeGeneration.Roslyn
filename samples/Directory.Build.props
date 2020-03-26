@@ -7,12 +7,16 @@
     <PackageOutputPath>$(MSBuildThisFileDirectory)bin/Packages/$(Configuration)/</PackageOutputPath>
 
     <LocalNuGetVersion Condition=" '$(LocalNuGetVersion)' == '' ">*</LocalNuGetVersion>
+    <!-- Setting this is needed because we're not using actual Sdk package which defines it. -->
+    <CodeGenerationRoslynPluginSdkVersion>$(LocalNuGetVersion)</CodeGenerationRoslynPluginSdkVersion>
     <RestorePackagesPath>$(MSBuildThisFileDirectory)/.nuget/</RestorePackagesPath>
 
     <_MainPackagesDebug>$(MSBuildThisFileDirectory)../bin/Packages/Debug/</_MainPackagesDebug>
     <_MainPackagesRelease>$(MSBuildThisFileDirectory)../bin/Packages/Release/</_MainPackagesRelease>
     <_SamplePackages>$(MSBuildThisFileDirectory)bin/Packages/$(Configuration)/</_SamplePackages>
     <RestoreAdditionalProjectSources>@(CustomLocalFeed);$(RestoreAdditionalProjectSources)</RestoreAdditionalProjectSources>
+
+    <CodeGenerationRoslynPluginSdkPath>$(MSBuildThisFileDirectory)../src/CodeGeneration.Roslyn.Plugin.Sdk/Sdk/</CodeGenerationRoslynPluginSdkPath>
   </PropertyGroup>
 
   <ItemGroup>
