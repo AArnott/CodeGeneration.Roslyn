@@ -1,79 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <!-- Setting this is needed because we're not using actual Sdk package which defines it. -->
+    <CodeGenerationRoslynPluginSdkVersion>$(LocalNuGetVersion)</CodeGenerationRoslynPluginSdkVersion>
+  </PropertyGroup>
+  <Import Project="../../src/CodeGeneration.Roslyn.Plugin.Sdk/Sdk/Sdk.props" />
 
-    <!-- Ignore 'Missing XML comments', it's a tool. -->
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <!--
-      NU5129 false positive - similar to https://github.com/NuGet/Home/issues/8627
-      Possible cause: generating the .props file dynamically during build.
-    -->
-    <NoWarn>$(NoWarn);NU5129</NoWarn>
-    <!-- Packing -->
-    <DevelopmentDependency>true</DevelopmentDependency>
-    <!--
-      Min Version is 2.5 because that's when build/ folder support was introduced:
-      https://docs.microsoft.com/en-us/nuget/release-notes/nuget-2.5#automatic-import-of-msbuild-targets-and-props-files
-    -->
-    <MinClientVersion>2.5</MinClientVersion>
-    <!-- Don't create lib/ in package. -->
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <!-- Below is needed to make NuGet package TFM-oblivious -->
-    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
-    <!-- This target adds 'publish' content to package -->
-    <TargetsForTfmSpecificContentInPackage>
-      PackCustomTool;$(TargetsForTfmSpecificContentInPackage)
-    </TargetsForTfmSpecificContentInPackage>
-    <PackPublishedContentPath>tools/any</PackPublishedContentPath>
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CodeGeneration.Roslyn" Version="$(LocalNuGetVersion)" ExcludeAssets="runtime" />
-  </ItemGroup>
-
-  <!--
-    This target adds 'Publish' target output to nuget package,
-    so the tool is packaged with all dependencies bundled.
-    As of this writing there's no better alternatives.
-  -->
-  <Target Name="PackCustomTool" DependsOnTargets="Publish;CreatePluginPackageBuildProps">
-    <ItemGroup>
-      <!--
-        deps.json file is specifically added as a workaround for it not being in ResolvedFileToPublish
-        This is expected to be not needed once .NET 5 hits as per this change:
-        https://github.com/dotnet/sdk/commit/1f2a4a110e356808d721358ce358de4f88923795#diff-7dc833d02f198e5a9f0ab88e229db18aL1039-R1023
-      -->
-      <TfmSpecificPackageFile Include="$(PublishDepsFilePath)" PackagePath="$(PackPublishedContentPath)/$(ProjectDepsFileName)" />
-      <!-- Include 'Publish' output in package -->
-      <TfmSpecificPackageFile Include="@(ResolvedFileToPublish)" PackagePath="$(PackPublishedContentPath)/%(ResolvedFileToPublish.RelativePath)" />
-    </ItemGroup>
-  </Target>
-
-  <!--
-    This target writes a PackageId.props file that will get packed into build/ folder in NuGet.
-    That props file adds the path to the Plugin dll to the CodeGenerationRoslynPlugin ItemGroup,
-    so that CodeGeneration.Roslyn tooling can read and load generator plugins.
-  -->
-  <Target Name="CreatePluginPackageBuildProps">
-    <PropertyGroup>
-      <PackagePropsContent>
-        <![CDATA[
-<?xml version="1.0" encoding="utf-8" ?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup>
-    <CodeGenerationRoslynPlugin Include="%24(MSBuildThisFileDirectory)../$(PackPublishedContentPath)/$(TargetFileName)" />
-  </ItemGroup>
-</Project>
-]]>
-      </PackagePropsContent>
-      <PackagePropsPath>$(IntermediateOutputPath)$(PackageId).props</PackagePropsPath>
-    </PropertyGroup>
-    <WriteLinesToFile File="$(PackagePropsPath)" Lines="$(PackagePropsContent)" Overwrite="true" />
-    <ItemGroup>
-      <TfmSpecificPackageFile Include="$(PackagePropsPath)" Pack="true" PackagePath="build" BuildAction="None" />
-      <FileWrites Include="$(PackagePropsPath)" />
-    </ItemGroup>
-  </Target>
+  <Import Project="../../src/CodeGeneration.Roslyn.Plugin.Sdk/Sdk/Sdk.targets" />
 
 </Project>

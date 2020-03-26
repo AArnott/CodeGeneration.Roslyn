@@ -1,11 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <!-- Setting this is needed because we're not using actual Sdk package which defines it. -->
+    <CodeGenerationRoslynPluginSdkVersion>$(LocalNuGetVersion)</CodeGenerationRoslynPluginSdkVersion>
+  </PropertyGroup>
+  <Import Project="../../../src/CodeGeneration.Roslyn.Plugin.Sdk/Sdk/Sdk.props" />
+
+  <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CodeGeneration.Roslyn" Version="$(LocalNuGetVersion)" />
-  </ItemGroup>
+  <Import Project="../../../src/CodeGeneration.Roslyn.Plugin.Sdk/Sdk/Sdk.targets" />
 
 </Project>

@@ -25,6 +25,7 @@
     <!-- Declare dependencies of PackCodeGenerationRoslynPlugin target -->
     <PackCodeGenerationRoslynPluginDependsOn>
       $(PackCodeGenerationRoslynPluginDependsOn);
+      DefinePluginPackagePath;
       CreatePluginPackageBuildProps;
       Publish;
     </PackCodeGenerationRoslynPluginDependsOn>
@@ -32,19 +33,27 @@
     <BeforePack>ValidatePluginPackageBuildProps;$(BeforePack)</BeforePack>
   </PropertyGroup>
 
+  <Target Name="DefinePluginPackagePath">
+    <PropertyGroup>
+      <PluginPackagePath>tools/$(TargetFramework)/any</PluginPackagePath>
+    </PropertyGroup>
+  </Target>
+
   <!--
     This target writes a PackageId.props file that will get packed into build/ folder in NuGet.
     That props file adds the path to the Plugin dll to the CodeGenerationRoslynPlugin ItemGroup,
     so that CodeGeneration.Roslyn tooling can read and load generator plugins.
   -->
-  <Target Name="CreatePluginPackageBuildProps" Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == 'true' ">
+  <Target Name="CreatePluginPackageBuildProps"
+          DependsOnTargets="DefinePluginPackagePath"
+          Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == 'true' ">
     <PropertyGroup>
       <PackagePropsContent>
         <![CDATA[
 <?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CodeGenerationRoslynPlugin Include="%24(MSBuildThisFileDirectory)../tools/$(TargetFramework)/any/$(TargetFileName)" />
+    <CodeGenerationRoslynPlugin Include="%24(MSBuildThisFileDirectory)../$(PluginPackagePath)/$(TargetFileName)" />
   </ItemGroup>
 </Project>
 ]]>
@@ -53,7 +62,7 @@
     </PropertyGroup>
     <WriteLinesToFile File="$(PackagePropsPath)" Lines="$(PackagePropsContent)" Overwrite="true" />
     <ItemGroup>
-      <TfmSpecificPackageFile Include="$(PackagePropsPath)" Pack="true" PackagePath="build" BuildAction="None" />
+      <TfmSpecificPackageFile Include="$(PackagePropsPath)" Pack="true" PackagePath="build/" BuildAction="None" />
       <FileWrites Include="$(PackagePropsPath)" />
     </ItemGroup>
   </Target>
@@ -64,17 +73,17 @@
     As of this writing there's no better alternatives.
   -->
   <Target Name="PackCodeGenerationRoslynPlugin"
-          Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == 'true' "
-          DependsOnTargets="$(PackCodeGenerationRoslynPluginDependsOn)">
+          DependsOnTargets="$(PackCodeGenerationRoslynPluginDependsOn)"
+          Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == 'true' ">
     <ItemGroup>
       <!--
         deps.json file is specifically added as a workaround for it not being in ResolvedFileToPublish
         This is expected to be not needed once .NET 5 hits as per this change:
         https://github.com/dotnet/sdk/commit/1f2a4a110e356808d721358ce358de4f88923795#diff-7dc833d02f198e5a9f0ab88e229db18aL1039-R1023
       -->
-      <TfmSpecificPackageFile Include="$(PublishDepsFilePath)" PackagePath="$(PackPublishedContentPath)/$(ProjectDepsFileName)" />
+      <TfmSpecificPackageFile Include="$(PublishDepsFilePath)" PackagePath="$(PluginPackagePath)/$(ProjectDepsFileName)" />
       <!-- Include 'Publish' output in package -->
-      <TfmSpecificPackageFile Include="@(ResolvedFileToPublish)" PackagePath="$(PackPublishedContentPath)/%(ResolvedFileToPublish.RelativePath)" />
+      <TfmSpecificPackageFile Include="@(ResolvedFileToPublish)" PackagePath="$(PluginPackagePath)/%(ResolvedFileToPublish.RelativePath)" />
     </ItemGroup>
   </Target>
 
@@ -93,13 +102,11 @@
     <PropertyGroup>
       <_PackAsCgrPluginRequiresSingleTargetFrameworkMessage>
         <![CDATA[
-        PackAsCodeGenerationRoslynPlugin target requires a single TargetFramework to be used for packing the tool.
-        Enable Plugin packing conditionally by adding this to one of PropertyGroup elements:
-        <PackAsCodeGenerationRoslynPlugin>$('$(TargetFramework)' == 'netcoreapp2.1')</PackAsCodeGenerationRoslynPlugin>
+        PackAsCodeGenerationRoslynPlugin target requires a single TargetFramework to be used for packing the tool. Enable Plugin packing conditionally by adding this to one of PropertyGroup elements: <PackAsCodeGenerationRoslynPlugin>%24(TargetFramework.Equals('netcoreapp2.1'))</PackAsCodeGenerationRoslynPlugin>
         ]]>
       </_PackAsCgrPluginRequiresSingleTargetFrameworkMessage>
     </PropertyGroup>
-    <Warning Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == '' AND '$(TargetFrameworks)' != '' " Text="$(_PackAsCgrPluginRequiresSingleTargetFrameworkMessage)" />
+    <Warning Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == '' AND '$(TargetFrameworks)' != '' " Text="$(_PackAsCgrPluginRequiresSingleTargetFrameworkMessage.Trim())" />
   </Target>
 
 </Project>
