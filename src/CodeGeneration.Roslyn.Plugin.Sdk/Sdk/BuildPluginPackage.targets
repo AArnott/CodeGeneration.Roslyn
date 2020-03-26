@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <PropertyGroup Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == 'true' ">
+  <!-- 
+    Enable plugin-packing automatically only for non-multitargeting projects
+    (that haven't specifically set the property).
+   -->
+  <PropertyGroup Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == '' AND '$(TargetFrameworks)' == '' ">
+    <PackAsCodeGenerationRoslynPlugin>true</PackAsCodeGenerationRoslynPlugin>
+  </PropertyGroup>
+
+  <!-- Hook plugin-packing targets -->
+  <PropertyGroup >
     <!--
         The following is a documented extension point that causes CreatePluginPackageBuildProps
         to be always executed in a specific TargetFramework context, whether multitargeting or not.
@@ -11,8 +20,16 @@
     -->
     <TargetsForTfmSpecificContentInPackage>
         $(TargetsForTfmSpecificContentInPackage);
-        CreatePluginPackageBuildProps
+        PackCodeGenerationRoslynPlugin
     </TargetsForTfmSpecificContentInPackage>
+    <!-- Declare dependencies of PackCodeGenerationRoslynPlugin target -->
+    <PackCodeGenerationRoslynPluginDependsOn>
+      $(PackCodeGenerationRoslynPluginDependsOn);
+      CreatePluginPackageBuildProps;
+      Publish;
+    </PackCodeGenerationRoslynPluginDependsOn>
+    <!-- Run validation before Pack target -->
+    <BeforePack>ValidatePluginPackageBuildProps;$(BeforePack)</BeforePack>
   </PropertyGroup>
 
   <!--
@@ -20,10 +37,10 @@
     That props file adds the path to the Plugin dll to the CodeGenerationRoslynPlugin ItemGroup,
     so that CodeGeneration.Roslyn tooling can read and load generator plugins.
   -->
-  <Target Name="CreatePluginPackageBuildProps">
+  <Target Name="CreatePluginPackageBuildProps" Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == 'true' ">
     <PropertyGroup>
       <PackagePropsContent>
-<![CDATA[
+        <![CDATA[
 <?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
@@ -36,23 +53,53 @@
     </PropertyGroup>
     <WriteLinesToFile File="$(PackagePropsPath)" Lines="$(PackagePropsContent)" Overwrite="true" />
     <ItemGroup>
-      <TfmSpecificPackageFile Include="$(PackagePropsPath)" Pack="true" PackagePath="build" BuildAction="None"/>
+      <TfmSpecificPackageFile Include="$(PackagePropsPath)" Pack="true" PackagePath="build" BuildAction="None" />
       <FileWrites Include="$(PackagePropsPath)" />
     </ItemGroup>
   </Target>
 
   <!--
-    This target raises a warning if the Pack is called with multiple
-    TargetFrameworks - this scenario is not supported by CodeGeneration.Roslyn tooling.
+    This target adds 'Publish' target output to nuget package,
+    so the tool is packaged with all dependencies bundled.
+    As of this writing there's no better alternatives.
+  -->
+  <Target Name="PackCodeGenerationRoslynPlugin"
+          Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == 'true' "
+          DependsOnTargets="$(PackCodeGenerationRoslynPluginDependsOn)">
+    <ItemGroup>
+      <!--
+        deps.json file is specifically added as a workaround for it not being in ResolvedFileToPublish
+        This is expected to be not needed once .NET 5 hits as per this change:
+        https://github.com/dotnet/sdk/commit/1f2a4a110e356808d721358ce358de4f88923795#diff-7dc833d02f198e5a9f0ab88e229db18aL1039-R1023
+      -->
+      <TfmSpecificPackageFile Include="$(PublishDepsFilePath)" PackagePath="$(PackPublishedContentPath)/$(ProjectDepsFileName)" />
+      <!-- Include 'Publish' output in package -->
+      <TfmSpecificPackageFile Include="@(ResolvedFileToPublish)" PackagePath="$(PackPublishedContentPath)/%(ResolvedFileToPublish.RelativePath)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    This target raises a warning if the project is multi-targeting but doesn't set
+    PackAsCodeGenerationRoslynPlugin explicitly. This is to require developers to
+    specifically enable plugin-packing for a single framework instead of packaging
+    tool for multiple TFMs - such a scenario is not supported by CodeGeneration.Roslyn tooling.
+
+    Reasoning: the plugin system cannot decide which framework's assets to load,
+    so we need to provide only one set.
 
     TODO: validate the contents of the nupkg? (props points at the output assembly)
   -->
-  <Target Name="ValidatePluginPackageBuildProps"
-          BeforeTargets="Pack"
-          Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == 'true' ">
-    <Warning
-      Condition=" $(TargetFrameworks.Contains(';')) "
-      Text="CreatePluginPackageBuildProps target requires a single TargetFramework to be used for packing. You can override this by calling e.g. 'dotnet pack -p:TargetFrameworks=netcoreapp2.1' to pack the tool for that TFM."/>
+  <Target Name="ValidatePluginPackageBuildProps">
+    <PropertyGroup>
+      <_PackAsCgrPluginRequiresSingleTargetFrameworkMessage>
+        <![CDATA[
+        PackAsCodeGenerationRoslynPlugin target requires a single TargetFramework to be used for packing the tool.
+        Enable Plugin packing conditionally by adding this to one of PropertyGroup elements:
+        <PackAsCodeGenerationRoslynPlugin>$('$(TargetFramework)' == 'netcoreapp2.1')</PackAsCodeGenerationRoslynPlugin>
+        ]]>
+      </_PackAsCgrPluginRequiresSingleTargetFrameworkMessage>
+    </PropertyGroup>
+    <Warning Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == '' AND '$(TargetFrameworks)' != '' " Text="$(_PackAsCgrPluginRequiresSingleTargetFrameworkMessage)" />
   </Target>
 
 </Project>

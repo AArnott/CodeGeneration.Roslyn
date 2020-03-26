@@ -10,16 +10,12 @@
     -->
     <!-- Make importing CodeGenerationRoslynReferences.props configurable -->
     <ImportCodeGenerationRoslynReferences Condition="'$(ImportCodeGenerationRoslynReferences)' == ''">true</ImportCodeGenerationRoslynReferences>
-    <!-- Make CodeGenerationRoslynReferences.props path configurable -->
-    <CodeGenerationRoslynReferencesPropsPath Condition="'$(CodeGenerationRoslynReferencesPropsPath)' == ''">
-      $(MSBuildThisFileDirectory)CodeGenerationRoslynReferences.props
-    </CodeGenerationRoslynReferencesPropsPath>
   </PropertyGroup>
 
-  <Import Project="$(MSBuildThisFileDirectory)Version.props" />
+  <Import Project="Version.props" Condition=" Exists('Version.props') " />
 
-  <Import Project="$(CodeGenerationRoslynReferencesPropsPath)" Condition="'$(ImportCodeGenerationRoslynReferences)' == 'true'"  />
+  <Import Project="CodeGenerationRoslynReferences.props" Condition="'$(ImportCodeGenerationRoslynReferences)' == 'true'"  />
 
-  <Import Project="$(MSBuildThisFileDirectory)BuildPluginPackage.props" />
+  <Import Project="BuildPluginPackage.props" />
 
 </Project>
