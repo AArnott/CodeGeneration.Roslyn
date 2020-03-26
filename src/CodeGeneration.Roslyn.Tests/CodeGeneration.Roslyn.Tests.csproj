@@ -3,7 +3,7 @@
   <Import Project="..\CodeGeneration.Roslyn.Tool\build\CodeGeneration.Roslyn.Tool.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
     <!-- Ignore CGR1002 because it's expected to be raised by legacy Amadevus.RecordGenerator -->
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);CGR1002</MSBuildWarningsAsMessages>
     <GenerateCodeFromAttributesDependsOn>OverrideCodeGenToolPath;$(GenerateCodeFromAttributesDependsOn)</GenerateCodeFromAttributesDependsOn>
