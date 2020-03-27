@@ -29,7 +29,11 @@ try {
     
     # build all other projects/solutions
     Get-ChildItem -Directory -Name -Exclude $generators | Where-Object { $Projects -eq $null -or $Projects -contains $_} | ForEach-Object {
-        if (Get-ChildItem $_/* -File -Include *.csproj, *.sln) {
+        if (Get-ChildItem $_/* -File -Include 'build.ps1') {
+            Write-Host "$_/build.ps1" -ForegroundColor Green
+            & "$_/build.ps1"
+        }
+        elseif (Get-ChildItem $_/* -File -Include *.csproj, *.sln) {
             Write-Host "dotnet build $_" -ForegroundColor Green
             dotnet build $_
         }
