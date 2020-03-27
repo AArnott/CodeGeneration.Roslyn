@@ -142,6 +142,7 @@ with a dependency on your code generation assembly.
 
 We'll consume our generator in a Reflector app:
 > `dotnet new console -f netcoreapp2.1 -o Reflector`
+> 
 > `dotnet add Reflector reference Duplicator`
 
 Let's write a simple program that prints all types in its assembly:
@@ -184,6 +185,7 @@ namespace Reflector
 
 Right now `dotnet run -p Reflector` outputs:
 > `Reflector.Program`
+> 
 > `Reflector.Test`
 
 Now all that's left is to plumb the build pipeline with code generation tool.
@@ -191,7 +193,7 @@ You'll need to add a reference to [`CodeGeneration.Roslyn.Tool`][ToolNuPkg] pack
 > `dotnet add Reflector package CodeGeneration.Roslyn.Tool`
 
 Also, you need to add the following metadata to your generator project reference:
-`OutputItemType="CodeGenerationRoslynPlugin"`. This will add the path to the `Duplicator.dll` to the list of plugins the tool uses.
+`OutputItemType="CodeGenerationRoslynPlugin"`. This will add the path to the `Duplicator.dll` to the list of plugins the tool runs.
 
 This is how your project file can look like:
 
@@ -219,10 +221,12 @@ This is how your project file can look like:
 
 And if all steps were done correctly, `dotnet run -p Reflector` should print:
 > `Reflector.Program`
+> 
 > `Reflector.Test`
+> 
 > `Reflector.TestPassed`
 
-> ➡ Notice that there is a `TestPassed` type in the assembly now.
+> 💡 Notice that there is a `TestPassed` type in the assembly now.
 
 What's even better is that you should see that new type in IntelliSense as well!
 Try executing Go to Definition (<kbd>F12</kbd>) on it - your IDE (VS/VS Code) should open the generated file for you (it'll be located in `IntermediateOutputPath` - most commonly `obj/`).
