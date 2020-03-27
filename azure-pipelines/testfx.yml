@@ -13,8 +13,8 @@ steps:
   displayName: Restore packages
   workingDirectory: ${{ parameters.projectdirectory }}
 - script: dotnet build -v n -c $(BuildConfiguration) --no-restore /bl:"$(Build.ArtifactStagingDirectory)/build_logs/build.binlog"
-  displayName: Build tests for netcoreapp2.1
+  displayName: Build
   workingDirectory: ${{ parameters.projectdirectory }}
-- script: dotnet test -v n -f netcoreapp2.1 -c $(BuildConfiguration) --no-build
-  displayName: Run tests for netcoreapp2.1
+- script: dotnet test -v n -c $(BuildConfiguration) --no-build
+  displayName: Run tests
   workingDirectory: ${{ parameters.projectdirectory }}
