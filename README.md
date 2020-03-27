@@ -355,7 +355,7 @@ An example consuming project file should contain:
 
 > 📋 You can also attempt to craft a self-contained package that will
 > flow all the needed dependencies and assets into the consuming project.
-> Such a scenario is outside this project's scope, however.
+> For a sample implementation, see [MetapackageSample](samples/MetapackageSample/).
 
 [NuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn
 [BuildTimeNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.BuildTime
