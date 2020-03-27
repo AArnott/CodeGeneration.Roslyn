@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+> ⚠ There are major changes, please look at [v0.7 migration guide].
+
 ### Added
 * Various samples in `samples` folder
 * GitHub Actions CI
