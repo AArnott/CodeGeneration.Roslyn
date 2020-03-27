@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <!--
+    Add an implicit reference to CodeGeneration.Roslyn package if not disabled.
+    Disable by setting AddImplicitCodeGenerationRoslynReference to false.
+  -->
+  <ItemGroup Condition=" '$(AddImplicitCodeGenerationRoslynReference)' != 'false' ">
+    <!--
+      CodeGenerationRoslynPluginSdkVersion Property is defined in Version.props (imported in Sdk.props).
+      This is used to add an implicit reference to the CodeGeneration.Roslyn package,
+      so that the versions of Plugin.Sdk and CG.R dependency stay in sync.
+    -->
+    <PackageReference Include="CodeGeneration.Roslyn"
+                      Version="$(CodeGenerationRoslynPluginSdkVersion)"
+                      IsImplicitlyDefined="true"
+                      ExcludeAssets="runtime" />
+  </ItemGroup>
+
   <Import Project="BuildPluginPackage.targets" />
 
 </Project>
