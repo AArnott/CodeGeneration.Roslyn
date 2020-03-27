@@ -82,12 +82,12 @@
       <Output TaskParameter="ExitCode" PropertyName="_CodeGenToolVersionExitCode"/>
     </Exec>
     <Message
-      Text="CodeGeneration.Roslyn.Tool (dotnet-codegen) version: $(_CodeGenToolVersionOutput)"
+      Text="CodeGeneration.Roslyn.Tool version: $(_CodeGenToolVersionOutput)"
       Importance="normal"
       Condition="'$(_CodeGenToolVersionExitCode)' == '0'" />
     <Error
       Code="CGR1001"
-      Text="CodeGeneration.Roslyn.Tool (dotnet-codegen) is not available, code generation won't run. Please check $(CgrUrl) for usage instructions."
+      Text="CodeGeneration.Roslyn.Tool is not available, code generation won't run. Please check $(CgrUrl) for usage instructions."
       Condition="'$(_CodeGenToolVersionExitCode)' != '0'" />
     <ItemGroup>
       <FileWrites Include="$(_CodeGenToolResponseFileFullPath)" />
@@ -110,7 +110,7 @@
       StandardOutputImportance="normal" />
     <Error
       Code="CGR1000"
-      Text="CodeGeneration.Roslyn.Tool (dotnet-codegen) failed to generate the list of generated files. The tool didn't run successfully. Please check $(CgrUrl) for usage instructions."
+      Text="CodeGeneration.Roslyn.Tool failed to generate the list of generated files. The tool didn't run successfully. Please check $(CgrUrl) for usage instructions."
       Condition="Exists('$(_CodeGenToolGeneratedFileListFullPath)') != 'true'" />
   </Target>
 

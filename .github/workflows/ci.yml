@@ -12,87 +12,49 @@ on:
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  build_configuration: Release
+  Configuration: Release
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v1
-    - name: Install .NET Core
-      shell: pwsh
-      run: |
-        $info = dotnet --info
-        $isRuntime = $info -contains 'Microsoft.NETCore.App 2.1'
-        Push-Location src; dotnet --version > $null; Pop-Location; $isSdk = $LASTEXITCODE -eq 0; $LASTEXITCODE = 0
-        if ($isSdk -and $isRuntime) { return }
-        [string]$dotnetroot = "~/.dotnet" | %{ if (-not (Test-Path $_)) { mkdir $_ > $null }; Resolve-Path $_ } 
-        Invoke-WebRequest "https://dotnetwebsite.azurewebsites.net/download/dotnet-core/scripts/v1/dotnet-install.ps1" -OutFile ~/dotnet-install.ps1
-        ~/dotnet-install.ps1 -JsonFile src/global.json -InstallDir $dotnetroot
-        ~/dotnet-install.ps1 -Channel 2.1 -Runtime dotnet -InstallDir $dotnetroot
-        Write-Output "::add-path::$dotnetroot"
-        Write-Output "::set-env name=DOTNET_ROOT::$dotnetroot"
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
-    - run: dotnet --info
-    - name: Install and run nbgv
-      run: |
-        dotnet tool install --tool-path . nbgv
-        ./nbgv get-version -p src
-    - name: Restore
-      run: dotnet restore src -v normal
-    - name: Build
-      run: dotnet build src -t:build,pack --no-restore -m -c ${{ env.build_configuration }} -bl:obj/logs/build-windows.binlog
-    - name: Test
-      run: dotnet test src --no-build -c ${{ env.build_configuration }}
-    - name: Upload nugets
-      if: github.event_name == 'push'
-      uses: actions/upload-artifact@v1
-      with:
-        name: nugets
-        path: bin/Packages/${{ env.build_configuration }}
-    - name: Upload logs
-      uses: actions/upload-artifact@v1
-      with:
-        name: logs-windows
-        path: obj/logs/
-
-  build-other:
+  build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ windows-latest, ubuntu-latest, macos-latest ]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v1
-    - name: Install .NET Core
-      shell: pwsh
-      run: |
-        $info = dotnet --info
-        $isRuntime = $info -contains 'Microsoft.NETCore.App 2.1'
-        Push-Location src; dotnet --version > $null; Pop-Location; $isSdk = $LASTEXITCODE -eq 0; $LASTEXITCODE = 0
-        if ($isSdk -and $isRuntime) { return }
-        [string]$dotnetroot = "~/.dotnet" | %{ if (-not (Test-Path $_)) { mkdir $_ > $null }; Resolve-Path $_ } 
-        Invoke-WebRequest "https://dotnetwebsite.azurewebsites.net/download/dotnet-core/scripts/v1/dotnet-install.sh" -OutFile ~/dotnet-install.sh
-        chmod +x ~/dotnet-install.sh
-        ~/dotnet-install.sh -JsonFile src/global.json -InstallDir $dotnetroot
-        ~/dotnet-install.sh -Channel 2.1 -Runtime dotnet -InstallDir $dotnetroot
-        Write-Output "::add-path::$dotnetroot"
-        Write-Output "::set-env name=DOTNET_ROOT::$dotnetroot"
+
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
+
     - run: dotnet --info
-    - name: Install and run nbgv
-      run: |
-        dotnet tool install --tool-path . nbgv --version 3.0.28
-        ./nbgv get-version -p src
+
+    - run: dotnet tool restore
+
+    - name: Run nbgv
+      run: dotnet nbgv get-version -p src
+
     - name: Restore
       run: dotnet restore src -v normal
+
     - name: Build
-      run: dotnet build src --no-restore -m -c ${{ env.build_configuration }}  -bl:obj/logs/build-${{ matrix.os }}.binlog
+      run: dotnet build src -t:build,pack --no-restore -m  -bl:obj/logs/build-${{ matrix.os }}.binlog
+
     - name: Test
-      run: dotnet test src --no-build -c ${{ env.build_configuration }} -f netcoreapp2.1
+      run: dotnet test src --no-build
+
+    - name: Upload nugets
+      if: github.event_name == 'push' && matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v1
+      with:
+        name: nugets
+        path: bin/Packages/${{ env.Configuration }}
+
     - name: Upload logs
       uses: actions/upload-artifact@v1
       with:
         name: logs-${{ matrix.os }}
         path: obj/logs/
+
+    - name: Build samples
+      shell: pwsh
+      run: samples/build.ps1

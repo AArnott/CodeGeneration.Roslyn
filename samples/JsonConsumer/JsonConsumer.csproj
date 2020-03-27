@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CodeGeneration.Roslyn.Attributes" Version="$(LocalNuGetVersion)" PrivateAssets="all" />
+    <PackageReference Include="CodeGeneration.Roslyn.Tool" Version="$(LocalNuGetVersion)" PrivateAssets="all" />
+    <PackageReference Include="JsonGenerator" Version="1.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,28 @@
+<Project>
+  
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+    <OutputPath>$(MSBuildThisFileDirectory)bin/$(MSBuildProjectName)/$(Configuration)/</OutputPath>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)bin/Packages/$(Configuration)/</PackageOutputPath>
+
+    <LocalNuGetVersion Condition=" '$(LocalNuGetVersion)' == '' ">*</LocalNuGetVersion>
+    <!-- Setting this is needed because we're not using actual Sdk package which defines it. -->
+    <CodeGenerationRoslynPluginSdkVersion>$(LocalNuGetVersion)</CodeGenerationRoslynPluginSdkVersion>
+    <RestorePackagesPath>$(MSBuildThisFileDirectory)/.nuget/</RestorePackagesPath>
+
+    <_MainPackagesDebug>$(MSBuildThisFileDirectory)../bin/Packages/Debug/</_MainPackagesDebug>
+    <_MainPackagesRelease>$(MSBuildThisFileDirectory)../bin/Packages/Release/</_MainPackagesRelease>
+    <_SamplePackages>$(MSBuildThisFileDirectory)bin/Packages/$(Configuration)/</_SamplePackages>
+    <RestoreAdditionalProjectSources>@(CustomLocalFeed);$(RestoreAdditionalProjectSources)</RestoreAdditionalProjectSources>
+
+    <CodeGenerationRoslynPluginSdkPath>$(MSBuildThisFileDirectory)../src/CodeGeneration.Roslyn.Plugin.Sdk/Sdk/</CodeGenerationRoslynPluginSdkPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CustomLocalFeed Include="$(_MainPackagesDebug)" Condition="Exists($(_MainPackagesDebug))" />
+    <CustomLocalFeed Include="$(_MainPackagesRelease)" Condition="Exists($(_MainPackagesRelease))" />
+    <CustomLocalFeed Include="$(_SamplePackages)" Condition="Exists($(_SamplePackages))" />
+  </ItemGroup>
+  
+</Project>

@@ -1,17 +1,23 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
-  <PropertyGroup Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == '' ">
-    <PackAsCodeGenerationRoslynPlugin>true</PackAsCodeGenerationRoslynPlugin>
-  </PropertyGroup>
   
-  <PropertyGroup Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == 'true' ">
+  <PropertyGroup>
     <!-- This is needed for local Plugin development, it copies all assemblies of dependencies. -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!--
+      ============================== Packing ==============================
+    -->
     <!-- Generator package is a development dependency -->
-    <DevelopmentDependecy>true</DevelopmentDependecy>
-    <!-- PackAsTool builds a no-dependency NuGet that contains all required assemblies. -->
-    <PackAsTool>true</PackAsTool>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <!--
+      Min Version is 2.5 because that's when build/ folder support was introduced:
+      https://docs.microsoft.com/en-us/nuget/release-notes/nuget-2.5#automatic-import-of-msbuild-targets-and-props-files
+    -->
+    <MinClientVersion>2.5</MinClientVersion>
+    <!-- Don't create lib/ in package. -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <!-- Below is needed to make NuGet package TFM-oblivious -->
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
 </Project>
