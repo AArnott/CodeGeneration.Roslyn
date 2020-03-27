@@ -52,6 +52,7 @@ for it. That's because code generation runs *before* the consuming project is it
 Now we'll use an [MSBuild project SDK] `CodeGeneration.Roslyn.Plugin.Sdk` to speed up configuring our generator plugin. Edit your project file and add the `<Sdk>` element:
 
 ```xml
+<!-- Duplicator/Duplicator.csproj -->
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Add the following element above any others: -->
   <Sdk Name="CodeGeneration.Roslyn.Plugin.Sdk" Version="{replace with actual version used}"/>
@@ -185,9 +186,9 @@ Right now `dotnet run -p Reflector` outputs:
 > `Reflector.Program`
 > `Reflector.Test`
 
-Now all that's left is to plumb the build pipeline with code generation tool. You'll need to add the following two references to your Reflector project file:
-* [`CodeGeneration.Roslyn.BuildTime`][BuildTimeNuPkg]
-* [`dotnet-codegen`][ToolNuPkg]
+Now all that's left is to plumb the build pipeline with code generation tool.
+You'll need to add a reference to [`CodeGeneration.Roslyn.Tool`][ToolNuPkg] package:
+> `dotnet add Reflector package CodeGeneration.Roslyn.Tool`
 
 Also, you need to add the following metadata to your generator project reference:
 `OutputItemType="CodeGenerationRoslynPlugin"`. This will add the path to the `Duplicator.dll` to the list of plugins the tool uses.
@@ -200,21 +201,18 @@ This is how your project file can look like:
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <CodeGenerationRoslynVersion>{replace with actual version used}</CodeGenerationRoslynVersion>
   </PropertyGroup>
   <ItemGroup>
     <!-- This ProjectReference to the generator need to have the OutputItemType metadata -->
     <ProjectReference Include="..\Duplicator\Duplicator.csproj"
                       OutputItemType="CodeGenerationRoslynPlugin" />
-    <!-- This reference imports targets that run the dotnet-codegen tool during build. It contains only MSBuild targets and so can be marked with PrivateAssets="all" -->
-    <PackageReference Include="CodeGeneration.Roslyn.BuildTime"
-                      Version="$(CodeGenerationRoslynVersion)"
+    <!--
+      This contains the generation tool and MSBuild targets that invoke it,
+      and so can be marked with PrivateAssets="all"
+    -->
+    <PackageReference Include="CodeGeneration.Roslyn.Tool"
+                      Version="{replace with actual version used}"
                       PrivateAssets="all" />
-    <!-- This allows the build to invoke dotnet-codegen console tool that actually
-    performs code generation: compiles you source files, runs plugins and saves
-    results adding them to the list of Compile sources for the CoreCompile step. -->
-    <DotNetCliToolReference Include="dotnet-codegen" 
-                            Version="$(CodeGenerationRoslynVersion)" />
   </ItemGroup>
 </Project>
 ```
@@ -264,18 +262,27 @@ So, the consuming project will have a simple ProjectReference to the
 `Duplicator.Attributes` project, and the generator project will not have
 any attribute defined. With that done, we can move to the next section.
 
-> 📋 Side note: if you use generator only in a single TFM-incompatible project,
+> 📋 Side note: if there's only one consumer project for your generator,
 > you can define the triggering attribute in the consuming project as well.
+> In our case, this would bean moving the `DuplicateWithSuffixAttribute.cs`
+> from `Duplicator` to `Reflector`, and adding a reference to the
+> [`CodeGeneration.Roslyn.Attributes`][AttrNuPkg] in Reflector:
+> > `dotnet add Reflector package CodeGeneration.Roslyn.Attributes`
+> >
+> > `mv Duplicator/DuplicateWithSuffixAttribute.cs Reflector`
+> 
+> For simplicity, we'll assume this is the case in the following sections.
 
 ### Customize generator reference
 
 With the attribute available to consuming code, we don't need a reference to
 the generator project, right? Well, not quite. The magic OutputItemType metadata
 is important - it adds a path to the generator dll to the list of plugins known
-to the `dotnet-codegen` tool. Additionally, we want to specify that there's a build
-dependency of the consuming project on the generator. So we modify the reference:
+to the `CodeGeneration.Roslyn.Tool` tool. Additionally, we want to specify that there's a build dependency of the consuming project on the generator. So we modify
+the reference:
 
 ```xml
+<!-- Reflector/Reflector.csproj -->
   <ItemGroup>
     <ProjectReference Include="..\Duplicator\Duplicator.csproj"
       ReferenceOutputAssembly="false"
@@ -293,35 +300,34 @@ We add two new metadata attributes:
 
 #### Multitargeting generator
 
-The case gets more complicated when the generator project is multitargeting,
-e.g. it has
+It can happen that your generator project will become multi-targeting. You could
+need to do that to use C#8's Nullable Reference Types feature in the Duplicator;
+the generator has to target `netcoreapp2.1` as this is the framework it'll be run
+in by the `CG.R.Tool` - on the other hand, NRT feature is only supported in newer
+TFMs, starting with `netcoreapp3.1`. So you'll do:
 ```xml
-<TargetFrameworks>netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
+<!-- Duplicator/Duplicator.csproj -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+  </PropertyGroup>
+  <!-- ... -->
+</Project>
 ```
 
-You could want to do that to use C#8's Nullable Reference Types feature.
-
-This won't work now, because the generator's Build target output will contain two references. To fix that you can use `SetTargetFramework` metadata:
+There'll be a build error, because the consumer (Reflector) doesn't know which
+output to use (and assign to the CodeGenerationRoslynPlugin Item). To fix that
+we have to use `SetTargetFramework` metadata. Setting it implies
+`SkipGetTargetFrameworkProperties="true"` so we can replace it.
 
 ```xml
+<!-- Reflector/Reflector.csproj -->
   <ItemGroup>
     <ProjectReference Include="..\Duplicator\Duplicator.csproj"
       ReferenceOutputAssembly="false"
       SetTargetFramework="TargetFramework=netcoreapp2.1"
       OutputItemType="CodeGenerationRoslynPlugin" />
   </ItemGroup>
-```
-
-Non-empty `SetTargetFramework` automatically implies `SkipGetTargetFrameworkProperties="true"` so we can omit that.
-
-We also need to add a condition on `TargetFrameworks` element so that we skip
-setting it at all when a singular property is set.
-
-```xml
-<TargetFrameworks Condition="'$(TargetFramework)' == ''">
-  netcoreapp2.1;
-  netcoreapp3.0
-</TargetFrameworks>
 ```
 
 ### Package your code generator
@@ -331,35 +337,29 @@ and use. A project using `CodeGeneration.Roslyn.Plugin.Sdk` is automatically
 configured to produce a correct Plugin nuget package.
 
 Your consumers will have to depend on the following:
-- [`dotnet-codegen`][ToolNuPkg] tool
-- [`CodeGeneration.Roslyn.BuildTime`][BuildTimeNuPkg]
+- [`CodeGeneration.Roslyn.Tool`][ToolNuPkg] tool
 - `Duplicator.Attributes` (your attributes package)
 - `Duplicator` (your generator/plugin package)
 
 An example consuming project file should contain:
 ```xml
+<!-- Reflector/Reflector.csproj -->
 <ItemGroup>
   <PackageReference Include="Duplicator" Version="1.0.0" PrivateAssets="all" />
   <PackageReference Include="Duplicator.Attributes" Version="1.0.0" PrivateAssets="all" />
-  <PackageReference Include="CodeGeneration.Roslyn.BuildTime"
-                    Version="$(CodeGenerationRoslynVersion)"
+  <PackageReference Include="CodeGeneration.Roslyn.Tool"
+                    Version="{CodeGeneration.Roslyn.Tool version}"
                     PrivateAssets="all" />
-  <DotNetCliToolReference Include="dotnet-codegen" 
-                          Version="$(CodeGenerationRoslynVersion)" />
 </ItemGroup>
 ```
 
-where `CodeGenerationRoslynVersion` is a correctly defined Property.
-
 > 📋 You can also attempt to craft a self-contained package that will
-> flow all the needed dependencies and assets into the consuming project,
-> but the `DotNetCliToolReference` has to be in the consumer's project file
-> no matter what. Just a friendly reminder. Also, such a scenario is definitely
-> outside this project's scope.
+> flow all the needed dependencies and assets into the consuming project.
+> Such a scenario is outside this project's scope, however.
 
 [NuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn
 [BuildTimeNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.BuildTime
 [AttrNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.Attributes
-[ToolNuPkg]: https://nuget.org/packages/dotnet-codegen
+[ToolNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.Tool
 [netstandard-table]: https://docs.microsoft.com/dotnet/standard/net-standard#net-implementation-support
 [MSBuild project SDK]: https://docs.microsoft.com/visualstudio/msbuild/how-to-use-project-sdk
