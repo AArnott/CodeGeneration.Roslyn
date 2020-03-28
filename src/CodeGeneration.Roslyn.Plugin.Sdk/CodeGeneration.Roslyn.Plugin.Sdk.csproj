@@ -5,6 +5,8 @@
     <Description>The MSBuild SDK that helps correctly create CodeGeneration.Roslyn plugins.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <DevelopmentDependency>true</DevelopmentDependency>
+    <SymbolPackageFormat></SymbolPackageFormat>
+    <IncludeSymbols>false</IncludeSymbols>
     <!--
     Min Version is 2.5 because that's when build/ folder support was introduced:
     https://docs.microsoft.com/en-us/nuget/release-notes/nuget-2.5#automatic-import-of-msbuild-targets-and-props-files
@@ -23,7 +25,7 @@
   <ItemGroup>
     <None Include="**/*.props;**/*.targets" Pack="true" PackagePath="" />
   </ItemGroup>
-  
+
   <!--
     This target adds a Sdk/Version.props file to the nuget package.
     That props file contains CodeGenerationRoslynPluginSdkVersion property,
