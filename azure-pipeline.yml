@@ -76,6 +76,7 @@ jobs:
     inputs:
       Contents: |
         bin/**/$(BuildConfiguration)/**/*.nupkg
+        bin/**/$(BuildConfiguration)/**/*.snupkg
       TargetFolder: $(Build.ArtifactStagingDirectory)/deployables
       flattenFolders: true
 
