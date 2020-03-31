@@ -50,7 +50,7 @@
     </PropertyGroup>
     <WriteLinesToFile File="$(VersionPropsPath)" Lines="$(VersionPropsContent)" Overwrite="true" />
     <ItemGroup>
-      <None Include="$(VersionPropsPath)" Pack="true" PackagePath="Sdk" />
+      <None Include="$(VersionPropsPath)" Pack="true" PackagePath="build/" />
       <FileWrites Include="$(VersionPropsPath)" />
     </ItemGroup>
   </Target>

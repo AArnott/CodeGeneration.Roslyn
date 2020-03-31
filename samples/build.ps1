@@ -5,6 +5,12 @@ param (
     $Projects
 )
 
+function PrintAndInvoke {
+    param ($expression)
+    Write-Host "$expression" -ForegroundColor Green
+    Invoke-Expression $expression
+}
+
 Write-Host "Running in $PSScriptRoot" -ForegroundColor Cyan
 Push-Location $PSScriptRoot
 try {
@@ -22,20 +28,22 @@ try {
     $generators = Get-ChildItem -Directory -Name | Where-Object { $_ -match 'Generator$' }
     
     # pack generators to make them available in folder feed
-    $generators | Where-Object { $Projects -eq $null -or $Projects -contains $_} | ForEach-Object {
-        Write-Host "dotnet pack $_" -ForegroundColor Green
-        dotnet pack $_
+    $generators | Where-Object { $Projects -eq $null -or $Projects -contains $_ } | ForEach-Object {
+        if (Get-ChildItem $_/* -File -Include 'build.ps1') {
+            PrintAndInvoke "$_/build.ps1"
+        }
+        elseif (Get-ChildItem $_/* -File -Include *.csproj, *.sln) {
+            PrintAndInvoke "dotnet pack $_"
+        }
     }
     
     # build all other projects/solutions
-    Get-ChildItem -Directory -Name -Exclude $generators | Where-Object { $Projects -eq $null -or $Projects -contains $_} | ForEach-Object {
+    Get-ChildItem -Directory -Name -Exclude $generators | Where-Object { $Projects -eq $null -or $Projects -contains $_ } | ForEach-Object {
         if (Get-ChildItem $_/* -File -Include 'build.ps1') {
-            Write-Host "$_/build.ps1" -ForegroundColor Green
-            & "$_/build.ps1"
+            PrintAndInvoke "$_/build.ps1"
         }
         elseif (Get-ChildItem $_/* -File -Include *.csproj, *.sln) {
-            Write-Host "dotnet build $_" -ForegroundColor Green
-            dotnet build $_
+            PrintAndInvoke "dotnet build $_"
         }
     }
 }

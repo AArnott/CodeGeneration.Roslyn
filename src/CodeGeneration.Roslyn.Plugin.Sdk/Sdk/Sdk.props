@@ -2,17 +2,11 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <!-- Announce this SDK -->
-    <UsingCodeGenerationRoslynPluginSdk>true</UsingCodeGenerationRoslynPluginSdk>
+    <!-- Announce this SDK (add *AsSdk to differentiate between using this as Sdk
+      and normal PackageReference/dependency usage)-->
+    <UsingCodeGenerationRoslynPluginSdkAsSdk>true</UsingCodeGenerationRoslynPluginSdkAsSdk>
   </PropertyGroup>
 
-  <!--
-    Version.props defines CodeGenerationRoslynPluginSdkVersion Property in NuGet package.
-    This is used to add an implicit reference to the CodeGeneration.Roslyn package,
-    so that the versions of Plugin.Sdk and CG.R dependency stay in sync.
-  -->
-  <Import Project="Version.props" Condition=" Exists('Version.props') " />
-
-  <Import Project="BuildPluginPackage.props" />
+  <Import Project="../build/CodeGeneration.Roslyn.Plugin.Sdk.props" />
 
 </Project>

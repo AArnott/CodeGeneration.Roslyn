@@ -19,8 +19,9 @@
         https://docs.microsoft.com/en-us/nuget/reference/msbuild-targets#targetsfortfmspecificcontentinpackage
     -->
     <TargetsForTfmSpecificContentInPackage>
-        $(TargetsForTfmSpecificContentInPackage);
-        PackCodeGenerationRoslynPlugin
+      $(TargetsForTfmSpecificContentInPackage);
+      _SetNoBuildTrueWhenGeneratePackageOnBuild;
+      PackCodeGenerationRoslynPlugin
     </TargetsForTfmSpecificContentInPackage>
     <!-- Declare dependencies of PackCodeGenerationRoslynPlugin target -->
     <PackCodeGenerationRoslynPluginDependsOn>
@@ -107,6 +108,20 @@
       </_PackAsCgrPluginRequiresSingleTargetFrameworkMessage>
     </PropertyGroup>
     <Warning Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == '' AND '$(TargetFrameworks)' != '' " Text="$(_PackAsCgrPluginRequiresSingleTargetFrameworkMessage.Trim())" />
+  </Target>
+  
+  <!--
+    This is required to prevent circular dependency:
+    - Build -> GeneratePackageOnBuild -> Pack
+    - Pack -> PackCodeGenerationRoslynPlugin depends on Publish
+    - Publish depends on Build (**if NoBuild != true**)
+
+    If it's causing trouble, disable this target by setting SkipSetNoBuildTrueWhenGeneratePackageOnBuild=true
+  -->
+  <Target Name="_SetNoBuildTrueWhenGeneratePackageOnBuild" Condition=" '$(GeneratePackageOnBuild)' == 'true' and '$(SkipSetNoBuildTrueWhenGeneratePackageOnBuild)' != 'true' ">
+    <PropertyGroup>
+      <NoBuild>true</NoBuild>
+    </PropertyGroup>
   </Target>
 
 </Project>
