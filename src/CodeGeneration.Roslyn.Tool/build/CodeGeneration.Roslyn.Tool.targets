@@ -47,7 +47,7 @@
       Text="Using both CodeGeneration.Roslyn.Tool and CodeGeneration.Roslyn.BuildTime is unsupported. Please either remove reference to the BuildTime package, or add an explicit reference and mark it as ExcludeAssets=&quot;all&quot;. See $(CgrUrl) for more info." />
     <!-- Inform the user there are no generators so the Tool won't be run. -->
     <Message
-      Condition=" '@(CodeGenerationRoslynPlugin)' != '' " 
+      Condition=" '@(CodeGenerationRoslynPlugin)' == '' " 
       Text="There are no registered Plugins (generators) for the CodeGeneration.Roslyn.Tool to run. The tool won't run." 
       Importance="high" />
     <!-- Inform the user DotNetCliToolReference is deprecated and unnecessary since v0.7. -->
