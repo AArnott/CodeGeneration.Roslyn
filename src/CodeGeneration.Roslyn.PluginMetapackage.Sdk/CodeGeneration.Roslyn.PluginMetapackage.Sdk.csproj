@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.Build.NoTargets">
 
   <PropertyGroup>
+    <PackageType>MSBuildSdk</PackageType>
     <TargetFramework>netstandard1.0</TargetFramework>
     <Description>The MSBuild project SDK that helps correctly create metapackage for CodeGeneration.Roslyn plugins (generators).
 
