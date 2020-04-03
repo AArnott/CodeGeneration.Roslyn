@@ -2,7 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard1.0</TargetFramework>
-    <Description>The MSBuild SDK that helps correctly create CodeGeneration.Roslyn plugins.</Description>
+    <Description>The MSBuild project SDK that helps correctly create CodeGeneration.Roslyn plugins (generators).
+
+For the convenience of plugin consumers, create metapackage as well. For details, see project readme: https://github.com/AArnott/CodeGeneration.Roslyn#package-your-code-generator
+
+How to use MSBuild project SDKs: https://docs.microsoft.com/visualstudio/msbuild/how-to-use-project-sdk
+    </Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <DevelopmentDependency>true</DevelopmentDependency>
     <SymbolPackageFormat></SymbolPackageFormat>

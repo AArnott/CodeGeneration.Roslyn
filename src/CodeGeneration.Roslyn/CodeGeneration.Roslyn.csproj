@@ -2,7 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Description>A package that offers libraries for creating a code generation attribute and the associated generator.</Description>
+    <Description>Library for creating source generators. API (types contained):
+* CodeGeneration.Roslyn.ICodeGenerator
+* CodeGeneration.Roslyn.IRichCodeGenerator
+* CodeGeneration.Roslyn.Logger
+* CodeGeneration.Roslyn.RichGenerationResult
+* CodeGeneration.Roslyn.TransformationContext
+    </Description>
   </PropertyGroup>
 
   <ItemGroup>

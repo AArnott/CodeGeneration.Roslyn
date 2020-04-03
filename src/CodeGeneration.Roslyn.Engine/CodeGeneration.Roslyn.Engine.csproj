@@ -2,7 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <Description>The engine of source code generation used by CodeGeneration.Roslyn.Tool.</Description>
+    <Description>The engine of source code generation; used by CodeGeneration.Roslyn.Tool. Useful for testing custom source generators. API:
+* CodeGeneration.Roslyn.CompilationGenerator
+* CodeGeneration.Roslyn.DocumentTransform
+    </Description>
   </PropertyGroup>
 
   <ItemGroup>

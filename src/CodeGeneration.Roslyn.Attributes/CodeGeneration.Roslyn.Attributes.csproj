@@ -3,7 +3,9 @@
   <PropertyGroup>
     <TargetFrameworks>net20;net40;netstandard1.0</TargetFrameworks>
     <RootNamespace>CodeGeneration.Roslyn</RootNamespace>
-    <Description>A package that offers attributes to drive code generation.</Description>
+    <Description>A package that offers attributes to drive code generation. API:
+* CodeGeneration.Roslyn.CodeGenerationAttributeAttribute
+    </Description>
   </PropertyGroup>
   
 </Project>
