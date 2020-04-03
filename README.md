@@ -20,14 +20,15 @@ Instructions on development and using this project's source code are in [CONTRIB
   - [How to write your own code generator](#how-to-write-your-own-code-generator)
     - [Prerequisites](#prerequisites)
     - [Define code generator](#define-code-generator)
-    - [Define attribute](#define-attribute)
     - [Create consuming console app](#create-consuming-console-app)
+    - [Define attribute](#define-attribute)
     - [Apply code generation](#apply-code-generation)
   - [Advanced scenarios](#advanced-scenarios)
-    - [Separate out the attribute](#separate-out-the-attribute)
     - [Customize generator reference](#customize-generator-reference)
       - [Multitargeting generator](#multitargeting-generator)
     - [Package your code generator](#package-your-code-generator)
+      - [Separate out the attribute](#separate-out-the-attribute)
+      - [Create the metapackage](#create-the-metapackage)
 
 ## How to write your own code generator
 
@@ -47,12 +48,12 @@ In this walkthrough, we will define a code generator that replicates any class (
 Your generator cannot be defined in the same project that will have code generated
 for it. That's because code generation runs *before* the consuming project is itself compiled. We'll start by creating the generator. This must be done in a library that targets `netcoreapp2.1`. Let's create one called Duplicator:
 
-> `dotnet new classlib -f netcoreapp2.1 -o Duplicator`
+> `dotnet new classlib -f netcoreapp2.1 -o Duplicator.Generators`
 
-Now we'll use an [MSBuild project SDK] `CodeGeneration.Roslyn.Plugin.Sdk` to speed up configuring our generator plugin. Edit your project file and add the `<Sdk>` element:
+Now we'll use an [MSBuild project SDK] [`CodeGeneration.Roslyn.Plugin.Sdk`][PluginSdkNuPkg] to speed up configuring our generator plugin. Edit your project file and add the `<Sdk>` element:
 
 ```xml
-<!-- Duplicator/Duplicator.csproj -->
+<!-- Duplicator.Generators/Duplicator.Generators.csproj -->
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Add the following element above any others: -->
   <Sdk Name="CodeGeneration.Roslyn.Plugin.Sdk" Version="{replace with actual version used}"/>
@@ -64,12 +65,12 @@ Now we'll use an [MSBuild project SDK] `CodeGeneration.Roslyn.Plugin.Sdk` to spe
 </Project>
 ```
 
-This SDK will automatically add a PackageReference to the corresponding version of [`CodeGeneration.Roslyn`][NuPkg] nuget, and set properties to make plugin build correctly. We can now write our generator:
+This SDK will implicitly add a PackageReference to the corresponding version of [`CodeGeneration.Roslyn`][NuPkg] nuget, and set properties to make plugin build correctly. We can now write our generator:
 
 > ⚠ *Note: constructor is required to have exactly a single `AttributeData` parameter.*
 
 ```csharp
-// Duplicator/DuplicateWithSuffixGenerator.cs
+// Duplicator.Generators/DuplicateWithSuffixGenerator.cs
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -78,7 +79,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Duplicator
+namespace Duplicator.Generators
 {
     public class DuplicateWithSuffixGenerator : ICodeGenerator
     {
@@ -105,45 +106,12 @@ namespace Duplicator
 }
 ```
 
-### Define attribute
-
-To activate your code generator, you need to define an attribute with which
-we'll annotate the class to be copied. Define your attribute class:
-
-```csharp
-// Duplicator/DuplicateWithSuffixAttribute.cs
-using System;
-using System.Diagnostics;
-using CodeGeneration.Roslyn;
-
-namespace Duplicator
-{
-    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-    [CodeGenerationAttribute(typeof(DuplicateWithSuffixGenerator))]
-    [Conditional("CodeGeneration")]
-    public class DuplicateWithSuffixAttribute : Attribute
-    {
-        public DuplicateWithSuffixAttribute(string suffix)
-        {
-            Suffix = suffix;
-        }
-
-        public string Suffix { get; }
-    }
-}
-```
-
-The `[Conditional("CodeGeneration")]` attribute is not necessary, but it will prevent
-the attribute from persisting in the compiled assembly that consumes it, leaving it
-instead as just a compile-time hint to code generation, and allowing you to not ship
-with a dependency on your code generation assembly.
-
 ### Create consuming console app
 
 We'll consume our generator in a Reflector app:
 > `dotnet new console -f netcoreapp2.1 -o Reflector`
 > 
-> `dotnet add Reflector reference Duplicator`
+> `dotnet add Reflector reference Duplicator.Generators`
 
 Let's write a simple program that prints all types in its assembly:
 ```csharp
@@ -166,34 +134,102 @@ namespace Reflector
 Now, when we `dotnet run -p Reflector` we should get:
 > `Reflector.Program`
 
+### Define attribute
+
+To activate your code generator, you need to define an attribute with which
+we'll annotate the class to be copied. Install [Attributes package][AttrNuPkg]:
+
+> `dotnet add Reflector package CodeGeneration.Roslyn.Attributes`
+
+Then, define your attribute class:
+
+```csharp
+// Reflector/Program.cs
+using System;
+using System.Diagnostics;
+using CodeGeneration.Roslyn;
+
+namespace Reflector
+{
+    class Program
+    {
+        // ...
+    }
+
+    [AttributeUsage(AttributeTargets.Class)]
+    [CodeGenerationAttribute("Duplicator.Generators.DuplicateWithSuffixGenerator, Duplicator.Generators")]
+    [Conditional("CodeGeneration")]
+    public class DuplicateWithSuffixAttribute : Attribute
+    {
+        public DuplicateWithSuffixAttribute(string suffix)
+        {
+            Suffix = suffix;
+        }
+
+        public string Suffix { get; }
+    }
+}
+```
+
+`CodeGenerationAttribute` is crucial - this tells the CG.R Tool which generator
+to invoke for a member annotated with our `DuplicateWithSuffixAttribute`.
+It's parameter is an assembly-qualified generator type name (incl. namespace):
+`Full.Type.Name, Full.Assembly.Name`
+
+The `[Conditional("CodeGeneration")]` attribute is not necessary, but it will prevent
+the attribute from persisting in the compiled assembly that consumes it, leaving it
+instead as just a compile-time hint to code generation, and allowing you to not ship
+with a dependency on your code generation assembly.
+
+> ℹ Of course, the attribute will persist if you define compilation symbol
+> "CodeGeneration"; we assume it won't be defined.
+
 ### Apply code generation
 
 Applying code generation is incredibly simple. Just add the attribute on any type
-or member supported by the attribute and generator you wrote. We'll create a new
-class to test our Duplicator on:
+or member supported by the attribute and generator you wrote. We'll test our Duplicator on a new `Test` class:
 
 ```csharp
-// Reflector/Test.cs
-using Duplicator;
+// Reflector/Program.cs
+using System;
+using System.Diagnostics;
+using CodeGeneration.Roslyn;
 
 namespace Reflector
 {
     [DuplicateWithSuffix("Passed")]
     class Test {}
+
+    class Program
+    {
+        // ...
+    }
+
+    class DuplicateWithSuffixAttribute : Attribute
+    {
+        // ...
+    }
 }
 ```
 
-Right now `dotnet run -p Reflector` outputs:
+Let's check our app again:
+> `> dotnet run -p Reflector`
+> 
+> `Reflector.DuplicateWithSuffixAttribute`
+> 
 > `Reflector.Program`
 > 
 > `Reflector.Test`
 
-Now all that's left is to plumb the build pipeline with code generation tool.
+Still nothing except what we wrote. Now all that's left is to plumb the build pipeline with code generation tool; that tool will handle invoking our Duplicator
+at correct time during build and write generated file, passing it into the
+compilation.
+
 You'll need to add a reference to [`CodeGeneration.Roslyn.Tool`][ToolNuPkg] package:
 > `dotnet add Reflector package CodeGeneration.Roslyn.Tool`
 
 Also, you need to add the following metadata to your generator project reference:
-`OutputItemType="CodeGenerationRoslynPlugin"`. This will add the path to the `Duplicator.dll` to the list of plugins the tool runs.
+`OutputItemType="CodeGenerationRoslynPlugin"`. This will add the path to the `Duplicator.Generators.dll` to the list of plugins the tool runs.
 
 This is how your project file can look like:
 
@@ -205,9 +241,11 @@ This is how your project file can look like:
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <!-- This ProjectReference to the generator need to have the OutputItemType metadata -->
-    <ProjectReference Include="..\Duplicator\Duplicator.csproj"
+    <!-- This ProjectReference to the generator needs to have the OutputItemType metadata -->
+    <ProjectReference Include="..\Duplicator.Generators\Duplicator.Generators.csproj"
                       OutputItemType="CodeGenerationRoslynPlugin" />
+    <PackageReference Include="CodeGeneration.Roslyn.Attributes"
+                      Version="{replace with actual version used}" />
     <!--
       This contains the generation tool and MSBuild targets that invoke it,
       and so can be marked with PrivateAssets="all"
@@ -219,7 +257,11 @@ This is how your project file can look like:
 </Project>
 ```
 
-And if all steps were done correctly, `dotnet run -p Reflector` should print:
+And if all steps were done correctly:
+> `> dotnet run -p Reflector`
+> 
+> `Reflector.DuplicateWithSuffixAttribute`
+> 
 > `Reflector.Program`
 > 
 > `Reflector.Test`
@@ -245,44 +287,12 @@ If you will try to add a P2P (project-to-project) reference to a generator
 (targeting `netcoreapp2.1`) to a business model project targeting `netstandard1.0`,
 you'll get errors.
 
-### Separate out the attribute
-
-The triggering attribute has to be available in consuming code, but the generator
-doesn't. So we'll separate the attribute into another project that has TFM
-allowing all your consuming projects to reference it, for example `netstandard1.0`.
-This new project (building on the demo sample, let's call it `Duplicator.Attributes`)
-needs only to know about `CodeGenerationAttributeAttribute` type which is available
-in [`CodeGeneration.Roslyn.Attributes`][AttrNuPkg] package. That package has a wide
-selection of TFMs available so it shouldn't be a problematic reference. Additionally,
-if you annotate your triggering attribute with `[Conditional("...")]`, you can make
-any references to the attribute project/package non-runtime via `PrivateAssets="all"`.
-
-But, if the attribute project doesn't have a reference to generator project,
-we cannot use `typeof(DuplicateWithSuffixGenerator)`. To workaround this,
-we must write the necessary string manually: an assembly-qualified generator type name.
-> `[CodeGenerationAttribute("Duplicator.DuplicateWithSuffixGenerator, Duplicator")]`
-
-So, the consuming project will have a simple ProjectReference to the
-`Duplicator.Attributes` project, and the generator project will not have
-any attribute defined. With that done, we can move to the next section.
-
-> 📋 Side note: if there's only one consumer project for your generator,
-> you can define the triggering attribute in the consuming project as well.
-> In our case, this would bean moving the `DuplicateWithSuffixAttribute.cs`
-> from `Duplicator` to `Reflector`, and adding a reference to the
-> [`CodeGeneration.Roslyn.Attributes`][AttrNuPkg] in Reflector:
-> > `dotnet add Reflector package CodeGeneration.Roslyn.Attributes`
-> >
-> > `mv Duplicator/DuplicateWithSuffixAttribute.cs Reflector`
-> 
-> For simplicity, we'll assume this is the case in the following sections.
-
 ### Customize generator reference
 
-With the attribute available to consuming code, we don't need a reference to
-the generator project, right? Well, not quite. The magic OutputItemType metadata
-is important - it adds a path to the generator dll to the list of plugins known
-to the `CodeGeneration.Roslyn.Tool` tool. Additionally, we want to specify that there's a build dependency of the consuming project on the generator. So we modify
+We don't need the generator as a compile reference. However, the magic OutputItemType
+metadata is important - it adds a path to the generator dll to the list of plugins
+run by the `CodeGeneration.Roslyn.Tool` tool. Additionally, we want to specify that
+there's a build dependency of the consuming project on the generator. So we modify
 the reference:
 
 ```xml
@@ -296,11 +306,14 @@ the reference:
 ```
 
 We add two new metadata attributes:
-- `ReferenceOutputAssembly="false"` - this causes the compilation to not
-  add a reference to Duplicator.dll to the `ReferencePath` - so the source
+- `ReferenceOutputAssembly="false"` - this causes the compilation to not add
+  a reference to Duplicator.Generators.dll to the `ReferencePath` - so the source
   code has no dependency and doesn't know anything about that project.
 - `SkipGetTargetFrameworkProperties="true"` - this prevents build tasks
   from checking compatibility of the generator's TFM with this project's TFM.
+
+Now we can retarget our Reflector to any TFM compatible with Attributes package
+(so `netstandard1.0`-compatible), e.g. netcoreapp2.0 - and it should run just fine.
 
 #### Multitargeting generator
 
@@ -310,7 +323,7 @@ the generator has to target `netcoreapp2.1` as this is the framework it'll be ru
 in by the `CG.R.Tool` - on the other hand, NRT feature is only supported in newer
 TFMs, starting with `netcoreapp3.1`. So you'll do:
 ```xml
-<!-- Duplicator/Duplicator.csproj -->
+<!-- Duplicator.Generators/Duplicator.Generators.csproj -->
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
@@ -326,12 +339,16 @@ we have to use `SetTargetFramework` metadata. Setting it implies
 
 ```xml
 <!-- Reflector/Reflector.csproj -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- ... -->
   <ItemGroup>
     <ProjectReference Include="..\Duplicator\Duplicator.csproj"
       ReferenceOutputAssembly="false"
       SetTargetFramework="TargetFramework=netcoreapp2.1"
       OutputItemType="CodeGenerationRoslynPlugin" />
+    <!-- ... -->
   </ItemGroup>
+</Project>
 ```
 
 ### Package your code generator
@@ -340,16 +357,39 @@ You can also package up your code generator as a NuGet package for others to ins
 and use. A project using `CodeGeneration.Roslyn.Plugin.Sdk` is automatically
 configured to produce a correct Plugin nuget package.
 
-Your consumers will have to depend on the following:
+#### Separate out the attribute
+
+The triggering attribute has to be available in consuming code. Your consumers
+can write it themselves, but it's not a good idea to require them do so.
+So we'll separate the attribute into another project that has TFM allowing
+all your consumers to reference it, for example `netstandard1.0` - you're
+constrained only by what [`CodeGeneration.Roslyn.Attributes`][AttrNuPkg] targets.
+
+Let's call this new project `Duplicator.Attributes`.
+> `dotnet new classlib -o Duplicator.Attributes`
+> `dotnet add Duplicator.Attributes package CodeGeneration.Roslyn.Attributes`
+> `dotnet add Reflector reference Duplicator.Attributes`
+
+Now, move the attribute definition from Reflector to our new project. Dont' forget
+to change the namespace. The app should work the same, except for not printing
+`DuplicateWithSuffixAttribute` type.
+
+If you annotate your triggering attribute with `[Conditional("...")]`,
+your consumers can make any references to the attribute package non-transient
+via `PrivateAssets="all"` and/or exclude from runtime assets via `ExcludeAssets="runtime"`.
+
+#### Create the metapackage
+
+Your consumers will now have to depend (have `PackageReference`) on the following:
 - [`CodeGeneration.Roslyn.Tool`][ToolNuPkg] tool
 - `Duplicator.Attributes` (your attributes package)
-- `Duplicator` (your generator/plugin package)
+- `Duplicator.Generators` (your generator/plugin package)
 
-An example consuming project file should contain:
+An example consuming project file would contain:
 ```xml
 <!-- Reflector/Reflector.csproj -->
 <ItemGroup>
-  <PackageReference Include="Duplicator" Version="1.0.0" PrivateAssets="all" />
+  <PackageReference Include="Duplicator.Generators" Version="1.0.0" PrivateAssets="all" />
   <PackageReference Include="Duplicator.Attributes" Version="1.0.0" PrivateAssets="all" />
   <PackageReference Include="CodeGeneration.Roslyn.Tool"
                     Version="{CodeGeneration.Roslyn.Tool version}"
@@ -357,13 +397,70 @@ An example consuming project file should contain:
 </ItemGroup>
 ```
 
-> 📋 You can also attempt to craft a self-contained package that will
-> flow all the needed dependencies and assets into the consuming project.
-> For a sample implementation, see [MetapackageSample](samples/MetapackageSample/).
+> ➡ There's a much better approach: **metapackage**.
+
+For this, we'll use [`CodeGeneration.Roslyn.PluginMetapackage.Sdk`][PluginMetapkgSdkNuPkg] [MSBuild project SDK]
+in a new project called simply `Duplicator`, which will reference our attributes:
+> `dotnet new classlib -o Duplicator`
+> `dotnet add Duplicator reference Duplicator.Attributes`
+
+Remove `Class1.cs` file.
+
+Modify project file:
+- Add `<Sdk>` element
+- Set `NoBuild=true` and `IncludeBuildOutput=false`
+- Add `NupkgAdditionalDependency` in ItemGroup
+```xml
+<!-- Duplicator/Duplicator.csproj -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Add the following element above any others: -->
+  <Sdk Name="CodeGeneration.Roslyn.PluginMetapackage.Sdk" Version="{replace with actual version used}"/>
+
+  <PropertyGroup>
+    <!-- Declare the TargetFramework(s) the same as in your Attributes package -->
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <!-- This project contains no files, so building can be skipped -->
+    <NoBuild>true</NoBuild>
+    <!-- Since we don't build, there'll be no build output -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Reference your Attributes project normally -->
+    <ProjectReference Include="../Duplicator.Attributes/Duplicator.Attributes.csproj" />
+    <!--
+      Reference your generators package by adding an item to NupkgAdditionalDependency
+      with IncludeAssets="all" to flow "build" assets.
+      Version used will be the PackageVersion Pack resolves,
+      but you can specify Version metadata to override it.
+
+      This is necessary to do like that, because it ensures the dependency is setup
+      correctly (e.g. simple transient dependency), and skips validation of TFM (Plugin is a tool,
+      it's TFM has no meaning for the consumer).
+    -->
+    <NupkgAdditionalDependency
+        Include="Duplicator.Generators"
+        IncludeAssets="all" />
+  </ItemGroup>
+</Project>
+```
+
+This project will now produce a `nupkg` that will not contain
+anything on it's own, but will "pull in" all the other dependecies
+consumers will need:
+- `CodeGeneration.Roslyn.Tool` (added implicitly by the Sdk)
+- `Duplicator.Attributes`
+- `Duplicator.Generators`
+
+Our metapackage should be versioned in the same manner
+as it's dependant packages.
+
+> 📋 For a sample metapackage, see [MetapackageSample](samples/MetapackageSample/).
 
 [NuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn
-[BuildTimeNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.BuildTime
 [AttrNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.Attributes
 [ToolNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.Tool
+[PluginSdkNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.Plugin.Sdk
+[PluginMetapkgSdkNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.PluginMetapackage.Sdk
 [netstandard-table]: https://docs.microsoft.com/dotnet/standard/net-standard#net-implementation-support
 [MSBuild project SDK]: https://docs.microsoft.com/visualstudio/msbuild/how-to-use-project-sdk
