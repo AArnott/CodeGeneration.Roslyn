@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <!-- Announce this SDK (add *AsSdk to differentiate between using this as Sdk
+      and normal PackageReference/dependency usage)-->
+    <UsingCodeGenerationRoslynPluginMetapackageSdkAsSdk>true</UsingCodeGenerationRoslynPluginMetapackageSdkAsSdk>
+  </PropertyGroup>
+
+  <Import Project="../build/CodeGeneration.Roslyn.PluginMetapackage.Sdk.props" />
+
+</Project>

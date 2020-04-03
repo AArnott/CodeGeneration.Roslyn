@@ -3,15 +3,13 @@
 
   <PropertyGroup>
     <!-- Announce this SDK -->
-    <UsingCodeGenerationRoslynPluginSdk>true</UsingCodeGenerationRoslynPluginSdk>
+    <UsingCodeGenerationRoslynPluginMetapackageSdk>true</UsingCodeGenerationRoslynPluginMetapackageSdk>
   </PropertyGroup>
 
   <!--
-    Version.props defines CodeGenerationRoslynPluginSdkVersion Property
+    Version.props defines CodeGenerationRoslynPluginMetapackageSdkVersion Property
     with the version of the Sdk package itself.
   -->
   <Import Project="Version.props" Condition=" Exists('Version.props') " />
-
-  <Import Project="BuildPluginPackage.props" />
 
 </Project>

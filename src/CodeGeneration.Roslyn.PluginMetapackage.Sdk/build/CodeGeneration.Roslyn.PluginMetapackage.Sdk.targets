@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!--
+    Task that adds additional Dependencies to all metadata/dependencies/group elements of a nuspec file.
+
+    Performance isn't the best (0.75s on personal PC), but it's much easier to start with than full-blown
+    task dll for Core/Full MSBuild etc. We may want to refactor this as a .dll task in future.
+
+    docs: https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-roslyncodetaskfactory?view=vs-2019
+  -->
+  <UsingTask
+      TaskName="AddNupkgAdditionalDependencyToNuspec"
+      TaskFactory="RoslynCodeTaskFactory"
+      AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Dependencies ParameterType="Microsoft.Build.Framework.ITaskItem[]" />
+      <OriginalNuspecFilePath ParameterType="System.String" />
+      <PatchedNuspecFilePath ParameterType="System.String" />
+      <PackageVersion ParameterType="System.String" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.Xml.Linq" />
+      <Code
+          Type="Fragment"
+          Language="cs">
+        <![CDATA[
+        var document = XDocument.Load(OriginalNuspecFilePath);
+        var ns = document.Root.GetDefaultNamespace();
+        foreach (var group in document.Root.Element(ns + "metadata").Element(ns + "dependencies").Elements(ns + "group"))
+        {
+            foreach (var item in Dependencies)
+            {
+                var dep = new XElement(ns + "dependency");
+                dep.SetAttributeValue("id", item.ItemSpec);
+                var version = item.GetMetadata("Version") is var fromMeta && !string.IsNullOrWhiteSpace(fromMeta) ? fromMeta : PackageVersion;
+                dep.SetAttributeValue("version", version);
+                if (item.GetMetadata("IncludeAssets") is { } include && include.Length > 0)
+                {
+                    dep.SetAttributeValue("include", include);
+                }
+                if (item.GetMetadata("ExcludeAssets") is { } exclude && exclude.Length > 0)
+                {
+                    dep.SetAttributeValue("exclude", exclude);
+                }
+                group.Add(dep);
+            }
+        }
+        document.Save(PatchedNuspecFilePath);
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <!-- Hook up our targets into the Pack pipeline -->
+  <PropertyGroup>
+    <!-- Add our nuspec patch and repack after Pack targets -->
+    <PackDependsOn>$(PackDependsOn);PackMetapackage;</PackDependsOn>
+    <!-- Workaround the hardcoded ContinuePackingAfterGeneratingNuspec -->
+    <GenerateNuspecDependsOn>SetContinuePackingAfterNuspecToFalse;$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
+    <!-- Put _._ placeholder files in lib/TFM package folders -->
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackTfmPlaceholder;</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+
+  <!-- 
+    This is required for the original Pack->GenerateNuspec to stop packing after creating .nuspec;
+    this is hard-coded to true in _IntermediatePack which happens before GenerateNuspec in PackDependsOn
+    see https://github.com/NuGet/NuGet.Client/blob/514e7b311468bd0bcc771a30d49b7496615a100e/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.targets#L191
+
+    Conditionalize it to skip when doing the 2nd Pack from PackMetapackage target
+   -->
+  <Target
+      Name="SetContinuePackingAfterNuspecToFalse"
+      Condition=" '$(NuspecPatched)' != 'true' ">
+    <PropertyGroup>
+      <ContinuePackingAfterGeneratingNuspec>false</ContinuePackingAfterGeneratingNuspec>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    Check whether the project references CG.R.Tool package with correct metadata,
+    and warn if it doesn't, so that when this Sdk is used as a normal non-sdk dependency,
+    the user knows to add that reference manually.
+
+    If AddImplicitCodeGenerationRoslynToolReference=false we skip because the user
+    has explicitly disabled that import, and we trust that advanced user knows what to do.
+  -->
+  <Target
+      Name="CheckCgrToolReferenceExists"
+      Condition=" '$(NuspecPatched)' != 'true' AND '$(AddImplicitCodeGenerationRoslynToolReference)' != 'false' ">
+    <PropertyGroup>
+      <_CheckCgrToolReferenceExistsWarning>
+        <![CDATA[
+        Plugin metapackage project should contain <PackageReference Include="CodeGeneration.Roslyn.Tool" Version="$(CodeGenerationRoslynPluginMetapackageSdkVersion)" PrivateAssets="none" /> if it doesn't use the CodeGeneration.Roslyn.PluginMetapackage.Sdk as an <Sdk> element. This will allow consumers to directly use this metapackage and have all the required dependencies setup correctly.
+        ]]>
+      </_CheckCgrToolReferenceExistsWarning>
+    </PropertyGroup>
+    <ItemGroup>
+      <_CgrToolRef
+          Include="@(PackageReference)"
+          Condition=" '%(Identity)' == 'CodeGeneration.Roslyn.Tool' " />
+    </ItemGroup>
+    <Warning
+        Condition=" @(_CgrToolRef->WithMetadataValue('Version', '$(CodeGenerationRoslynPluginMetapackageSdkVersion)')->WithMetadataValue('PrivateAssets', 'none')->Count()) == 0 "
+        Code="CGR2001"
+        Text="$(_CheckCgrToolReferenceExistsWarning.Trim())" />
+  </Target>
+
+  <!--
+    Puts _._ placeholder file in lib/TFM package folder, per TFM.
+
+    Disable by setting SkipPackTfmPlaceholder=true
+  -->
+  <Target
+      Name="PackTfmPlaceholder"
+      Condition="'$(SkipPackTfmPlaceholder)' != 'true'">
+    <ItemGroup>
+      <TfmSpecificPackageFile
+          Include="$(MSBuildThisFileDirectory)/_._"
+          PackagePath="lib/$(TargetFramework)/" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Build paths used in PatchNuspecFile target -->
+  <Target
+      Name="PreparePathsForPatchNuspecFile"
+      Condition="'$(NuspecPatched)' != 'true'"
+      DependsOnTargets="GenerateNuspec">
+    <PropertyGroup>
+      <OriginalNuspecFilePath Condition=" '$(NuspecFile)' != '' ">$(NuspecFile)</OriginalNuspecFilePath>
+      <OriginalNuspecFilePath Condition=" '$(NuspecFile)' == '' ">$(NuspecOutputPath)$(PackageId).$(PackageVersion).nuspec</OriginalNuspecFilePath>
+      <PatchedNuspecFilePath>$(NuspecOutputPath)$(PackageId).patched.$(PackageVersion).nuspec</PatchedNuspecFilePath>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    Take generated nuspec, add NupkgAdditionalDependency items to all metadata/dependencies/group elements
+    and save as a new file under PatchedNuspecFilePath.
+  -->
+  <Target
+      Name="PatchNuspecFile"
+      Condition="'$(NuspecPatched)' != 'true'"
+      DependsOnTargets="PreparePathsForPatchNuspecFile;GenerateNuspec">
+    <AddNupkgAdditionalDependencyToNuspec
+        Dependencies="@(NupkgAdditionalDependency)"
+        OriginalNuspecFilePath="$(OriginalNuspecFilePath)"
+        PatchedNuspecFilePath="$(PatchedNuspecFilePath)"
+        PackageVersion="$(PackageVersion)" />
+    <ItemGroup>
+      <FileWrites Include="$(PatchedNuspecFilePath)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Run 'Pack' on currently built Project, this time with NuspecFile set to
+    the file patched in PatchNuspecFile, and NuspecPatched=true to indicate
+    that we're repacking, and e.g. this target won't run again.
+  -->
+  <Target
+      Name="PackMetapackage"
+      Condition="'$(NuspecPatched)' != 'true'"
+      DependsOnTargets="CheckCgrToolReferenceExists;PatchNuspecFile">
+    <MSBuild
+        Projects="$(MSBuildProjectFullPath)"
+        Targets="Pack"
+        Properties="NuspecFile=$(PatchedNuspecFilePath);NuspecPatched=true;" />
+  </Target>
+
+</Project>

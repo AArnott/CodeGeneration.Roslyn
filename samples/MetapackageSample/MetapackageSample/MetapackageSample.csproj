@@ -1,8 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    The imports (on top and bottom) should be replaced with a single Sdk element at the top,
+    <Sdk Name="CodeGeneration.Roslyn.PluginMetapackage.Sdk" Version="x.y.z" />
+
+    see https://docs.microsoft.com/en-us/visualstudio/msbuild/how-to-use-project-sdk?view=vs-2019#reference-a-project-sdk
+
+    But it's using local Sdk, so we can't use it like that.
+  -->
+  <Import Project="$(CodeGenerationRoslynPluginMetapackageSdkPath)Sdk.props" />
 
   <PropertyGroup>
-    <!-- Declare the TargetFramework the same as in your Attributes package -->
-    <TargetFramework>netstandard1.0</TargetFramework>
+    <!-- Declare the TargetFramework(s) the same as in your Attributes package -->
+    <TargetFrameworks>netstandard1.0;netstandard2.0</TargetFrameworks>
     <!-- This project contains no files, so building can be skipped -->
     <NoBuild>true</NoBuild>
     <!-- Since we don't build, there'll be no build output -->
@@ -10,14 +19,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Reference your Attributes normally -->
-    <PackageReference Include="MetapackageSample.Attributes" Version="$(PackageVersion)" />
-    <!-- Reference your generators with PrivateAssets="none" to flow "build" assets -->
-    <PackageReference Include="MetapackageSample.Generators" Version="$(PackageVersion)" PrivateAssets="none" />
-    <!-- Reference CodeGeneration.Roslyn.Tool with PrivateAssets="none" to flow "build" assets -->
-    <PackageReference Include="CodeGeneration.Roslyn.Tool" Version="$(LocalNuGetVersion)" PrivateAssets="none" />
-    <!-- Add an empty placeholder to keep valid package structure -->
-    <None Include="_._" Pack="true" PackagePath="lib/$(TargetFramework)/"/>
+    <!-- Reference your Attributes project normally -->
+    <ProjectReference Include="../MetapackageSample.Attributes/MetapackageSample.Attributes.csproj" />
+    <!--
+      Reference your generators package by adding an item to NupkgAdditionalDependency
+      with IncludeAssets="all" to flow "build" assets.
+      Version used will be the PackageVersion Pack resolves,
+      but you can specify Version metadata to override it.
+
+      This is necessary to do like that, because it ensures the dependency is setup
+      correctly (e.g. simple transient dependency), and skips validation of TFM (Plugin is a tool,
+      it's TFM has no meaning for the consumer).
+    -->
+    <NupkgAdditionalDependency
+        Include="MetapackageSample.Generators"
+        IncludeAssets="all" />
   </ItemGroup>
 
+  <!-- See top comment -->
+  <Import Project="$(CodeGenerationRoslynPluginMetapackageSdkPath)Sdk.targets" />
 </Project>

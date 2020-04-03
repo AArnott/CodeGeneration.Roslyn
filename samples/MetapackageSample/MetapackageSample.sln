@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetapackageSample.Attribute
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetapackageSample.Generators", "MetapackageSample.Generators\MetapackageSample.Generators.csproj", "{6B5DBA1C-1FE6-4211-819D-1CD520B143F8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetapackageSample", "MetapackageSample\MetapackageSample.csproj", "{A402B05D-7B8A-405D-BFEB-0505476A5718}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,5 +46,17 @@ Global
 		{6B5DBA1C-1FE6-4211-819D-1CD520B143F8}.Release|x64.Build.0 = Release|Any CPU
 		{6B5DBA1C-1FE6-4211-819D-1CD520B143F8}.Release|x86.ActiveCfg = Release|Any CPU
 		{6B5DBA1C-1FE6-4211-819D-1CD520B143F8}.Release|x86.Build.0 = Release|Any CPU
+		{A402B05D-7B8A-405D-BFEB-0505476A5718}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A402B05D-7B8A-405D-BFEB-0505476A5718}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A402B05D-7B8A-405D-BFEB-0505476A5718}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A402B05D-7B8A-405D-BFEB-0505476A5718}.Debug|x64.Build.0 = Debug|Any CPU
+		{A402B05D-7B8A-405D-BFEB-0505476A5718}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A402B05D-7B8A-405D-BFEB-0505476A5718}.Debug|x86.Build.0 = Debug|Any CPU
+		{A402B05D-7B8A-405D-BFEB-0505476A5718}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A402B05D-7B8A-405D-BFEB-0505476A5718}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A402B05D-7B8A-405D-BFEB-0505476A5718}.Release|x64.ActiveCfg = Release|Any CPU
+		{A402B05D-7B8A-405D-BFEB-0505476A5718}.Release|x64.Build.0 = Release|Any CPU
+		{A402B05D-7B8A-405D-BFEB-0505476A5718}.Release|x86.ActiveCfg = Release|Any CPU
+		{A402B05D-7B8A-405D-BFEB-0505476A5718}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <Description>The MSBuild SDK that helps correctly create CodeGeneration.Roslyn plugins.</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <SymbolPackageFormat></SymbolPackageFormat>
+    <IncludeSymbols>false</IncludeSymbols>
+    <!--
+    Min Version is 2.5 because that's when build/ folder support was introduced:
+    https://docs.microsoft.com/en-us/nuget/release-notes/nuget-2.5#automatic-import-of-msbuild-targets-and-props-files
+    -->
+    <MinClientVersion>2.5</MinClientVersion>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <!-- Below is needed to make NuGet package TFM-oblivious -->
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <!--
+      Run our target to add Version.props to the nuget package before Pack
+      using a documented extension point.
+    -->
+    <BeforePack>$(BeforePack);CreateVersionProps</BeforePack>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="**/*.props;**/*.targets" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <!--
+    This target adds a Sdk/Version.props file to the nuget package.
+    That props file contains CodeGenerationRoslynPluginMetapackageSdkVersion property,
+    so that other targets can reference correct packages and/or validate
+    versions of the already referenced ones.
+
+    GetBuildVersion target is from Nerdbank.GitVersioning package and sets correct PackageVersion.
+  -->
+  <Target Name="CreateVersionProps" DependsOnTargets="GetBuildVersion">
+    <PropertyGroup>
+      <VersionPropsContent>
+<![CDATA[
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <CodeGenerationRoslynPluginMetapackageSdkVersion>$(PackageVersion)</CodeGenerationRoslynPluginMetapackageSdkVersion>
+  </PropertyGroup>
+</Project>
+]]>
+      </VersionPropsContent>
+      <VersionPropsPath>$(IntermediateOutputPath)Version.props</VersionPropsPath>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(VersionPropsPath)" Lines="$(VersionPropsContent)" Overwrite="true" />
+    <ItemGroup>
+      <None Include="$(VersionPropsPath)" Pack="true" PackagePath="build/" />
+      <FileWrites Include="$(VersionPropsPath)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

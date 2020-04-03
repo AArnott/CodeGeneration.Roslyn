@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!--
+    Add an implicit reference to CodeGeneration.Roslyn.Tool package if not disabled.
+    Disable by setting AddImplicitCodeGenerationRoslynToolReference to false.
+
+    CodeGenerationRoslynPluginMetapackageSdkVersion Property is defined in Version.props (imported in .props).
+
+    This is Sdk-only because adding PackageReference in build/.targets doesn't actually
+    impact restore (or *shouldn't*).
+  -->
+  <ItemGroup Condition=" '$(AddImplicitCodeGenerationRoslynToolReference)' != 'false' ">
+    <PackageReference Include="CodeGeneration.Roslyn.Tool"
+                      Version="$(CodeGenerationRoslynPluginMetapackageSdkVersion)"
+                      IsImplicitlyDefined="true"
+                      PrivateAssets="none" />
+  </ItemGroup>
+
+  <Import Project="../build/CodeGeneration.Roslyn.PluginMetapackage.Sdk.targets" />
+
+</Project>
