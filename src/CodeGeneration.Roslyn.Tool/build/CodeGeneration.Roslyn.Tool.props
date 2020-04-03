@@ -1,5 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <!--
+      Announce this Tool's build artifacts are being used.
+      Plugins can validate whether the Tool is available to use on this property.
+    -->
+    <UsingCodeGenerationRoslynToolTargets>true</UsingCodeGenerationRoslynToolTargets>
+  </PropertyGroup>
   
   <ItemDefinitionGroup>
     <Compile>

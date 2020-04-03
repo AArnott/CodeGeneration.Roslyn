@@ -59,12 +59,24 @@
 </Project>
 ]]>
       </PackagePropsContent>
+      <PackageTargetsContent>
+        <![CDATA[
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="CheckCgrToolUsed" BeforeTargets="Build">
+    <Warning Condition=" '%24(UsingCodeGenerationRoslynToolTargets)' != 'true' " Text="CodeGeneration.Roslyn.Tool build targets weren't detected. CG.R Plugins (generators) won't be run without importing targets from the CodeGeneration.Roslyn.Tool package (v$(PackageVersion))." />
+  </Target>
+</Project>
+]]>
+      </PackageTargetsContent>
       <PackagePropsPath>$(IntermediateOutputPath)$(PackageId).props</PackagePropsPath>
+      <PackageTargetsPath>$(IntermediateOutputPath)$(PackageId).targets</PackageTargetsPath>
     </PropertyGroup>
     <WriteLinesToFile File="$(PackagePropsPath)" Lines="$(PackagePropsContent)" Overwrite="true" />
+    <WriteLinesToFile File="$(PackageTargetsPath)" Lines="$(PackageTargetsContent)" Overwrite="true" />
     <ItemGroup>
-      <TfmSpecificPackageFile Include="$(PackagePropsPath)" Pack="true" PackagePath="build/" BuildAction="None" />
-      <FileWrites Include="$(PackagePropsPath)" />
+      <TfmSpecificPackageFile Include="$(PackagePropsPath);$(PackageTargetsPath)" Pack="true" PackagePath="build/" BuildAction="None" />
+      <FileWrites Include="$(PackagePropsPath);$(PackageTargetsPath)" />
     </ItemGroup>
   </Target>
 

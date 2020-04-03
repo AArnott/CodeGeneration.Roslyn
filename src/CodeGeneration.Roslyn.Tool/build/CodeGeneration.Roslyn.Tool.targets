@@ -40,6 +40,21 @@
       Code="CGR1002"
       Text="Using GeneratorAssemblySearchPaths is deprecated, please use CodeGenerationRoslynPlugin ItemGroup. See $(CgrUrl) for more info. Suppress this warning by adding CGR1002 to MSBuildWarningsAsMessages PropertyGroup."
       Condition=" '@(GeneratorAssemblySearchPaths)' != '' " />
+    <!-- Warning for when the BuildTime package is referenced. -->
+    <Warning
+      Code="CGR1003"
+      Condition=" '@(PackageReference->AnyHaveMetadataValue('Identity', 'CodeGeneration.Roslyn.BuildTime'))' == 'true' "
+      Text="Using both CodeGeneration.Roslyn.Tool and CodeGeneration.Roslyn.BuildTime is unsupported. Please either remove reference to the BuildTime package, or add an explicit reference and mark it as ExcludeAssets=&quot;all&quot;. See $(CgrUrl) for more info." />
+    <!-- Inform the user there are no generators so the Tool won't be run. -->
+    <Message
+      Condition=" '@(CodeGenerationRoslynPlugin)' != '' " 
+      Text="There are no registered Plugins (generators) for the CodeGeneration.Roslyn.Tool to run. The tool won't run." 
+      Importance="high" />
+    <!-- Inform the user DotNetCliToolReference is deprecated and unnecessary since v0.7. -->
+    <Message
+      Condition=" '@(DotNetCliToolReference->AnyHaveMetadataValue('Identity', 'dotnet-codegen'))' == 'true' " 
+      Text="DotNetCliToolReference of 'dotnet-codegen' is deprecated and can be removed since CodeGeneration.Roslyn v0.7." 
+      Importance="high" />
     <PropertyGroup>
       <CodeGenerationRoslynToolPath
         Condition="'$(GenerateCodeFromAttributesToolPathOverride)' != ''">$(GenerateCodeFromAttributesToolPathOverride)</CodeGenerationRoslynToolPath>
@@ -101,10 +116,13 @@
     and just read the existing file in ReadGenerateCodeFromAttributesResults target.
   -->
   <Target Name="GenerateCodeFromAttributesCore"
-    Condition=" '@(_CodeGenToolInputs_Compile)' != '' AND '$(_CodeGenToolVersionExitCode)' == '0' "
+    Condition=" '@(_CodeGenToolInputs_Compile)' != '' AND '$(_CodeGenToolVersionExitCode)' == '0' AND '@(CodeGenerationRoslynPlugin)' != '' "
     Inputs="$(_CodeGenToolResponseFileFullPath);@(CodeGenerationRoslynPlugin);@(_CodeGenToolInputs_Compile)"
     Outputs="$(_CodeGenToolGeneratedFileListFullPath)">
-    <!--Run the tool and raise an error when failed-->
+    <!--
+      Run the tool and raise an error when failed:
+      dotnet "path/to/CodeGeneration.Roslyn.Tool" "@path/to/responseFile.rsp"
+    -->
     <Exec
       Command="dotnet &quot;$(CodeGenerationRoslynToolPath)&quot; &quot;%40$(_CodeGenToolResponseFileFullPath)&quot;"
       StandardOutputImportance="normal" />

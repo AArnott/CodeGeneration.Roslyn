@@ -101,7 +101,7 @@
           Condition=" '%(Identity)' == 'CodeGeneration.Roslyn.Tool' " />
     </ItemGroup>
     <Warning
-        Condition=" @(_CgrToolRef->WithMetadataValue('Version', '$(CodeGenerationRoslynPluginMetapackageSdkVersion)')->WithMetadataValue('PrivateAssets', 'none')->Count()) == 0 "
+        Condition=" '@(_CgrToolRef->WithMetadataValue('Version', '$(CodeGenerationRoslynPluginMetapackageSdkVersion)')->WithMetadataValue('PrivateAssets', 'none'))' == '' "
         Code="CGR2001"
         Text="$(_CheckCgrToolReferenceExistsWarning.Trim())" />
   </Target>
