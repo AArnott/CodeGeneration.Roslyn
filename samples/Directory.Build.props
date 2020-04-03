@@ -7,6 +7,9 @@
     <PackageOutputPath>$(MSBuildThisFileDirectory)bin/Packages/$(Configuration)/</PackageOutputPath>
 
     <LocalNuGetVersion Condition=" '$(LocalNuGetVersion)' == '' ">*</LocalNuGetVersion>
+    <!-- Since we're using local nugets with prerelease versions, but samples build as 1.0.0 (default), ignore
+    NU5104 "A stable release of a package should not have a prerelease dependency." -->
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
     <!-- Setting this is needed because we're not using actual Sdk package which defines it. -->
     <CodeGenerationRoslynPluginSdkVersion>$(LocalNuGetVersion)</CodeGenerationRoslynPluginSdkVersion>
     <CodeGenerationRoslynPluginMetapackageSdkVersion>$(LocalNuGetVersion)</CodeGenerationRoslynPluginMetapackageSdkVersion>
