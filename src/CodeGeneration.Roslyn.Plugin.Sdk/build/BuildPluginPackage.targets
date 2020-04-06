@@ -41,18 +41,27 @@
   </Target>
 
   <!--
-    This target writes a PackageId.props file that will get packed into build/ folder in NuGet.
-    That props file adds the path to the Plugin dll to the CodeGenerationRoslynPlugin ItemGroup,
-    so that CodeGeneration.Roslyn tooling can read and load generator plugins.
+    This target writes PackageId.props/targets files that will get packed into build/ folder in NuGet.
+    Those MSBuild files add the path to the Plugin dll to the CodeGenerationRoslynPlugin ItemGroup,
+    so that CodeGeneration.Roslyn tooling can read and load generator plugins, and additionally
+    create a target that checks whether the Tool targets were imported, and warns if they weren't.
+
+    It also imports any PackageBuildFolderProjectImport items as per extension - .props in .props,
+    .targets in .targets. It doesn't handle actually packaging those files correctly.
   -->
   <Target Name="CreatePluginPackageBuildProps"
           DependsOnTargets="DefinePluginPackagePath"
           Condition=" '$(PackAsCodeGenerationRoslynPlugin)' == 'true' ">
+    <ItemGroup>
+      <_PackageBuildFolderProjectImport_props Include="@(PackageBuildFolderProjectImport->Distinct())" Condition=" '%(Extension)' == '.props' " />
+      <_PackageBuildFolderProjectImport_targets Include="@(PackageBuildFolderProjectImport->Distinct())" Condition=" '%(Extension)' == '.targets' " />
+    </ItemGroup>
     <PropertyGroup>
       <PackagePropsContent>
         <![CDATA[
 <?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+@(_PackageBuildFolderProjectImport_props->'  <Import Project="%(Identity)" />', '%0D%0A')
   <ItemGroup>
     <CodeGenerationRoslynPlugin Include="%24(MSBuildThisFileDirectory)../$(PluginPackagePath)/$(TargetFileName)" />
   </ItemGroup>
@@ -63,6 +72,7 @@
         <![CDATA[
 <?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+@(_PackageBuildFolderProjectImport_targets->'  <Import Project="%(Identity)" />', '%0D%0A')
   <Target Name="CheckCgrToolUsed" BeforeTargets="Build">
     <Warning Condition=" '%24(UsingCodeGenerationRoslynToolTargets)' != 'true' " Text="CodeGeneration.Roslyn.Tool build targets weren't detected. CG.R Plugins (generators) won't be run without importing targets from the CodeGeneration.Roslyn.Tool package (v$(PackageVersion))." />
   </Target>

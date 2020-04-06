@@ -14,4 +14,10 @@
     </PackageReference>
   </ItemGroup>
 
+  <!-- This target tests whether using PackageBuildFolderProjectImport in Plugin works as expected. -->
+  <Target Name="CheckPluginBuildPropsTargetsImported" AfterTargets="AfterBuild">
+    <Error Text="Generator Test.props not imported." Condition=" '$(TestPropertyProps)' != 'true' " />
+    <Error Text="Generator Test.targets not imported." Condition=" '$(TestPropertyTargets)' != 'true' " />
+  </Target>
+
 </Project>

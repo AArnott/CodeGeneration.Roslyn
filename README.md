@@ -29,6 +29,7 @@ Instructions on development and using this project's source code are in [CONTRIB
     - [Package your code generator](#package-your-code-generator)
       - [Separate out the attribute](#separate-out-the-attribute)
       - [Create the metapackage](#create-the-metapackage)
+      - [Add extra `build/` content in Plugin package](#add-extra-build-content-in-plugin-package)
 
 ## How to write your own code generator
 
@@ -456,6 +457,14 @@ Our metapackage should be versioned in the same manner
 as it's dependant packages.
 
 > 📋 For a sample metapackage, see [MetapackageSample](samples/MetapackageSample/).
+
+
+#### Add extra `build/` content in Plugin package
+
+`CG.R.Plugin.Sdk` creates custom `build/PackageId.props/targets` files. If you want
+to add custom MSBuild props/targets into NuGet package's `build` folder (and have it
+imported when package is referenced), you'll need to use `PackageBuildFolderProjectImport`
+ItemGroup, as shown in `PackagedGenerator` sample.
 
 [NuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn
 [AttrNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.Attributes
