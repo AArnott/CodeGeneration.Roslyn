@@ -9,11 +9,6 @@
     <RollForward>Major</RollForward>
     <!-- Ignore 'Missing XML comments', it's a tool. -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <!--
-      NU5129 false positive - similar to https://github.com/NuGet/Home/issues/8627
-      Possible cause: generating the .props file dynamically during build.
-    -->
-    <NoWarn>$(NoWarn);NU5129</NoWarn>
     <!-- Packing -->
     <DevelopmentDependency>true</DevelopmentDependency>
     <!--
@@ -33,11 +28,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="build/**">
-      <Pack>true</Pack>
-      <PackagePath>build/</PackagePath>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="build/**" Pack="true" PackagePath="build" />
     <Compile Update="CommandLine\Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

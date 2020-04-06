@@ -46,6 +46,11 @@
                 group.Add(dep);
             }
         }
+        // if not present, add empty <files/> node to prevent packing .nuspec's directory
+        if (document.Root.Element(ns + "files") == null)
+        {
+            document.Root.Add(new XElement(ns + "files"));
+        }
         document.Save(PatchedNuspecFilePath);
         ]]>
       </Code>
@@ -58,8 +63,11 @@
     <PackDependsOn>$(PackDependsOn);PackMetapackage;</PackDependsOn>
     <!-- Workaround the hardcoded ContinuePackingAfterGeneratingNuspec -->
     <GenerateNuspecDependsOn>SetContinuePackingAfterNuspecToFalse;$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
-    <!-- Put _._ placeholder files in lib/TFM package folders -->
-    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackTfmPlaceholder;</TargetsForTfmSpecificContentInPackage>
+    <!--
+      Ignore NU5128: Some target frameworks declared in the dependencies group of the nuspec and the lib/ref folder do not have exact matches in the other location.
+      Reason: It's exactly what we want (no content at all).
+    -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
   <!-- 
@@ -104,21 +112,6 @@
         Condition=" '@(_CgrToolRef->WithMetadataValue('Version', '$(CodeGenerationRoslynPluginMetapackageSdkVersion)')->WithMetadataValue('PrivateAssets', 'none'))' == '' "
         Code="CGR2001"
         Text="$(_CheckCgrToolReferenceExistsWarning.Trim())" />
-  </Target>
-
-  <!--
-    Puts _._ placeholder file in lib/TFM package folder, per TFM.
-
-    Disable by setting SkipPackTfmPlaceholder=true
-  -->
-  <Target
-      Name="PackTfmPlaceholder"
-      Condition="'$(SkipPackTfmPlaceholder)' != 'true'">
-    <ItemGroup>
-      <TfmSpecificPackageFile
-          Include="$(MSBuildThisFileDirectory)/_._"
-          PackagePath="lib/$(TargetFramework)/" />
-    </ItemGroup>
   </Target>
 
   <!-- Build paths used in PatchNuspecFile target -->
