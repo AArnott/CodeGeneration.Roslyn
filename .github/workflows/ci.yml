@@ -21,7 +21,9 @@ jobs:
         os: [ windows-latest, ubuntu-latest, macos-latest ]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
@@ -58,3 +60,9 @@ jobs:
     - name: Build samples
       shell: pwsh
       run: samples/build.ps1
+
+    - name: Build and test templates
+      shell: pwsh
+      run: |
+        templates/build.ps1
+        templates/test-new.ps1

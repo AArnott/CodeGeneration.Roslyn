@@ -19,9 +19,10 @@ Instructions on development and using this project's source code are in [CONTRIB
   - [Table of Contents](#table-of-contents)
   - [How to write your own code generator](#how-to-write-your-own-code-generator)
     - [Prerequisites](#prerequisites)
+    - [Use template pack](#use-template-pack)
     - [Define code generator](#define-code-generator)
-    - [Create consuming console app](#create-consuming-console-app)
     - [Define attribute](#define-attribute)
+    - [Create consuming console app](#create-consuming-console-app)
     - [Apply code generation](#apply-code-generation)
   - [Advanced scenarios](#advanced-scenarios)
     - [Customize generator reference](#customize-generator-reference)
@@ -44,6 +45,63 @@ In this walkthrough, we will define a code generator that replicates any class (
 
 [dotnet-sdk-2.1]: https://dotnet.microsoft.com/download/dotnet-core/2.1
 
+### Use template pack
+
+To install the template pack, run:
+> `dotnet new -i CodeGeneration.Roslyn.Templates`
+
+You'll then have our template pack installed and ready for use with `dotnet new`.
+For details see [templates Readme](./templates/README.md).
+
+Prepare a directory where you want to create your Plugin projects, e.g. `mkdir DemoGeneration`.
+Then, in that directory, create the set of Plugin projects (we add the --sln to create solution as well):
+> `dotnet new cgrplugin -n Duplicator --sln`
+
+This will create 3 ready-to-build projects. You can now skip through the next steps
+of creating and setting up projects, just apply the following changes to have the same content:
+- rename `Duplicator.Generators/Generator1.cs` to `DuplicateWithSuffixGenerator.cs`
+  - also replace the `DuplicateWithSuffixGenerator` class with the following:
+    ```csharp
+    public class DuplicateWithSuffixGenerator : ICodeGenerator
+    {
+        private readonly string suffix;
+
+        public DuplicateWithSuffixGenerator(AttributeData attributeData)
+        {
+            suffix = (string)attributeData.ConstructorArguments[0].Value;
+        }
+
+        public Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(TransformationContext context, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
+        {
+            // Our generator is applied to any class that our attribute is applied to.
+            var applyToClass = (ClassDeclarationSyntax)context.ProcessingNode;
+
+            // Apply a suffix to the name of a copy of the class.
+            var copy = applyToClass.WithIdentifier(SyntaxFactory.Identifier(applyToClass.Identifier.ValueText + suffix));
+
+            // Return our modified copy. It will be added to the user's project for compilation.
+            var results = SyntaxFactory.SingletonList<MemberDeclarationSyntax>(copy);
+            return Task.FromResult(results);
+        }
+    }
+    ```
+- rename `Duplicator.Attributes/Generator1Attribute.cs` file to `DuplicateWithSuffixAttribute.cs`
+  - also replace `DuplicateWithSuffixAttribute` class with the following:
+    ```csharp
+    [AttributeUsage(AttributeTargets.Class)]
+    [CodeGenerationAttribute("Duplicator.Generators.DuplicateWithSuffixGenerator, Duplicator.Generators")]
+    [Conditional("CodeGeneration")]
+    public class DuplicateWithSuffixAttribute : Attribute
+    {
+        public DuplicateWithSuffixAttribute(string suffix)
+        {
+            Suffix = suffix;
+        }
+
+        public string Suffix { get; }
+    }
+    ```
+
 ### Define code generator
 
 Your generator cannot be defined in the same project that will have code generated
@@ -57,7 +115,7 @@ Now we'll use an [MSBuild project SDK] [`CodeGeneration.Roslyn.Plugin.Sdk`][Plug
 <!-- Duplicator.Generators/Duplicator.Generators.csproj -->
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Add the following element above any others: -->
-  <Sdk Name="CodeGeneration.Roslyn.Plugin.Sdk" Version="{replace with actual version used}"/>
+  <Sdk Name="CodeGeneration.Roslyn.Plugin.Sdk" Version="{replace with actual version used}" />
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -107,56 +165,26 @@ namespace Duplicator.Generators
 }
 ```
 
-### Create consuming console app
-
-We'll consume our generator in a Reflector app:
-> `dotnet new console -f netcoreapp2.1 -o Reflector`
-> 
-> `dotnet add Reflector reference Duplicator.Generators`
-
-Let's write a simple program that prints all types in its assembly:
-```csharp
-// Reflector/Program.cs
-using System;
-
-namespace Reflector
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            foreach (var type in typeof(Program).Assembly.GetTypes())
-                Console.WriteLine(type.FullName);
-        }
-    }
-}
-```
-
-Now, when we `dotnet run -p Reflector` we should get:
-> `Reflector.Program`
-
 ### Define attribute
 
 To activate your code generator, you need to define an attribute with which
-we'll annotate the class to be copied. Install [Attributes package][AttrNuPkg]:
+we'll annotate the class to be copied. Let's do that in a new project:
+> `dotnet new classlib -f netstandard2.0 -o Duplicator.Attributes`
 
-> `dotnet add Reflector package CodeGeneration.Roslyn.Attributes`
+Install [Attributes package][AttrNuPkg]:
+
+> `dotnet add Duplicator.Attributes package CodeGeneration.Roslyn.Attributes`
 
 Then, define your attribute class:
 
 ```csharp
-// Reflector/Program.cs
+// Duplicator.Attributes/DuplicateWithSuffixAttribute.cs
 using System;
 using System.Diagnostics;
 using CodeGeneration.Roslyn;
 
-namespace Reflector
+namespace Duplicator
 {
-    class Program
-    {
-        // ...
-    }
-
     [AttributeUsage(AttributeTargets.Class)]
     [CodeGenerationAttribute("Duplicator.Generators.DuplicateWithSuffixGenerator, Duplicator.Generators")]
     [Conditional("CodeGeneration")]
@@ -185,6 +213,36 @@ with a dependency on your code generation assembly.
 > ℹ Of course, the attribute will persist if you define compilation symbol
 > "CodeGeneration"; we assume it won't be defined.
 
+### Create consuming console app
+
+We'll consume our generator in a Reflector app:
+> `dotnet new console -o Reflector`
+> 
+> `dotnet add Reflector reference Duplicator.Attributes`
+> 
+> `dotnet add Reflector reference Duplicator.Generators`
+
+Let's write a simple program that prints all types in its assembly:
+```csharp
+// Reflector/Program.cs
+using System;
+
+namespace Reflector
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            foreach (var type in typeof(Program).Assembly.GetTypes())
+                Console.WriteLine(type.FullName);
+        }
+    }
+}
+```
+
+Now, when we `dotnet run -p Reflector` we should get:
+> `Reflector.Program`
+
 ### Apply code generation
 
 Applying code generation is incredibly simple. Just add the attribute on any type
@@ -195,6 +253,7 @@ or member supported by the attribute and generator you wrote. We'll test our Dup
 using System;
 using System.Diagnostics;
 using CodeGeneration.Roslyn;
+using Duplicator;
 
 namespace Reflector
 {
@@ -205,18 +264,11 @@ namespace Reflector
     {
         // ...
     }
-
-    class DuplicateWithSuffixAttribute : Attribute
-    {
-        // ...
-    }
 }
 ```
 
 Let's check our app again:
 > `> dotnet run -p Reflector`
-> 
-> `Reflector.DuplicateWithSuffixAttribute`
 > 
 > `Reflector.Program`
 > 
@@ -260,8 +312,6 @@ This is how your project file can look like:
 
 And if all steps were done correctly:
 > `> dotnet run -p Reflector`
-> 
-> `Reflector.DuplicateWithSuffixAttribute`
 > 
 > `Reflector.Program`
 > 
@@ -354,11 +404,15 @@ we have to use `SetTargetFramework` metadata. Setting it implies
 
 ### Package your code generator
 
+> ℹ If you've used `cgrplugin` template, you've already got metapackage project ready.
+
 You can also package up your code generator as a NuGet package for others to install
 and use. A project using `CodeGeneration.Roslyn.Plugin.Sdk` is automatically
 configured to produce a correct Plugin nuget package.
 
 #### Separate out the attribute
+
+> ⚠ This section is deprecated since it's now the default.
 
 The triggering attribute has to be available in consuming code. Your consumers
 can write it themselves, but it's not a good idea to require them do so.
@@ -398,7 +452,7 @@ An example consuming project file would contain:
 </ItemGroup>
 ```
 
-> ➡ There's a much better approach: **metapackage**.
+> ✔ There's a much better approach: **metapackage**.
 
 For this, we'll use [`CodeGeneration.Roslyn.PluginMetapackage.Sdk`][PluginMetapkgSdkNuPkg] [MSBuild project SDK]
 in a new project called simply `Duplicator`, which will reference our attributes:

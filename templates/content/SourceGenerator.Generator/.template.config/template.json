@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "identity": "CodeGeneration.Roslyn.Templates.GeneratorClass",
+  "author": "Amadeusz Sadowski",
+  "classifications": [
+    "SourceGen",
+    "Plugin"
+  ],
+  "name": "CodeGeneration.Roslyn Generator class",
+  "shortName": "cgrgen",
+  "tags": {
+    "language": "C#",
+    "type": "item"
+  },
+  "sourceName": "Generator1",
+  "symbols": {
+    "namespace": {
+      "type": "parameter",
+      "description": "namespace for the generated code",
+      "replaces": "SourceGenerator"
+    }
+  }
+}

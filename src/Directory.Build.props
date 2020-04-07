@@ -9,6 +9,7 @@
     <RepositoryUrl>https://github.com/aarnott/CodeGeneration.Roslyn</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReleaseNotes>https://github.com/AArnott/CodeGeneration.Roslyn/blob/master/CHANGELOG.md</PackageReleaseNotes>
+    <PackageTags>codegen;codegeneration;roslyn;sourcegen;sourcegeneration;source;generation</PackageTags>
 
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>

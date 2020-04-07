@@ -42,6 +42,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGeneration.Roslyn.Plugi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGeneration.Roslyn.PluginMetapackage.Sdk", "CodeGeneration.Roslyn.PluginMetapackage.Sdk\CodeGeneration.Roslyn.PluginMetapackage.Sdk.csproj", "{C1964B5A-1E9C-477B-B1A1-B464FFB8BCB7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGeneration.Roslyn.Templates", "CodeGeneration.Roslyn.Templates\CodeGeneration.Roslyn.Templates.csproj", "{ABEDDF07-58BA-47EB-BA0F-F615D1E6D397}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -88,6 +90,10 @@ Global
 		{C1964B5A-1E9C-477B-B1A1-B464FFB8BCB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1964B5A-1E9C-477B-B1A1-B464FFB8BCB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C1964B5A-1E9C-477B-B1A1-B464FFB8BCB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABEDDF07-58BA-47EB-BA0F-F615D1E6D397}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABEDDF07-58BA-47EB-BA0F-F615D1E6D397}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABEDDF07-58BA-47EB-BA0F-F615D1E6D397}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABEDDF07-58BA-47EB-BA0F-F615D1E6D397}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

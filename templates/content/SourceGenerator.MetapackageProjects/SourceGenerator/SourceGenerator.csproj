@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--#if (sdkFromSource) -->
+  <Import Project="$(CodeGenerationRoslynPluginMetapackageSdkPath)Sdk.props" />
+  <!--#else
+  <Sdk Name="CodeGeneration.Roslyn.PluginMetapackage.Sdk" Version="$(LocalNuGetVersion)" />
+  #endif -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../SourceGenerator.Attributes/SourceGenerator.Attributes.csproj" />
+    <NupkgAdditionalDependency Include="SourceGenerator.Generators" IncludeAssets="all" />
+  </ItemGroup>
+
+  <!--#if (sdkFromSource) -->
+  <Import Project="$(CodeGenerationRoslynPluginMetapackageSdkPath)Sdk.targets" />
+  <!--#endif -->
+</Project>

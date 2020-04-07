@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <Description>Templates to use when creating CodeGeneration.Roslyn Plugins (source code generators).</Description>
+    <PackageTags>$(PackageTags);templates;cgrgen;cgratt;cgrplugin;cgrplugingens;cgrpluginatts</PackageTags>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <IncludeSymbols>false</IncludeSymbols>
+    <BeforePack>$(BeforePack);SetPackageVersionInTemplateConfigs</BeforePack>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="../../templates/content/**" Pack="true" PackagePath="content" />
+  </ItemGroup>
+
+  <Target Name="SetPackageVersionInTemplateConfigs" DependsOnTargets="GetBuildVersion">
+    <ItemGroup>
+      <!-- Take template.json files, set patched Target paths and PackagePath -->
+      <_TemplateJson Include="@(Content)"
+                     Condition=" '%(Filename)%(Extension)' == 'template.json' " 
+                     TargetPath="$(IntermediateOutputPath)patched/%(RecursiveDir)%(Filename)%(Extension)"
+                     PackagePath="%(PackagePath)/%(RecursiveDir)"/>
+      <Content Remove="@(_TemplateJson)" />
+      <Content Include="@(_TemplateJson->'%(TargetPath)')" />
+    </ItemGroup>
+    <!-- Actually patch the files: pwsh -c "&{ ./patch.ps1 'src1','src2' 'trg1','trg2' 'version' }" -->
+    <Exec Command="pwsh -c &quot; &amp;{ ./patch.ps1 @(_TemplateJson->'%27%(Identity)%27', ',') @(_TemplateJson->'%27%(TargetPath)%27', ',') '$(PackageVersion)' } &quot;" />
+  </Target>
+
+</Project>

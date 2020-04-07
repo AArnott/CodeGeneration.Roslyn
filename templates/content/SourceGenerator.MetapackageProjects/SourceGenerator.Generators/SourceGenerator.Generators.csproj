@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--#if (sdkFromSource) -->
+  <Import Project="$(CodeGenerationRoslynPluginSdkPath)Sdk.props" />
+  <!--#else
+  <Sdk Name="CodeGeneration.Roslyn.Plugin.Sdk" Version="$(LocalNuGetVersion)" />
+  #endif -->
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <!--#if (sdkFromSource) -->
+  <Import Project="$(CodeGenerationRoslynPluginSdkPath)Sdk.targets" />
+  <!--#endif -->
+</Project>

@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "identity": "CodeGeneration.Roslyn.Templates.GeneratorsProject",
+  "author": "Amadeusz Sadowski",
+  "classifications": [
+    "SourceGen",
+    "Plugin"
+  ],
+  "name": "CodeGeneration.Roslyn Plugin Generators Project",
+  "shortName": "cgrplugingens",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "SourceGenerator.Generators",
+  "preferNameDirectory": true,
+  "symbols": {
+    "sdkFromSource": {
+      "type": "parameter",
+      "description": "Use CG.R Sdks from local source files instead of nuget.",
+      "datatype": "bool",
+      "defaultValue": "false"
+    },
+    "cgr-version": {
+      "type": "parameter",
+      "description": "CodeGeneration.Roslyn toolset version to use in references, such as PackageReference.",
+      "datatype": "text",
+      "replaces": "$(LocalNuGetVersion)",
+      "defaultValue": "*"
+    }
+  }
+}

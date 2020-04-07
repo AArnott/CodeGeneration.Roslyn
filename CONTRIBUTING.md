@@ -1,7 +1,7 @@
 ## Prerequisites
 
 * .NET Core SDK - version as specified in [src/global.json](src/global.json).
-* netcoreapp2.1 runtime (Microsoft.NETCore.App 2.1.x)
+* PowerShell 7+ (`pwsh` in PATH)
 
 ## Building
 
