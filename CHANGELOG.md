@@ -10,10 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > ⚠ There are major changes, please look at [v0.7 migration guide].
 
 ### Added
+* Template pack for dotnet new: `dotnet new -i CodeGeneration.Roslyn.Templates`
 * Various samples in `samples` folder
 * GitHub Actions CI
 * Support for plugin dependencies! 🎉 ([#156]).
 * Plugins (generators) are now easier to build using `CodeGeneration.Roslyn.Plugin.Sdk` MSBuildSdk package ([#113]).
+* Plugins are now easier to distribute using `CodeGeneration.Roslyn.PluginMetapackage.Sdk` MSBuildSdk package, see
+[Readme section](https://github.com/AArnott/CodeGeneration.Roslyn#create-the-metapackage) ([#205]).
 
 ### Changed
 * .NET Core SDK version bumped to `3.1.100` ([#178]).
@@ -36,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#156]: https://github.com/AArnott/CodeGeneration.Roslyn/pull/156
 [#178]: https://github.com/AArnott/CodeGeneration.Roslyn/pull/178
 [#198]: https://github.com/AArnott/CodeGeneration.Roslyn/pull/198
+[#205]: https://github.com/AArnott/CodeGeneration.Roslyn/pull/205
 [v0.7 migration guide]: https://github.com/AArnott/CodeGeneration.Roslyn/wiki/Migrations#v07
 
 
