@@ -16,5 +16,5 @@ while ($InputFile) {
     if ($versionSymbol) {
         $versionSymbol.defaultValue = $Version
     }
-    New-Item $output -Value (ConvertTo-Json $json) -Force
+    $null = New-Item $output -Value (ConvertTo-Json $json) -Force
 }

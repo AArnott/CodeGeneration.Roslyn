@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(UsingCodeGenerationRoslynToolTargets)' != 'false' ">
     <GenerateCodeFromAttributesDependsOn>
       $(GenerateCodeFromAttributesDependsOn);
       ResolveReferences;
@@ -14,6 +14,7 @@
 
   <Target
     Name="GenerateCodeFromAttributes"
+    Condition=" '$(UsingCodeGenerationRoslynToolTargets)' != 'false' "
     DependsOnTargets="$(GenerateCodeFromAttributesDependsOn)"
     BeforeTargets="CoreCompile;PrepareResources">
   </Target>

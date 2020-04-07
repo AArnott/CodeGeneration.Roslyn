@@ -6,7 +6,7 @@
       Announce this Tool's build artifacts are being used.
       Plugins can validate whether the Tool is available to use on this property.
     -->
-    <UsingCodeGenerationRoslynToolTargets>true</UsingCodeGenerationRoslynToolTargets>
+    <UsingCodeGenerationRoslynToolTargets Condition=" '$(UsingCodeGenerationRoslynToolTargets)' == '' ">true</UsingCodeGenerationRoslynToolTargets>
   </PropertyGroup>
   
   <ItemDefinitionGroup>
