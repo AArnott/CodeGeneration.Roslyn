@@ -399,10 +399,14 @@ TFMs, starting with `netcoreapp3.1`. So you'll do:
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <PackAsCodeGenerationRoslynPlugin>$(TargetFramework.Equals('netcoreapp2.1'))</PackAsCodeGenerationRoslynPlugin>
   </PropertyGroup>
   <!-- ... -->
 </Project>
 ```
+
+> ℹ `PackAsCodeGenerationRoslynPlugin` is necessary to explicitly tell Plugin.Sdk
+> which TargetFramework's build output to pack - there can be only one.
 
 There'll be a build error, because the consumer (Reflector) doesn't know which
 output to use (and assign to the CodeGenerationRoslynPlugin Item). To fix that
