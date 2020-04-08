@@ -4,6 +4,11 @@
   <PropertyGroup>
     <!-- Announce this SDK -->
     <UsingCodeGenerationRoslynPluginMetapackageSdk>true</UsingCodeGenerationRoslynPluginMetapackageSdk>
+    <!-- Prevent running Tool targets in metapackage -->
+    <UsingCodeGenerationRoslynToolTargets>false</UsingCodeGenerationRoslynToolTargets>
+    <!-- Setup so that by default no build output and no symbols are packed -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
 
   <!--

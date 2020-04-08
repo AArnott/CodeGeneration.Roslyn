@@ -12,10 +12,6 @@
   <PropertyGroup>
     <!-- Declare the TargetFramework(s) the same as in your Attributes package -->
     <TargetFrameworks>netstandard1.0;netstandard2.0</TargetFrameworks>
-    <!-- This project contains no files, so building can be skipped -->
-    <NoBuild>true</NoBuild>
-    <!-- Since we don't build, there'll be no build output -->
-    <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>

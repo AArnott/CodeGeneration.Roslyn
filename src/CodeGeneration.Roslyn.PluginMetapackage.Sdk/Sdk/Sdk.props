@@ -5,8 +5,6 @@
     <!-- Announce this SDK (add *AsSdk to differentiate between using this as Sdk
       and normal PackageReference/dependency usage)-->
     <UsingCodeGenerationRoslynPluginMetapackageSdkAsSdk>true</UsingCodeGenerationRoslynPluginMetapackageSdkAsSdk>
-    <!-- Prevent running Tool targets in metapackage -->
-    <UsingCodeGenerationRoslynToolTargets>false</UsingCodeGenerationRoslynToolTargets>
   </PropertyGroup>
 
   <Import Project="../build/CodeGeneration.Roslyn.PluginMetapackage.Sdk.props" />
