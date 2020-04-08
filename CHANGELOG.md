@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.63] - 2020-04-08
+
 > ⚠ There are major changes, please look at [v0.7 migration guide].
 
 ### Added
@@ -48,5 +50,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 See https://github.com/AArnott/CodeGeneration.Roslyn/releases/tag/v0.6.1
 
-[Unreleased]: https://github.com/amis92/RecordGenerator/compare/v0.6.1...HEAD
-[0.6.1]: #061---2019-06-16
+[Unreleased]: https://github.com/AArnott/CodeGeneration.Roslyn/compare/v0.7.63...HEAD
+[0.7.63]: https://github.com/AArnott/CodeGeneration.Roslyn/compare/v0.6.1...v0.7.63
+[0.6.1]: https://github.com/AArnott/CodeGeneration.Roslyn/releases/tag/v0.6.1
