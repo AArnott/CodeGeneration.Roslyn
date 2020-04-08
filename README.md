@@ -2,7 +2,6 @@
 
 [![Build Status](https://andrewarnott.visualstudio.com/OSS/_apis/build/status/CodeGeneration.Roslyn)](https://andrewarnott.visualstudio.com/OSS/_build/latest?definitionId=15)
 [![GitHub Actions CI status](https://github.com/AArnott/CodeGeneration.Roslyn/workflows/CI/badge.svg?branch=master)](https://github.com/AArnott/CodeGeneration.Roslyn/actions?query=workflow%3ACI+branch%3Amaster)
-[![NuGet package](https://img.shields.io/nuget/v/CodeGeneration.Roslyn.svg)][NuPkg]
 
 Assists in performing Roslyn-based code generation during a build.
 This includes design-time support, such that code generation can respond to
@@ -13,9 +12,31 @@ See [who's generating code or consuming it using CodeGeneration.Roslyn](https://
 
 Instructions on development and using this project's source code are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Packages
+
+ Package | Latest | Preview | Description
+---------|--------|---------|-------------
+| [CodeGeneration.Roslyn.Tool][CgrToolPkg] | ![NuGet package](https://img.shields.io/nuget/v/CodeGeneration.Roslyn.Tool) | ![NuGet preview package](https://img.shields.io/nuget/vpre/CodeGeneration.Roslyn.Tool) | Tool that loads Plugins and MSBuild targets that run it during build. |
+| [CodeGeneration.Roslyn.Templates][CgrTmpltPkg] | ![NuGet package](https://img.shields.io/nuget/v/CodeGeneration.Roslyn.Templates) | ![NuGet preview package](https://img.shields.io/nuget/vpre/CodeGeneration.Roslyn.Templates) | Templates for `dotnet new` that help create Plugins items and projects. |
+| [CodeGeneration.Roslyn][CgrPkg] | ![NuGet package](https://img.shields.io/nuget/v/CodeGeneration.Roslyn) | ![NuGet preview package](https://img.shields.io/nuget/vpre/CodeGeneration.Roslyn) | API for generators to build against. |
+| [CodeGeneration.Roslyn.Attributes][CgrAttrPkg] | ![NuGet package](https://img.shields.io/nuget/v/CodeGeneration.Roslyn.Attributes) | ![NuGet preview package](https://img.shields.io/nuget/vpre/CodeGeneration.Roslyn.Attributes) | Attributes to annotate plugin attributes with. |
+| [CodeGeneration.Roslyn.Engine][CgrEnginePkg] | ![NuGet package](https://img.shields.io/nuget/v/CodeGeneration.Roslyn.Engine) | ![NuGet preview package](https://img.shields.io/nuget/vpre/CodeGeneration.Roslyn.Engine) | Engine called by Tool; useful for testing generators. |
+| [CodeGeneration.Roslyn.Plugin.Sdk][CgrPluginSdkPkg] | ![NuGet package](https://img.shields.io/nuget/v/CodeGeneration.Roslyn.Plugin.Sdk) | ![NuGet preview package](https://img.shields.io/nuget/vpre/CodeGeneration.Roslyn.Plugin.Sdk) | [MSBuild project Sdk] that facilitates correct Plugin project setup. |
+| [CodeGeneration.Roslyn.PluginMetapackage.Sdk][CgrPluginMetaSdkPkg] | ![NuGet package](https://img.shields.io/nuget/v/CodeGeneration.Roslyn.PluginMetapackage.Sdk) | ![NuGet preview package](https://img.shields.io/nuget/vpre/CodeGeneration.Roslyn.PluginMetapackage.Sdk) | [MSBuild project Sdk] that facilitates correct [Plugin metapackage](#create-the-metapackage) project setup. |
+
+
+[CgrToolPkg]: https://www.nuget.org/packages/CodeGeneration.Roslyn.Tool
+[CgrTmpltPkg]: https://www.nuget.org/packages/CodeGeneration.Roslyn.Templates
+[CgrPkg]: https://www.nuget.org/packages/CodeGeneration.Roslyn
+[CgrAttrPkg]: https://www.nuget.org/packages/CodeGeneration.Roslyn.Attributes
+[CgrEnginePkg]: https://www.nuget.org/packages/CodeGeneration.Roslyn.Engine
+[CgrPluginSdkPkg]: https://www.nuget.org/packages/CodeGeneration.Roslyn.Plugin.Sdk
+[CgrPluginMetaSdkPkg]: https://www.nuget.org/packages/CodeGeneration.Roslyn.PluginMetapackage.Sdk
+
 ## Table of Contents
 
 - [Roslyn-based Code Generation](#roslyn-based-code-generation)
+  - [Packages](#packages)
   - [Table of Contents](#table-of-contents)
   - [How to write your own code generator](#how-to-write-your-own-code-generator)
     - [Prerequisites](#prerequisites)
@@ -508,7 +529,10 @@ consumers will need:
 Our metapackage should be versioned in the same manner
 as it's dependant packages.
 
-> 📋 For a sample metapackage, see [MetapackageSample](samples/MetapackageSample/).
+> ⚠ Please note that Metapackage project doesn't change how P2P (`ProjectReference`)
+> setup works - it **only** works as a NuGet package!
+
+> ℹ For a sample metapackage, see [MetapackageSample](samples/MetapackageSample/).
 
 
 #### Add extra `build/` content in Plugin package

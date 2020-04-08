@@ -24,3 +24,7 @@ Important aspects of the `Metapackage/Metapackage.csproj`:
   with whatever you use in your setup. `LocalNuGetVersion` is the version of CG.R
   used across samples - you should use the same version as other CG.R packages you
   reference. `Directory.Build.props` is a good place to define that once.
+  
+
+> ⚠ Please note that Metapackage project doesn't change how P2P (`ProjectReference`)
+> setup works - it **only** works as a NuGet package!
