@@ -463,7 +463,7 @@ Remove `Class1.cs` file.
 
 Modify project file:
 - Add `<Sdk>` element
-- Set `NoBuild=true` and `IncludeBuildOutput=false`
+- Set `IncludeBuildOutput=false`
 - Add `NupkgAdditionalDependency` in ItemGroup
 ```xml
 <!-- Duplicator/Duplicator.csproj -->
@@ -474,9 +474,7 @@ Modify project file:
   <PropertyGroup>
     <!-- Declare the TargetFramework(s) the same as in your Attributes package -->
     <TargetFramework>netstandard1.0</TargetFramework>
-    <!-- This project contains no files, so building can be skipped -->
-    <NoBuild>true</NoBuild>
-    <!-- Since we don't build, there'll be no build output -->
+    <!-- We don't want any build output in package -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
 
