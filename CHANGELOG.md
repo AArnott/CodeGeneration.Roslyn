@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Readme section](https://github.com/AArnott/CodeGeneration.Roslyn#create-the-metapackage) ([#205]).
 
 ### Changed
+* Readme demo is now simpler, and suggests usage of Templates package, and Sdks.
 * .NET Core SDK version bumped to `3.1.100` ([#178]).
 * `Attributes` package now targets `net20;net40` in addition to `netstandard1.0` ([#178]).
 * Tool now has `RollForward=Major` policy to allow it to run on newer runtimes than 2.x,
@@ -28,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * ItemGroup now should contain full path to generator dll (previously it was a containing folder path)
   * Old behavior has a compat-plug for now and the paths are searched for any dll, and those found are added to new ItemGroup.
   * When using P2P generator (same solution), a consuming project needs to add an attribute `OutputItemType="CodeGenerationRoslynPlugin"` to the `ProjectReference` of the generator project. See [v0.7 migration guide].
-* `dotnet-codegen` package is now `CodeGeneration.Roslyn.Tool` and is build very differently;
+* `dotnet-codegen` package is now `CodeGeneration.Roslyn.Tool` and is built very differently;
   also it includes build assets from `BuildTime` package ([#198]).
 
 ### Removed
