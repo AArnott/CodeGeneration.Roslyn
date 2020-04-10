@@ -1,6 +1,6 @@
 ## Prerequisites
 
-* .NET Core SDK - version as specified in [src/global.json](src/global.json).
+* .NET Core SDK - version as specified in [global.json](global.json).
 * PowerShell 7+ (`pwsh` in PATH)
 
 ## Building

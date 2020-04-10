@@ -24,7 +24,6 @@ jobs:
     displayName: Install/select .NET Core SDK
     inputs:
       useGlobalJson: true
-      workingDirectory: src
 
   - script: |
       dotnet tool restore

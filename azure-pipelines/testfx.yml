@@ -3,7 +3,6 @@ steps:
   displayName: Install/select .NET Core SDK
   inputs:
     useGlobalJson: true
-    workingDirectory: src
 - script: dotnet restore
   displayName: Restore packages
   workingDirectory: ${{ parameters.projectdirectory }}
