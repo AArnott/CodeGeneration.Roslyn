@@ -27,7 +27,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
         {
             var results = SyntaxFactory.List<MemberDeclarationSyntax>();
 
-            MemberDeclarationSyntax copy = null;
+            MemberDeclarationSyntax? copy = null;
             var applyToClass = context.ProcessingNode as ClassDeclarationSyntax;
             if (applyToClass != null)
             {
@@ -37,7 +37,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
                         var propertySymbol = context.SemanticModel.GetDeclaredSymbol(x);
                         var attribute = propertySymbol?.GetAttributes()
                             .FirstOrDefault(a => a.AttributeClass.Name == nameof(TestAttribute));
-                        string suffix = "Suff" + string.Concat(attribute?.NamedArguments.Select(a => a.Value.Value.ToString()) ?? Enumerable.Empty<string>());
+                        string suffix = "Suff" + string.Concat(attribute?.NamedArguments.Select(a => a.Value.Value!.ToString()) ?? Enumerable.Empty<string>());
                         return (MemberDeclarationSyntax)MethodDeclaration(ParseTypeName("void"), x.Identifier.ValueText + suffix)
                             .AddModifiers(Token(SyntaxKind.PublicKeyword))
                             .AddBodyStatements(Block());

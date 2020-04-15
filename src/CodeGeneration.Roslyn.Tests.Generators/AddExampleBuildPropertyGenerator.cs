@@ -30,9 +30,11 @@ namespace CodeGeneration.Roslyn.Tests.Generators
 
             IEnumerable<MemberDeclarationSyntax> GeneratePartialClass()
             {
-                var classDeclaration = context.ProcessingNode as ClassDeclarationSyntax;
-                yield return classDeclaration
-                    .AddMembers(CreateExampleBuildProperty());
+                if (context.ProcessingNode is ClassDeclarationSyntax classDeclaration)
+                {
+                    yield return classDeclaration
+                        .AddMembers(CreateExampleBuildProperty());
+                }
             }
 
             MemberDeclarationSyntax CreateExampleBuildProperty()

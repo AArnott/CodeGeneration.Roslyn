@@ -3,6 +3,7 @@
 
 using System.Threading;
 
+#nullable enable
 namespace CodeGeneration.Roslyn.Generate
 {
     using System;
@@ -40,9 +41,9 @@ namespace CodeGeneration.Roslyn.Generate
             IReadOnlyList<string> preprocessorSymbols = Array.Empty<string>();
             IReadOnlyList<string> plugins = Array.Empty<string>();
             IReadOnlyList<string> buildPropertiesList = Array.Empty<string>();
-            string generatedCompileItemFile = null;
-            string outputDirectory = null;
-            string projectDir = null;
+            string? generatedCompileItemFile = null;
+            string? outputDirectory = null;
+            string? projectDir = null;
             bool version = false;
             Dictionary<string, string> buildProperties = new Dictionary<string, string>();
             
@@ -64,6 +65,7 @@ namespace CodeGeneration.Roslyn.Generate
                 Console.WriteLine(ThisAssembly.AssemblyInformationalVersion);
                 return 0;
             }
+
             if (!compile.Any())
             {
                 Console.Error.WriteLine("No source files are specified.");
@@ -76,6 +78,12 @@ namespace CodeGeneration.Roslyn.Generate
                 return 2;
             }
 
+            if (projectDir == null)
+            {
+                Console.Error.WriteLine("The project directory must be specified.");
+                return 3;
+            }
+            
             foreach (var prop in buildPropertiesList) 
             {
                 var i = prop.IndexOf("=");
@@ -90,16 +98,7 @@ namespace CodeGeneration.Roslyn.Generate
                 buildProperties[key] = value;
             }
 
-            var generator = new CompilationGenerator
-            {
-                ProjectDirectory = projectDir,
-                Compile = Sanitize(compile),
-                ReferencePath = Sanitize(refs),
-                PreprocessorSymbols = preprocessorSymbols,
-                PluginPaths = Sanitize(plugins),
-                BuildProperties = Sanitize(buildProperties),
-                IntermediateOutputDirectory = outputDirectory,
-            };
+            var generator = new CompilationGenerator(projectDir, Sanitize(compile), Sanitize(refs), preprocessorSymbols, Sanitize(plugins), outputDirectory, Sanitize(buildProperties));
 
             var progress = new Progress<Diagnostic>(OnDiagnosticProgress);
 

@@ -26,7 +26,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
         public AddGeneratedUsingGenerator(AttributeData attributeData)
             : base(attributeData)
         {
-            Using = (string)AttributeData.ConstructorArguments[0].Value;
+            Using = (string)AttributeData.ConstructorArguments[0].Value!;
         }
 
         public string Using { get; }

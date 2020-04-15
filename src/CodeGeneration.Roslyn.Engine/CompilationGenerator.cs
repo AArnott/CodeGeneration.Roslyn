@@ -16,7 +16,6 @@ namespace CodeGeneration.Roslyn.Engine
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
     using Microsoft.CodeAnalysis.Text;
-    using Validation;
 
     /// <summary>
     /// Runs code generation for every applicable document and handles resulting syntax trees,
@@ -31,37 +30,58 @@ namespace CodeGeneration.Roslyn.Engine
         private readonly List<string> generatedFiles = new List<string>();
         private readonly List<string> additionalWrittenFiles = new List<string>();
         private readonly List<string> loadedAssemblies = new List<string>();
-        private readonly Dictionary<string, (PluginLoader loader, Assembly assembly)> cachedPlugins = new Dictionary<string, (PluginLoader, Assembly)>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, (PluginLoader Loader, Assembly Assembly)> cachedPlugins = new Dictionary<string, (PluginLoader, Assembly)>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Gets or sets the list of paths of files to be compiled.
+        /// Initializes a new instance of the <see cref="CompilationGenerator"/> class.
         /// </summary>
-        public IReadOnlyList<string> Compile { get; set; }
+        /// <param name="projectDirectory">The directory with the project file.</param>
+        /// <param name="compile">The list of paths of files to be compiled.</param>
+        /// <param name="referencePath">The list of paths to reference assemblies.</param>
+        /// <param name="preprocessorSymbols">A set of preprocessor symbols to define.</param>
+        /// <param name="pluginPaths">The paths to plugins.</param>
+        /// <param name="intermediateOutputDirectory">The path to the directory that contains generated source files.</param>
+        /// <param name="buildProperties">The build properties to expose to generators.</param>
+        public CompilationGenerator(string? projectDirectory, IReadOnlyList<string> compile, IReadOnlyList<string> referencePath, IEnumerable<string> preprocessorSymbols, IReadOnlyList<string> pluginPaths, string intermediateOutputDirectory, IReadOnlyDictionary<string, string> buildProperties)
+        {
+            ProjectDirectory = projectDirectory;
+            Compile = compile ?? throw new ArgumentNullException(nameof(compile));
+            ReferencePath = referencePath ?? throw new ArgumentNullException(nameof(referencePath));
+            PreprocessorSymbols = preprocessorSymbols ?? throw new ArgumentNullException(nameof(preprocessorSymbols));
+            PluginPaths = pluginPaths ?? throw new ArgumentNullException(nameof(pluginPaths));
+            IntermediateOutputDirectory = intermediateOutputDirectory ?? throw new ArgumentNullException(nameof(intermediateOutputDirectory));
+            BuildProperties = buildProperties ?? throw new ArgumentNullException(nameof(buildProperties));
+        }
 
         /// <summary>
-        /// Gets or sets the list of paths to reference assemblies.
+        /// Gets the list of paths of files to be compiled.
         /// </summary>
-        public IReadOnlyList<string> ReferencePath { get; set; }
+        public IReadOnlyList<string> Compile { get; }
 
         /// <summary>
-        /// Gets or sets a set of preprocessor symbols to define.
+        /// Gets the list of paths to reference assemblies.
         /// </summary>
-        public IEnumerable<string> PreprocessorSymbols { get; set; }
+        public IReadOnlyList<string> ReferencePath { get; }
 
         /// <summary>
-        /// Gets or sets the paths to plugins.
+        /// Gets a set of preprocessor symbols to define.
         /// </summary>
-        public IReadOnlyList<string> PluginPaths { get; set; } = new List<string>();
+        public IEnumerable<string> PreprocessorSymbols { get; }
 
         /// <summary>
-        /// Gets or sets the build properties to expose to generators.
+        /// Gets the build properties to expose to generators.
         /// </summary>
-        public IReadOnlyDictionary<string, string> BuildProperties { get; set; }
+        public IReadOnlyDictionary<string, string> BuildProperties { get; }
 
         /// <summary>
-        /// Gets or sets the path to the directory that contains generated source files.
+        /// Gets the paths to plugins.
         /// </summary>
-        public string IntermediateOutputDirectory { get; set; }
+        public IReadOnlyList<string> PluginPaths { get; }
+
+        /// <summary>
+        /// Gets the path to the directory that contains generated source files.
+        /// </summary>
+        public string IntermediateOutputDirectory { get; }
 
         /// <summary>
         /// Gets the set of files generated after <see cref="GenerateAsync"/> is invoked.
@@ -79,9 +99,9 @@ namespace CodeGeneration.Roslyn.Engine
         public IEnumerable<string> EmptyGeneratedFiles => this.emptyGeneratedFiles;
 
         /// <summary>
-        /// Gets or sets the directory with the project file.
+        /// Gets the directory with the project file.
         /// </summary>
-        public string ProjectDirectory { get; set; }
+        public string? ProjectDirectory { get; }
 
         /// <summary>
         /// Runs the code generation as configured using this instance's properties.
@@ -89,12 +109,12 @@ namespace CodeGeneration.Roslyn.Engine
         /// <param name="progress">Optional handler of diagnostics provided by code generator.</param>
         /// <param name="cancellationToken">Cancellation token to interrupt async operations.</param>
         /// <returns>A <see cref="Task.CompletedTask"/>.</returns>
-        public async Task GenerateAsync(IProgress<Diagnostic> progress = null, CancellationToken cancellationToken = default)
+        public async Task GenerateAsync(IProgress<Diagnostic> progress, CancellationToken cancellationToken = default)
         {
-            Verify.Operation(this.Compile != null, $"{nameof(Compile)} must be set first.");
-            Verify.Operation(this.ReferencePath != null, $"{nameof(ReferencePath)} must be set first.");
-            Verify.Operation(this.PluginPaths != null, $"{nameof(PluginPaths)} must be set first.");
-            Verify.Operation(this.IntermediateOutputDirectory != null, $"{nameof(IntermediateOutputDirectory)} must be set first.");
+            if (progress is null)
+            {
+                throw new ArgumentNullException(nameof(progress));
+            }
 
             var compilation = this.CreateCompilation(cancellationToken);
 
@@ -178,12 +198,12 @@ namespace CodeGeneration.Roslyn.Engine
             }
         }
 
-        private Assembly LoadPlugin(AssemblyName assemblyName)
+        private Assembly? LoadPlugin(AssemblyName assemblyName)
         {
             if (cachedPlugins.TryGetValue(assemblyName.Name, out var cached))
             {
-                Logger.Info($"CGR retrieved cached plugin for {assemblyName.Name}: {cached.assembly.Location}");
-                return cached.assembly;
+                Logger.Info($"CGR retrieved cached plugin for {assemblyName.Name}: {cached.Assembly.Location}");
+                return cached.Assembly;
             }
             Logger.Info($"CGR looking up plugin {assemblyName.Name}");
             var pluginPath = PluginPaths.FirstOrDefault(IsRequestedPlugin);

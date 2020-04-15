@@ -26,7 +26,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
         {
             Requires.NotNull(attributeData, nameof(attributeData));
 
-            this.suffix = (string)attributeData.ConstructorArguments[0].Value;
+            this.suffix = (string)attributeData.ConstructorArguments[0].Value!;
             this.attributeData = attributeData;
             this.data = this.attributeData.NamedArguments.ToImmutableDictionary(kv => kv.Key, kv => kv.Value);
         }
@@ -35,7 +35,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
         {
             var results = SyntaxFactory.List<MemberDeclarationSyntax>();
 
-            MemberDeclarationSyntax copy = null;
+            MemberDeclarationSyntax? copy = null;
             var applyToClass = context.ProcessingNode as MethodDeclarationSyntax;
             if (applyToClass != null)
             {

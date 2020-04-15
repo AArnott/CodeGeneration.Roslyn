@@ -26,7 +26,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
         public AddGeneratedExternGenerator(AttributeData attributeData)
             : base(attributeData)
         {
-            Extern = (string)AttributeData.ConstructorArguments[0].Value;
+            Extern = (string)AttributeData.ConstructorArguments[0].Value!;
         }
 
         public string Extern { get; }

@@ -71,7 +71,7 @@ public partial class CodeGenerationTests
     public partial class MultipliedBar
     {
         [Test(X = 10, Y = 20)]
-        public string Value { get; set; }
+        public string Value { get; set; } = "";
     }
 
     [AddExampleBuildProperty]

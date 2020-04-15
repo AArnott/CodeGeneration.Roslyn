@@ -9,6 +9,9 @@
         "licenseName": "MS-PL",
         "licenseFile": "LICENSE.txt"
       }
+    },
+    "namingRules": {
+      "tupleElementNameCasing": "PascalCase"
     }
   }
 }

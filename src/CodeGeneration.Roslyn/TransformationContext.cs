@@ -27,7 +27,7 @@ namespace CodeGeneration.Roslyn
             CSharpSyntaxNode processingNode,
             SemanticModel semanticModel,
             CSharpCompilation compilation,
-            string projectDirectory,
+            string? projectDirectory,
             IEnumerable<UsingDirectiveSyntax> compilationUnitUsings,
             IEnumerable<ExternAliasDirectiveSyntax> compilationUnitExterns,
             IReadOnlyDictionary<string, string> buildProperties)
@@ -51,7 +51,7 @@ namespace CodeGeneration.Roslyn
         public CSharpCompilation Compilation { get; }
 
         /// <summary>Gets the absolute path of the directory where the project file is located.</summary>
-        public string ProjectDirectory { get; }
+        public string? ProjectDirectory { get; }
 
         /// <summary>Gets a collection of using directives already queued to be generated.</summary>
         public IEnumerable<UsingDirectiveSyntax> CompilationUnitUsings { get; }

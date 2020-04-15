@@ -25,6 +25,7 @@
       PackCustomTool;$(TargetsForTfmSpecificContentInPackage)
     </TargetsForTfmSpecificContentInPackage>
     <PackPublishedContentPath>tools/any</PackPublishedContentPath>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

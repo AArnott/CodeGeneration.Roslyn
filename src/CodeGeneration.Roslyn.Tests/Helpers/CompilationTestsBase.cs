@@ -2,6 +2,7 @@
 // Licensed under the MS-PL license. See LICENSE.txt file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -21,7 +22,7 @@ public abstract class CompilationTestsBase
     static CompilationTestsBase()
     {
         // this "core assemblies hack" is from https://stackoverflow.com/a/47196516/4418060
-        var coreAssemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location);
+        var coreAssemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
         var coreAssemblyNames = new[]
         {
             "mscorlib.dll",
@@ -68,18 +69,28 @@ public abstract class CompilationTestsBase
 
     protected static string NormalizeToLf(string input)
     {
-        return input?.Replace(CrLf, Lf);
+        return input.Replace(CrLf, Lf);
     }
 
     protected static async Task<SyntaxTree> GenerateAsync(string source)
     {
         var document = CreateProject(source).Documents.Single();
         var tree = await document.GetSyntaxTreeAsync();
-        var compilation = (CSharpCompilation)(await document.Project.GetCompilationAsync());
+        if (tree is null)
+        {
+            throw new InvalidOperationException("Could not get the syntax tree of the sources");
+        }
+
+        var compilation = (CSharpCompilation?)await document.Project.GetCompilationAsync();
+        if (compilation is null)
+        {
+            throw new InvalidOperationException("Could not compile the sources");
+        }
+
         var diagnostics = compilation.GetDiagnostics();
         Assert.Empty(diagnostics.Where(x => x.Severity >= DiagnosticSeverity.Warning));
         var progress = new Progress<Diagnostic>();
-        var result = await DocumentTransform.TransformAsync(compilation, tree, null, null, Assembly.Load, progress, CancellationToken.None);
+        var result = await DocumentTransform.TransformAsync(compilation, tree, null, new Dictionary<string, string>(), Assembly.Load, progress, CancellationToken.None);
         return result;
     }
 
@@ -105,6 +116,12 @@ public abstract class CompilationTestsBase
             solution = solution.AddDocument(documentId, newFileName, SourceText.From(source));
             count++;
         }
-        return solution.GetProject(projectId);
+        var project = solution.GetProject(projectId);
+        if (project is null)
+        {
+            throw new InvalidOperationException($"The ad hoc workspace does not contain a project with the id {projectId.Id}");
+        }
+
+        return project;
     }
 }

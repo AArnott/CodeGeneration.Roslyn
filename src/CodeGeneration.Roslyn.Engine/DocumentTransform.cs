@@ -48,9 +48,9 @@ namespace CodeGeneration.Roslyn.Engine
         public static async Task<SyntaxTree> TransformAsync(
             CSharpCompilation compilation,
             SyntaxTree inputDocument,
-            string projectDirectory,
+            string? projectDirectory,
             IReadOnlyDictionary<string, string> buildProperties,
-            Func<AssemblyName, Assembly> assemblyLoader,
+            Func<AssemblyName, Assembly?> assemblyLoader,
             IProgress<Diagnostic> progress,
             CancellationToken cancellationToken)
         {
@@ -135,11 +135,11 @@ namespace CodeGeneration.Roslyn.Engine
             }
         }
 
-        private static IEnumerable<ICodeGenerator> FindCodeGenerators(ImmutableArray<AttributeData> nodeAttributes, Func<AssemblyName, Assembly> assemblyLoader)
+        private static IEnumerable<ICodeGenerator> FindCodeGenerators(ImmutableArray<AttributeData> nodeAttributes, Func<AssemblyName, Assembly?> assemblyLoader)
         {
             foreach (var attributeData in nodeAttributes)
             {
-                Type generatorType = GetCodeGeneratorTypeForAttribute(attributeData.AttributeClass, assemblyLoader);
+                Type? generatorType = GetCodeGeneratorTypeForAttribute(attributeData.AttributeClass, assemblyLoader);
                 if (generatorType != null)
                 {
                     ICodeGenerator generator;
@@ -158,53 +158,48 @@ namespace CodeGeneration.Roslyn.Engine
             }
         }
 
-        private static Type GetCodeGeneratorTypeForAttribute(INamedTypeSymbol attributeType, Func<AssemblyName, Assembly> assemblyLoader)
+        private static Type? GetCodeGeneratorTypeForAttribute(INamedTypeSymbol attributeType, Func<AssemblyName, Assembly?> assemblyLoader)
         {
-            Requires.NotNull(assemblyLoader, nameof(assemblyLoader));
-
-            if (attributeType != null)
+            foreach (var generatorCandidateAttribute in attributeType.GetAttributes())
             {
-                foreach (var generatorCandidateAttribute in attributeType.GetAttributes())
+                if (generatorCandidateAttribute.AttributeClass.Name == typeof(CodeGenerationAttributeAttribute).Name)
                 {
-                    if (generatorCandidateAttribute.AttributeClass.Name == typeof(CodeGenerationAttributeAttribute).Name)
+                    string? assemblyName = null;
+                    string? fullTypeName = null;
+                    TypedConstant firstArg = generatorCandidateAttribute.ConstructorArguments.Single();
+                    if (firstArg.Value is string typeName)
                     {
-                        string assemblyName = null;
-                        string fullTypeName = null;
-                        TypedConstant firstArg = generatorCandidateAttribute.ConstructorArguments.Single();
-                        if (firstArg.Value is string typeName)
+                        // This string is the full name of the type, which MAY be assembly-qualified.
+                        int commaIndex = typeName.IndexOf(',');
+                        bool isAssemblyQualified = commaIndex >= 0;
+                        if (isAssemblyQualified)
                         {
-                            // This string is the full name of the type, which MAY be assembly-qualified.
-                            int commaIndex = typeName.IndexOf(',');
-                            bool isAssemblyQualified = commaIndex >= 0;
-                            if (isAssemblyQualified)
-                            {
-                                fullTypeName = typeName.Substring(0, commaIndex);
-                                assemblyName = typeName.Substring(commaIndex + 1).Trim();
-                            }
-                            else
-                            {
-                                fullTypeName = typeName;
-                                assemblyName = generatorCandidateAttribute.AttributeClass.ContainingAssembly.Name;
-                            }
+                            fullTypeName = typeName.Substring(0, commaIndex);
+                            assemblyName = typeName.Substring(commaIndex + 1).Trim();
                         }
-                        else if (firstArg.Value is INamedTypeSymbol typeOfValue)
+                        else
                         {
-                            // This was a typeof(T) expression
-                            fullTypeName = GetFullTypeName(typeOfValue);
-                            assemblyName = typeOfValue.ContainingAssembly.Name;
+                            fullTypeName = typeName;
+                            assemblyName = generatorCandidateAttribute.AttributeClass.ContainingAssembly.Name;
                         }
-
-                        if (assemblyName != null)
-                        {
-                            var assembly = assemblyLoader(new AssemblyName(assemblyName));
-                            if (assembly != null)
-                            {
-                                return assembly.GetType(fullTypeName);
-                            }
-                        }
-
-                        Verify.FailOperation("Unable to find code generator: {0} in {1}", fullTypeName, assemblyName);
                     }
+                    else if (firstArg.Value is INamedTypeSymbol typeOfValue)
+                    {
+                        // This was a typeof(T) expression
+                        fullTypeName = GetFullTypeName(typeOfValue);
+                        assemblyName = typeOfValue.ContainingAssembly.Name;
+                    }
+
+                    if (assemblyName != null)
+                    {
+                        var assembly = assemblyLoader(new AssemblyName(assemblyName));
+                        if (assembly != null)
+                        {
+                            return assembly.GetType(fullTypeName);
+                        }
+                    }
+
+                    Verify.FailOperation("Unable to find code generator: {0} in {1}", fullTypeName, assemblyName);
                 }
             }
 

@@ -31,7 +31,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
         public AddGeneratedAttributeGenerator(AttributeData attributeData)
             : base(attributeData)
         {
-            Attribute = (string)AttributeData.ConstructorArguments[0].Value;
+            Attribute = (string)AttributeData.ConstructorArguments[0].Value!;
         }
 
         public string Attribute { get; }

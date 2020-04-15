@@ -12,7 +12,7 @@ namespace CodeGeneration.Roslyn.Tests.Generators
         public DuplicateInOtherNamespaceGenerator(AttributeData attributeData)
             : base(attributeData)
         {
-            Namespace = (string)AttributeData.ConstructorArguments[0].Value;
+            Namespace = (string)AttributeData.ConstructorArguments[0].Value!;
         }
 
         public string Namespace { get; }
