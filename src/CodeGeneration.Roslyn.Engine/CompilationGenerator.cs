@@ -54,6 +54,11 @@ namespace CodeGeneration.Roslyn.Engine
         public IReadOnlyList<string> PluginPaths { get; set; } = new List<string>();
 
         /// <summary>
+        /// Gets or sets the build properties to expose to generators.
+        /// </summary>
+        public IReadOnlyDictionary<string, string> BuildProperties { get; set; }
+
+        /// <summary>
         /// Gets or sets the path to the directory that contains generated source files.
         /// </summary>
         public string IntermediateOutputDirectory { get; set; }
@@ -122,6 +127,7 @@ namespace CodeGeneration.Roslyn.Engine
                                     compilation,
                                     inputSyntaxTree,
                                     this.ProjectDirectory,
+                                    this.BuildProperties,
                                     this.LoadPlugin,
                                     progress,
                                     cancellationToken);

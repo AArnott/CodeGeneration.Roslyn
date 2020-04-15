@@ -40,6 +40,7 @@ namespace CodeGeneration.Roslyn.Engine
         /// <param name="compilation">The compilation to which the document belongs.</param>
         /// <param name="inputDocument">The document to scan for generator attributes.</param>
         /// <param name="projectDirectory">The path of the <c>.csproj</c> project file.</param>
+        /// <param name="buildProperties">MSBuild properties to expose to the generator.</param>
         /// <param name="assemblyLoader">A function that can load an assembly with the given name.</param>
         /// <param name="progress">Reports warnings and errors in code generation.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
@@ -48,6 +49,7 @@ namespace CodeGeneration.Roslyn.Engine
             CSharpCompilation compilation,
             SyntaxTree inputDocument,
             string projectDirectory,
+            IReadOnlyDictionary<string, string> buildProperties,
             Func<AssemblyName, Assembly> assemblyLoader,
             IProgress<Diagnostic> progress,
             CancellationToken cancellationToken)
@@ -91,7 +93,8 @@ namespace CodeGeneration.Roslyn.Engine
                         compilation,
                         projectDirectory,
                         emittedUsings,
-                        emittedExterns);
+                        emittedExterns,
+                        buildProperties);
 
                     var richGenerator = generator as IRichCodeGenerator ?? new EnrichingCodeGeneratorProxy(generator);
 

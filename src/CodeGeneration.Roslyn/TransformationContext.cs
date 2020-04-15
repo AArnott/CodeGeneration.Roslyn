@@ -22,13 +22,15 @@ namespace CodeGeneration.Roslyn
         /// <param name="projectDirectory">The absolute path of the directory where the project file is located.</param>
         /// <param name="compilationUnitUsings">The using directives already queued to be generated.</param>
         /// <param name="compilationUnitExterns">The extern aliases already queued to be generated.</param>
+        /// <param name="buildProperties">MSBuild properties requested by plugins using PluginRequestedProperty/CodeGenerationRoslynRequestedProperty items.</param>
         public TransformationContext(
             CSharpSyntaxNode processingNode,
             SemanticModel semanticModel,
             CSharpCompilation compilation,
             string projectDirectory,
             IEnumerable<UsingDirectiveSyntax> compilationUnitUsings,
-            IEnumerable<ExternAliasDirectiveSyntax> compilationUnitExterns)
+            IEnumerable<ExternAliasDirectiveSyntax> compilationUnitExterns,
+            IReadOnlyDictionary<string, string> buildProperties)
         {
             ProcessingNode = processingNode;
             SemanticModel = semanticModel;
@@ -36,6 +38,7 @@ namespace CodeGeneration.Roslyn
             ProjectDirectory = projectDirectory;
             CompilationUnitUsings = compilationUnitUsings;
             CompilationUnitExterns = compilationUnitExterns;
+            BuildProperties = buildProperties;
         }
 
         /// <summary>Gets the syntax node the generator attribute is found on.</summary>
@@ -55,5 +58,8 @@ namespace CodeGeneration.Roslyn
 
         /// <summary>Gets a collection of extern aliases already queued to be generated.</summary>
         public IEnumerable<ExternAliasDirectiveSyntax> CompilationUnitExterns { get; }
+
+        /// <summary>Gets a dictionary of MSBuild properties requested by plugins using PluginRequestedProperty/CodeGenerationRoslynRequestedProperty items.</summary>
+        public IReadOnlyDictionary<string, string> BuildProperties { get; }
     }
 }

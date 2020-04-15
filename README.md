@@ -52,6 +52,7 @@ Instructions on development and using this project's source code are in [CONTRIB
       - [Separate out the attribute](#separate-out-the-attribute)
       - [Create the metapackage](#create-the-metapackage)
       - [Add extra `build/` content in Plugin package](#add-extra-build-content-in-plugin-package)
+    - [Access MSBuild Properties](#access-msbuild-properties)
 
 ## How to write your own code generator
 
@@ -542,6 +543,30 @@ as it's dependant packages.
 to add custom MSBuild props/targets into NuGet package's `build` folder (and have it
 imported when package is referenced), you'll need to use `PackageBuildFolderProjectImport`
 ItemGroup, as shown in `PackagedGenerator` sample.
+
+### Accesss MSBuild Properties
+
+You may access MSBuild property values of the project being generated for, by first adding the property
+name to the `PluginRequestedProperty` item list.  For example, if you want to access the TargetFramework build 
+property, you would do the following in your generator's .csproj file:
+
+```xml
+<ItemGroup>
+  <PluginRequestedProperty Include="ExampleBuildProperty" />
+</ItemGroup>
+```
+
+Then, you can access its value like this:
+
+```cs
+public Task<SyntaxList<MemberDeclarationSyntax>> GenerateAsync(TransformationContext context, IProgress<Diagnostic> progress, CancellationToken cancellationToken)
+{
+    var targetFramework = context.BuildProperties["TargetFramework"];
+    // ...
+}
+```
+
+> ℹ For a sample generator that accesses MSBuild properties, see [BuildPropsGenerator](samples/BuildPropsGenerator) and its consuming project, [BuildPropsConsumer](samples/BuildPropsConsumer)
 
 [NuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn
 [AttrNuPkg]: https://nuget.org/packages/CodeGeneration.Roslyn.Attributes

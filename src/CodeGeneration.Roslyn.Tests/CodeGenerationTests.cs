@@ -38,6 +38,13 @@ public partial class CodeGenerationTests
         record.ToBuilder();
     }
 
+    [Fact]
+    public void AccessingBuildPropertiesWorks()
+    {
+        var objWithBuildProp = new ClassWithExampleBuildProperty();
+        Assert.Equal("c7189d5e-495c-4cab-8e18-ab8d7ab71a2e", objWithBuildProp.ExampleBuildProperty);
+    }
+
     public partial class Wrapper
     {
         [ExternalDuplicateWithSuffixByName("Suffix")]
@@ -65,5 +72,10 @@ public partial class CodeGenerationTests
     {
         [Test(X = 10, Y = 20)]
         public string Value { get; set; }
+    }
+
+    [AddExampleBuildProperty]
+    public partial class ClassWithExampleBuildProperty
+    {
     }
 }

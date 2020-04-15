@@ -79,7 +79,7 @@ public abstract class CompilationTestsBase
         var diagnostics = compilation.GetDiagnostics();
         Assert.Empty(diagnostics.Where(x => x.Severity >= DiagnosticSeverity.Warning));
         var progress = new Progress<Diagnostic>();
-        var result = await DocumentTransform.TransformAsync(compilation, tree, null, Assembly.Load, progress, CancellationToken.None);
+        var result = await DocumentTransform.TransformAsync(compilation, tree, null, null, Assembly.Load, progress, CancellationToken.None);
         return result;
     }
 

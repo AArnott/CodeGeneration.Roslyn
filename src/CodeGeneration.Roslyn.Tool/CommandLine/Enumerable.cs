@@ -64,6 +64,11 @@ namespace CodeGeneration.Roslyn.Tool.CommandLine
             return System.Linq.Enumerable.ToArray(source);
         }
 
+        public static Dictionary<TKey, TElement> ToDictionary<T, TKey, TElement>(this IEnumerable<T> source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector)
+        {
+            return System.Linq.Enumerable.ToDictionary(source, keySelector, elementSelector);
+        }
+
         public static T Last<T>(this IEnumerable<T> source)
         {
             return System.Linq.Enumerable.Last(source);

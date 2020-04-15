@@ -39,16 +39,20 @@ namespace CodeGeneration.Roslyn.Generate
             IReadOnlyList<string> refs = Array.Empty<string>();
             IReadOnlyList<string> preprocessorSymbols = Array.Empty<string>();
             IReadOnlyList<string> plugins = Array.Empty<string>();
+            IReadOnlyList<string> buildPropertiesList = Array.Empty<string>();
             string generatedCompileItemFile = null;
             string outputDirectory = null;
             string projectDir = null;
             bool version = false;
+            Dictionary<string, string> buildProperties = new Dictionary<string, string>();
+            
             ArgumentSyntax.Parse(args, syntax =>
             {
                 syntax.DefineOption("version", ref version, "Show version of this tool (and exit).");
                 syntax.DefineOptionList("r|reference", ref refs, "Paths to assemblies being referenced");
                 syntax.DefineOptionList("d|define", ref preprocessorSymbols, "Preprocessor symbols");
                 syntax.DefineOptionList("plugin", ref plugins, "Paths to generator plugin assemblies");
+                syntax.DefineOptionList("buildProperty", ref buildPropertiesList, false, "MSBuild properties to expose to generators");
                 syntax.DefineOption("out", ref outputDirectory, true, "The directory to write generated source files to");
                 syntax.DefineOption("projectDir", ref projectDir, true, "The absolute path of the directory where the project file is located");
                 syntax.DefineOption("generatedFilesList", ref generatedCompileItemFile, "The path to the file to create with a list of generated source files");
@@ -72,6 +76,20 @@ namespace CodeGeneration.Roslyn.Generate
                 return 2;
             }
 
+            foreach (var prop in buildPropertiesList) 
+            {
+                var i = prop.IndexOf("=");
+
+                if (i <= 0) 
+                {
+                    continue;
+                }
+
+                var key = prop.Substring(0, i);
+                var value = prop.Substring(i + 1);
+                buildProperties[key] = value;
+            }
+
             var generator = new CompilationGenerator
             {
                 ProjectDirectory = projectDir,
@@ -79,6 +97,7 @@ namespace CodeGeneration.Roslyn.Generate
                 ReferencePath = Sanitize(refs),
                 PreprocessorSymbols = preprocessorSymbols,
                 PluginPaths = Sanitize(plugins),
+                BuildProperties = Sanitize(buildProperties),
                 IntermediateOutputDirectory = outputDirectory,
             };
 
@@ -116,6 +135,11 @@ namespace CodeGeneration.Roslyn.Generate
         private static IReadOnlyList<string> Sanitize(IReadOnlyList<string> inputs)
         {
             return inputs.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToArray();
+        }
+
+        private static IReadOnlyDictionary<string, string> Sanitize(IReadOnlyDictionary<string, string> inputs)
+        {
+            return inputs.Where(x => !string.IsNullOrWhiteSpace(x.Value)).ToDictionary(x => x.Key, x => x.Value.Trim());
         }
     }
 }
