@@ -18,6 +18,9 @@ try {
 
     # clean up all restore and build artifacts:
     Remove-Item .nuget, bin, obj -Recurse -Force -ErrorAction Ignore
+
+    ## Restore nbgv
+    PrintAndInvoke "dotnet tool restore" | Write-Host -ForegroundColor Gray
     
     # set env variable to use local CG.R packages
     $env:LocalNuGetVersion = dotnet nbgv get-version --variable NuGetPackageVersion --project ../src
