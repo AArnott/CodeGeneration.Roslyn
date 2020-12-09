@@ -3,6 +3,9 @@
 [![Build Status](https://andrewarnott.visualstudio.com/OSS/_apis/build/status/CodeGeneration.Roslyn)](https://andrewarnott.visualstudio.com/OSS/_build/latest?definitionId=15)
 [![GitHub Actions CI status](https://github.com/AArnott/CodeGeneration.Roslyn/workflows/CI/badge.svg?branch=master)](https://github.com/AArnott/CodeGeneration.Roslyn/actions?query=workflow%3ACI+branch%3Amaster)
 
+🛑 **This project is no longer maintained** now that [Roslyn offers source generators](https://devblogs.microsoft.com/dotnet/introducing-c-source-generators/) which offer superior performance, reliability, and IDE integration. See [#229](https://github.com/AArnott/CodeGeneration.Roslyn/issues/229) for a discussion leading up to this decision.
+Existing generators based on this project should be easily portable to Source Generators just by changing the wrapping and keeping all the syntax tree generating code.
+
 Assists in performing Roslyn-based code generation during a build.
 This includes design-time support, such that code generation can respond to
 changes made in hand-authored code files by generating new code that shows
