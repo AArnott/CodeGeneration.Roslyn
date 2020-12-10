@@ -4,7 +4,9 @@
 [![GitHub Actions CI status](https://github.com/AArnott/CodeGeneration.Roslyn/workflows/CI/badge.svg?branch=master)](https://github.com/AArnott/CodeGeneration.Roslyn/actions?query=workflow%3ACI+branch%3Amaster)
 
 🛑 **This project is no longer maintained** now that [Roslyn offers source generators](https://devblogs.microsoft.com/dotnet/introducing-c-source-generators/) which offer superior performance, reliability, and IDE integration. See [#229](https://github.com/AArnott/CodeGeneration.Roslyn/issues/229) for a discussion leading up to this decision.
-Existing generators based on this project should be easily portable to Source Generators just by changing the wrapping and keeping all the syntax tree generating code.
+Existing generators based on this project should be easily portable to Source Generators just by changing the wrapping and keeping all the syntax tree generating code. For an example migration, see [refactor: Use .NET 5 Source Generators PR](https://github.com/WarHub/wham/pull/122).
+
+---
 
 Assists in performing Roslyn-based code generation during a build.
 This includes design-time support, such that code generation can respond to
